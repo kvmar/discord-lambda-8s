@@ -43,11 +43,13 @@ class QueueDao:
     return self.get_queue_record_attributes(response["Item"])
 
   def put_queue(self, queue_record: QueueRecord):
+    version = queue_record.version
+    queue_record.version = queue_record.version + 1
     json_ = json.dumps(queue_record.__dict__, default=set_default)
     print(f'Putting following queue_record: {json_}')
     queue_dict = json.loads(json_)
     try:
-      response = self.table.put_item(Item=queue_dict, ConditionExpression=Attr("version").eq(queue_record.version))
+      response = self.table.put_item(Item=queue_dict, ConditionExpression=Attr("version").eq(version))
     except ClientError as err:
       if err.response["Error"]["Code"] == 'ConditionalCheckFailedException':
         # Somebody changed the item in the db while we were changing it!
