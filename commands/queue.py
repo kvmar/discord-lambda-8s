@@ -10,7 +10,7 @@ def queue(inter: Interaction, command: str = "queue") -> None:
 
 
 def setup(registry: CommandRegistry):
-  registry.register_cmd(func=queue, name="queue", desc="Adds 8s queue to discord.", options=[])
+  registry.register_cmd(func=queue, name="queue", desc="Adds 8s queue to discord", options=[])
 
 
 
