@@ -20,11 +20,7 @@ def help(inter: Interaction, command: str = "help") -> None:
 
 
 def setup(registry: CommandRegistry):
-  registry.register_cmd(func=help, name="help", desc="Provides information on how to use the bot.", options=[
-    CommandArg("command", "the command to get help with", CommandArg.Types.STRING, required=False, choices=[
-      CommandArg.Choice("help"),
-    ])
-  ])
+  registry.register_cmd(func=help, name="help", desc="Provides information on how to use the bot.", options=[])
 
 
 
