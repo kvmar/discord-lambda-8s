@@ -41,7 +41,8 @@ class QueueDao:
   def put_queue(self, queue_record: QueueRecord):
     json_ = json.dumps(queue_record.__dict__, default=set_default)
     print(f'Putting following queue_record: {json_}')
-    response = self.table.put_item(Item=json_)
+    queue_dict = json.loads(json_)
+    response = self.table.put_item(Item=queue_dict)
     print(f'Queue Dao get_queue response: {response}')
 
 
