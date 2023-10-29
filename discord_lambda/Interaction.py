@@ -69,9 +69,11 @@ class Interaction:
         self.token = interaction.get("token")
         self.id = interaction.get("id")
         self.data = interaction.get("data")
+        self.custom_id = interaction.get("data").get("custom_id")
         self.guild_id = interaction.get("guild").get("id")
         self.callback_url = f"https://discord.com/api/v10/interactions/{self.id}/{self.token}/callback"
         self.webhook_url = f"https://discord.com/api/v10/webhooks/{app_id}/{self.token}/messages/@original"
+        self.webhook_url_edit = f"https://discord.com/api/v10/webhooks/{app_id}/{self.token}/messages/"
         self.timestamp = time.time()
     
 
@@ -84,7 +86,6 @@ class Interaction:
             "flags": 1 << 6 if ephemeral else None
         }
         return response
-
 
     def defer(self, ephemeral: bool = True) -> None:
         try:
@@ -104,7 +105,20 @@ class Interaction:
             return response.json()['id']
         except Exception as e:
             raise Exception(f"Unable to send response: {e}")
-    
+
+    def edit_response(self, msg_id: str, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True, components: list[Components] = None) -> None:
+        try:
+            json = self.__create_channel_message(content, embeds, ephemeral, components)
+            print(f'Send Response json: {json}')
+            response = requests.patch(self.webhook_url_edit + msg_id, json=json)
+            print(f'Got SendResponse: {response.text}')
+            response.raise_for_status()
+            print(f'Convert to JSON SendResponse: {response.json}')
+            return response.json()['id']
+        except Exception as e:
+            raise Exception(f"Unable to send response: {e}")
+
+
 
     def send_followup(self, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True) -> None:
         try:

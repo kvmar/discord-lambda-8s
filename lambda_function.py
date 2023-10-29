@@ -28,7 +28,7 @@ def lambda_handler(event, context):
     interaction = Interaction(event.get("body-json"), os.environ.get('APP_ID'))
 
     if interaction.data.get("component_type") == 2:
-        ButtonManager.button_flow_tree(interaction.data.get("custom_id"))
+        ButtonManager.button_flow_tree(interaction.data.get("custom_id"), interaction.guild_id)
         return Interaction.PING_RESPONSE
 
 

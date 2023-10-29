@@ -29,6 +29,22 @@ def create_queue_resources(guild_id: str) -> (Embedding, Components):
     return (embed, component)
 
 
+def update_queue_resources(guild_id: str) -> (Embedding, Components):
+    embed = Embedding("Underworld 8s", "Queue size: 2", color=0x880808)
+    component = Components()
+    component.add_button("Join queue", join_queue_custom_id, False, 1)
+    component.add_button("Leave queue", leave_queue_custom_id, False, 4)
+    component.add_button("Start queue", start_queue_custom_id, True, 3)
+
+    response = queue_dao.get_queue(guild_id, "1")
+    print(f'Queue record: {json.dumps(response.__dict__, default=set_default) } for guild_id: {guild_id}')
+
+
+    response.clear_queue()
+    queue_dao.put_queue(response)
+
+    return (embed, component)
+
 def update_message_id(guild_id, msg_id):
     response = queue_dao.get_queue(guild_id, "1")
     print(f'Queue record: {json.dumps(response.__dict__, default=set_default) } for guild_id: {guild_id}')
