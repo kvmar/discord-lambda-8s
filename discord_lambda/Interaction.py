@@ -52,10 +52,10 @@ class Components:
         self.components = components
 
     def to_dict(self):
-        return [{
+        return {
             "type": 1,
             "components": self.components if self.components else None
-        }]
+        }
 
     def add_button(self, label: str, custom_id: str, disabled: bool, style: int = 1):
         self.components = self.components + [{"style": style, "label": label, "custom_id": custom_id, "disabled": disabled, "type": 2}]
