@@ -5,9 +5,12 @@ import boto3
 table_name = "QueueTable"
 
 class QueueRecord:
-  def __init__(self, guild_id: str, queue_id: str):
+  def __init__(self, guild_id: str, queue_id: str, team_1: set, team_2: set, queue: set):
     self.guild_id = guild_id
     self.queue_id = queue_id
+    self.team_1 = team_1
+    self.team_2 = team_2
+    self.queue = queue
 
 class QueueDao:
   def __init__(self):
