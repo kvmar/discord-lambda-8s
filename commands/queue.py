@@ -5,8 +5,8 @@ def queue(inter: Interaction, command: str = "queue") -> None:
   embed = None
   component = None
   if command == "queue":
-    print(f'Queue CMD called with interaction request: {inter.data.get("guild")}')
-    (embed, component) = QueueManager.create_queue_resources(inter.data.get("guild").get("id"))
+    print(f'Queue CMD called with interaction request: {inter.data}')
+    (embed, component) = QueueManager.create_queue_resources(inter.data)
 
   inter.send_response(components=[component], embeds=[embed], ephemeral=False)
 
