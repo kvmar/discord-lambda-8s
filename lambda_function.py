@@ -15,6 +15,8 @@ def verify_signature(event: dict) -> None:
 
 
 def lambda_handler(event, context):
+    print(f'Received API Event: {event}')
+    
     try:
         verify_signature(event)
     except Exception as e:
