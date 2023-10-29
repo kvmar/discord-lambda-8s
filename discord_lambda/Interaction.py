@@ -100,6 +100,8 @@ class Interaction:
             response = requests.patch(self.webhook_url, json=json)
             print(f'Got SendResponse: {response.text}')
             response.raise_for_status()
+            print(f'Convert to JSON SendResponse: {response.json}')
+            return response.json()['id']
         except Exception as e:
             raise Exception(f"Unable to send response: {e}")
     

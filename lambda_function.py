@@ -26,7 +26,7 @@ def lambda_handler(event, context):
         raise Exception(f"[UNAUTHORIZED] Invalid request signature: {e}")
 
     interaction = Interaction(event.get("body-json"), os.environ.get('APP_ID'))
-    
+
     if interaction.data.get("component_type") == 2:
         ButtonManager.button_flow_tree(interaction.data.get("custom_id"))
         return Interaction.PING_RESPONSE

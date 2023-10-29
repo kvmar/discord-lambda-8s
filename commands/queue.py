@@ -7,7 +7,8 @@ def queue(inter: Interaction, command: str = "queue") -> None:
   if command == "queue":
     (embed, component) = QueueManager.create_queue_resources(inter.guild_id)
 
-  inter.send_response(components=[component], embeds=[embed], ephemeral=False)
+  msg_id = inter.send_response(components=[component], embeds=[embed], ephemeral=False)
+  print(f'Queue message_id: {msg_id}')
 
 
 def setup(registry: CommandRegistry):

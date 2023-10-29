@@ -9,18 +9,20 @@ from dao import set_default
 table_name = "QueueTable"
 
 class QueueRecord:
-  def __init__(self, guild_id: str, queue_id: str, team_1: set, team_2: set, queue: set, version: int):
+  def __init__(self, guild_id: str, queue_id: str, team_1: set, team_2: set, queue: set, version: int, message_id: str = None):
     self.guild_id = guild_id
     self.queue_id = queue_id
     self.team_1 = team_1
     self.team_2 = team_2
     self.queue = queue
     self.version = int(version)
+    self.message_id = message_id
 
   def clear_queue(self):
     self.team_1 = set()
     self.team_2 = set()
     self.queue = set()
+    self.message_id = None
 
 class QueueDao:
   def __init__(self):
