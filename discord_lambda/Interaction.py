@@ -20,7 +20,7 @@ class Embedding:
             "color": self.color if self.color else None,
             "fields": self.fields if self.fields else None,
             "footer": self.footer if self.footer else None,
-            "components": self.components if self.components else None
+            "components": {"type": 1, "components": self.components if self.components else None}
         }
     
 
@@ -84,7 +84,9 @@ class Interaction:
 
     def send_response(self, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True) -> None:
         try:
-            requests.patch(self.webhook_url, json=self.__create_channel_message(content, embeds, ephemeral)).raise_for_status()
+            json = self.__create_channel_message(content, embeds, ephemeral)
+            print(f'Send Response json: json')
+            requests.patch(self.webhook_url, json=json).raise_for_status()
         except Exception as e:
             raise Exception(f"Unable to send response: {e}")
     
