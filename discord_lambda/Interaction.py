@@ -19,7 +19,8 @@ class Embedding:
             "url": self.url if self.url else None,
             "color": self.color if self.color else None,
             "fields": self.fields if self.fields else None,
-            "footer": self.footer if self.footer else None
+            "footer": self.footer if self.footer else None,
+            "components": self.components if self.components else None
         }
     
 
