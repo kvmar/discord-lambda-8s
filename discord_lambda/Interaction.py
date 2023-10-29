@@ -20,7 +20,7 @@ class Embedding:
             "color": self.color if self.color else None,
             "fields": self.fields if self.fields else None,
             "footer": self.footer if self.footer else None,
-            "components": {"type": 1, "components": self.components if self.components else None}
+            "components": [{"type": 1, "components": self.components if self.components else None}]
         }
     
 
