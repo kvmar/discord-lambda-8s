@@ -79,7 +79,7 @@ class Interaction:
         response = {
             "content": content,
             "embeds": [embed.to_dict() for embed in embeds] if embeds else None,
-            "components": [[component.to_dict() for component in components] if components else None],
+            "components": [component.to_dict() for component in components] if components else None,
             "flags": 1 << 6 if ephemeral else None
         }
         return response
