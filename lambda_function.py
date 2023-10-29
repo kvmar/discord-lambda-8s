@@ -25,11 +25,11 @@ def lambda_handler(event, context):
         # Return a 401 Unauthorized response
         raise Exception(f"[UNAUTHORIZED] Invalid request signature: {e}")
 
-    data = event.get("data")
+    data = event.get("body-json").get("data")
     print(f'Data object: {data}')
     if data is not None:
-        if event.get("data").get("component_type") is not None:
-            ButtonManager.button_flow_tree(event.get("data").get("custom_id"))
+        if event.get("body-json").get("data").get("component_type") is not None:
+            ButtonManager.button_flow_tree(event.get("body-json").get("data").get("custom_id"))
         return Interaction.PING_RESPONSE
     
     interaction = Interaction(event.get("body-json"), os.environ.get('APP_ID'))
