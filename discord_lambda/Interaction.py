@@ -69,6 +69,7 @@ class Interaction:
         self.token = interaction.get("token")
         self.id = interaction.get("id")
         self.data = interaction.get("data")
+        self.guild_id = interaction.get("guild").get("id")
         self.callback_url = f"https://discord.com/api/v10/interactions/{self.id}/{self.token}/callback"
         self.webhook_url = f"https://discord.com/api/v10/webhooks/{app_id}/{self.token}/messages/@original"
         self.timestamp = time.time()
