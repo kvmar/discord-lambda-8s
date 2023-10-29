@@ -1,5 +1,6 @@
 import json
 
+from dao import set_default
 from dao.QueueDao import QueueDao
 from discord_lambda import Embedding
 from discord_lambda import Components
@@ -19,6 +20,6 @@ def create_queue_resources(guild_id: str) -> (Embedding, Components):
     component.add_button("Start queue", start_queue_custom_id, True, 3)
 
     response = queue_dao.get_queue(guild_id, "1")
-    print(f'Queue record: {json.dumps(response.__dict__) } for guild_id: {guild_id}')
+    print(f'Queue record: {json.dumps(response.__dict__, default=set_default) } for guild_id: {guild_id}')
 
     return (embed, component)
