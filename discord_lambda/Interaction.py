@@ -53,7 +53,7 @@ class Components:
 
     def to_dict(self):
         return {
-            "components": [{"type": 1, "components": self.components if self.components else None}]
+            "components": self.components if self.components else None
         }
 
     def add_button(self, label: str, custom_id: str, disabled: bool, style: int = 1):
@@ -78,7 +78,7 @@ class Interaction:
         response = {
             "content": content,
             "embeds": [embed.to_dict() for embed in embeds] if embeds else None,
-            "components": [component.to_dict() for component in components] if components else None,
+            "components": [{"type": 1, "components": [component.to_dict() for component in components] if components else None}],
             "flags": 1 << 6 if ephemeral else None
         }
         return response
