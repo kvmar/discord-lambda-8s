@@ -6,7 +6,7 @@ def queue(inter: Interaction, command: str = "queue") -> None:
   if command == "queue":
     embed = QueueManager.create_queue()
 
-  inter.send_response(embeds=[embed])
+  inter.send_response(embeds=[embed], ephemeral=False)
 
 
 def setup(registry: CommandRegistry):

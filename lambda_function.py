@@ -27,7 +27,7 @@ def lambda_handler(event, context):
 
     if interaction.type == 1:
         return Interaction.PING_RESPONSE
-    
+
     elif interaction.type == 2:
         interaction.defer(ephemeral=True)
 
