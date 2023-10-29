@@ -58,11 +58,12 @@ class QueueDao:
       if err.response["Error"]["Code"] == 'ConditionalCheckFailedException':
         # Somebody changed the item in the db while we were changing it!
         print("Queue updated since read, retry!")
-        return
+        return response
       else:
         raise err
 
     print(f'Queue Dao get_queue response: {response}')
+    return response
 
 
   def get_queue_record_attributes(self, response):
