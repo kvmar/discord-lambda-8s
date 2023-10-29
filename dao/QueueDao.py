@@ -1,6 +1,9 @@
+import json
 import os
 
 import boto3
+
+from dao import set_default
 
 table_name = "QueueTable"
 
@@ -11,6 +14,11 @@ class QueueRecord:
     self.team_1 = team_1
     self.team_2 = team_2
     self.queue = queue
+
+  def clear_queue(self):
+    self.team_1 = set()
+    self.team_2 = set()
+    self.queue = set()
 
 class QueueDao:
   def __init__(self):
@@ -32,21 +40,22 @@ class QueueDao:
     print(f'Queue Dao get_queue response: {response["Item"]}')
     return self.get_queue_record_attributes(response["Item"])
 
+  def put_queue(self, queue_record: QueueRecord):
+    response = self.table.put_item(Item=json.dumps(queue_record.__dict__, default=set_default))
+    print(f'Queue Dao get_queue response: {response}')
+
 
   def get_queue_record_attributes(self, response):
     queue = set()
     for user in response['queue']:
-      print(f'Found user: {user} in queue')
       queue.add(user)
 
     team_1 = set()
     for user in response['team_1']:
-      print(f'Found user: {user} in team_1')
       team_1.add(user)
 
     team_2 = set()
     for user in response['team_2']:
-      print(f'Found user: {user} in team_2')
       team_2.add(user)
 
 
