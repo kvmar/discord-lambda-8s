@@ -13,8 +13,6 @@ def help(inter: Interaction, command: str = "help") -> None:
                     "This bot was developed by kumar.\n" \
                     "Please visit the [GitHub](https://github.com/novayammygang/discord-lambda-8s) to submit ideas or bugs.\n",
                     False)
-  if command == "queue":
-    embed = QueueManager.create_queue()
 
   inter.send_response(embeds=[embed])
 

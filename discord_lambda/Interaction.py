@@ -65,6 +65,7 @@ class Interaction:
     
 
     def __create_channel_message(self, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True) -> dict:
+        print(f'Creating channel message with ephemeral flag set to: {ephemeral}')
         response = {
             "content": content,
             "embeds": [embed.to_dict() for embed in embeds] if embeds else None,
