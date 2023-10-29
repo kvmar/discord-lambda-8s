@@ -2,7 +2,7 @@ from discord_lambda import Interaction, Embedding, CommandArg, CommandRegistry
 import time
 
 
-def ping_command(inter: Interaction, input: str) -> None:
+def ping_command(inter: Interaction) -> None:
     inter.send_response(content="Pong!")
 
 
