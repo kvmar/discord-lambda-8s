@@ -1,5 +1,6 @@
 from core import QueueManager
 from discord_lambda import Interaction
+from dao.QueueDao import QueueDao
 
 
 def button_flow_tree(interaction: Interaction):
@@ -9,4 +10,7 @@ def button_flow_tree(interaction: Interaction):
 def join_queue_button(guild_id: str, inter: Interaction):
   print("Join queue button clicked")
   (embed, component) = QueueManager.update_queue_resources(guild_id)
-  inter.edit_response(components=[component], embeds=[embed], ephemeral=False)
+
+
+  record = QueueDao.get_queue(guild_id, "1")
+  inter.edit_response(components=[component], embeds=[embed], ephemeral=False, msg_id=record.message_id)
