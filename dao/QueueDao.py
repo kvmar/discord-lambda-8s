@@ -1,17 +1,21 @@
 import json
 import os
 import boto3
+from boto3.dynamodb.conditions import Attr
+from botocore.exceptions import ClientError
+
 from dao import set_default
 
 table_name = "QueueTable"
 
 class QueueRecord:
-  def __init__(self, guild_id: str, queue_id: str, team_1: set, team_2: set, queue: set):
+  def __init__(self, guild_id: str, queue_id: str, team_1: set, team_2: set, queue: set, version: float):
     self.guild_id = guild_id
     self.queue_id = queue_id
     self.team_1 = team_1
     self.team_2 = team_2
     self.queue = queue
+    self.current_version = version
 
   def clear_queue(self):
     self.team_1 = set()
@@ -42,7 +46,15 @@ class QueueDao:
     json_ = json.dumps(queue_record.__dict__, default=set_default)
     print(f'Putting following queue_record: {json_}')
     queue_dict = json.loads(json_)
-    response = self.table.put_item(Item=queue_dict)
+    try:
+      response = self.table.put_item(Item=queue_dict, ConditionExpression=Attr("version").eq(queue_record.version))
+    except ClientError as err:
+      if err.response["Error"]["Code"] == 'ConditionalCheckFailedException':
+        # Somebody changed the item in the db while we were changing it!
+        print("Queue updated since read, retry!")
+      else:
+        raise err
+
     print(f'Queue Dao get_queue response: {response}')
 
 
@@ -60,4 +72,4 @@ class QueueDao:
       team_2.add(user)
 
 
-    return QueueRecord(response["guild_id"], response["queue_id"], team_1, team_2, queue)
+    return QueueRecord(response["guild_id"], response["queue_id"], team_1, team_2, queue, response['version'])
