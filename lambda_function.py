@@ -1,5 +1,7 @@
 import os
 from nacl.signing import VerifyKey
+
+from core import ButtonManager
 from discord_lambda import Interaction, Embedding
 import pickle
 
@@ -22,6 +24,13 @@ def lambda_handler(event, context):
     except Exception as e:
         # Return a 401 Unauthorized response
         raise Exception(f"[UNAUTHORIZED] Invalid request signature: {e}")
+
+    data = event.get("data")
+    print(f'Data object: {data}')
+    if data is not None:
+        if event.get("data").get("component_type") is not None:
+            ButtonManager.button_flow_tree(event.get("data").get("custom_id"))
+        return Interaction.PING_RESPONSE
     
     interaction = Interaction(event.get("body-json"), os.environ.get('APP_ID'))
 
