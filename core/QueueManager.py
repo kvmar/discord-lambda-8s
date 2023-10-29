@@ -28,14 +28,17 @@ def create_queue_resources(guild_id: str) -> (Embedding, Components):
 def get_queue_record_attributes(response):
     queue = set()
     for user in response['queue']:
+        print(f'Found user: {user} in queue')
         queue.add(user)
 
     team_1 = set()
     for user in response['team_1']:
+        print(f'Found user: {user} in team_1')
         team_1.add(user)
 
     team_2 = set()
     for user in response['team_2']:
+        print(f'Found user: {user} in team_2')
         team_2.add(user)
 
 
