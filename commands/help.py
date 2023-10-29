@@ -14,7 +14,7 @@ def help(inter: Interaction, command: str = "help") -> None:
                     "Please visit the [GitHub](https://github.com/novayammygang/discord-lambda-8s) to submit ideas or bugs.\n",
                     False)
 
-  inter.send_response(embeds=[embed])
+  inter.send_response(embeds=[embed], ephemeral=False)
 
 
 def setup(registry: CommandRegistry):

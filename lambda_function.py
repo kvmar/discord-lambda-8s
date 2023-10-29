@@ -29,7 +29,7 @@ def lambda_handler(event, context):
         return Interaction.PING_RESPONSE
 
     elif interaction.type == 2:
-        interaction.defer(ephemeral=True)
+        interaction.defer(ephemeral=False)
 
         registry = pickle.load(open("/opt/CommandRegistry.pickle", "rb"))
         try:
