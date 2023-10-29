@@ -22,7 +22,7 @@ class QueueDao:
     response = self.table.get_item(
       Key={
         'guild_id': guild_id,
-        'song': queue_id,
+        'queue_id': queue_id,
       }
     )
     print(f'Queue Dao get_queue response: {response["Item"]}')
