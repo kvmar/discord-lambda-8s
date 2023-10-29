@@ -1,10 +1,7 @@
 import json
 import os
-
 import boto3
-
 from dao import set_default
-from dynamodb_json import json_util as json
 
 table_name = "QueueTable"
 
@@ -43,8 +40,8 @@ class QueueDao:
 
   def put_queue(self, queue_record: QueueRecord):
     json_ = json.dumps(queue_record.__dict__, default=set_default)
-    dynamodb_json = json.dumps(json_)
-    response = self.table.put_item(Item=dynamodb_json)
+    print(f'Putting following queue_record: {json_}')
+    response = self.table.put_item(Item=json_)
     print(f'Queue Dao get_queue response: {response}')
 
 
