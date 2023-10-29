@@ -28,4 +28,26 @@ class QueueDao:
         'queue_id': queue_id,
       }
     )
+
     print(f'Queue Dao get_queue response: {response["Item"]}')
+    return self.get_queue_record_attributes(response["Item"])
+
+
+  def get_queue_record_attributes(self, response):
+    queue = set()
+    for user in response['queue']:
+      print(f'Found user: {user} in queue')
+      queue.add(user)
+
+    team_1 = set()
+    for user in response['team_1']:
+      print(f'Found user: {user} in team_1')
+      team_1.add(user)
+
+    team_2 = set()
+    for user in response['team_2']:
+      print(f'Found user: {user} in team_2')
+      team_2.add(user)
+
+
+    return QueueRecord(response["guild_id"], response["queue_id"], team_1, team_2, queue)
