@@ -98,7 +98,7 @@ class Interaction:
             json = self.__create_channel_message(content, embeds, ephemeral, components)
             print(f'Send Response json: {json}')
             response = requests.patch(self.webhook_url, json=json)
-            print(f'Got SendResponse: {response}')
+            print(f'Got SendResponse: {response.text}')
             response.raise_for_status()
         except Exception as e:
             raise Exception(f"Unable to send response: {e}")
