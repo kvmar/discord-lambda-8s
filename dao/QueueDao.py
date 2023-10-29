@@ -15,7 +15,7 @@ class QueueRecord:
     self.team_1 = team_1
     self.team_2 = team_2
     self.queue = queue
-    self.current_version = version
+    self.version = version
 
   def clear_queue(self):
     self.team_1 = set()
