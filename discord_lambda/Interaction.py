@@ -47,7 +47,7 @@ class Embedding:
     def set_footer(self, text: str, icon_url: str = None):
         self.footer = {"text": text, "icon_url": icon_url}
 
-    def add_button(self, label: str, custom_id: str, disabled: bool, style: str = 1):
+    def add_button(self, label: str, custom_id: str, disabled: bool, style: int = 1):
         self.components = self.components + [{"style": style, "label": label, "custom_id": custom_id, "disabled": disabled, "type": 2}]
 
 
