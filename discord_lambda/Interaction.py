@@ -52,10 +52,10 @@ class Components:
         self.components = components
 
     def to_dict(self):
-        return {
+        return [{
             "type": 1,
             "components": self.components if self.components else None
-        }
+        }]
 
     def add_button(self, label: str, custom_id: str, disabled: bool, style: int = 1):
         self.components = self.components + [{"style": style, "label": label, "custom_id": custom_id, "disabled": disabled, "type": 2}]
@@ -78,8 +78,8 @@ class Interaction:
         print(f'Creating channel message with ephemeral flag set to: {ephemeral}')
         response = {
             "content": content,
-            "embeds": [embed.to_dict() for embed in embeds] if embeds else None,
             "components": [component.to_dict() for component in components] if components else None,
+            "embeds": [embed.to_dict() for embed in embeds] if embeds else None,
             "flags": 1 << 6 if ephemeral else None
         }
         return response
