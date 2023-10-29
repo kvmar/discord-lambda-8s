@@ -3,10 +3,11 @@ from discord_lambda import Embedding, CommandRegistry, Interaction, CommandArg
 
 def queue(inter: Interaction, command: str = "queue") -> None:
   embed = None
+  component = None
   if command == "queue":
-    embed = QueueManager.create_queue()
+    (embed, component) = QueueManager.create_queue_resources()
 
-  inter.send_response(embeds=[embed], ephemeral=False)
+  inter.send_response(components=[component], embeds=[embed], ephemeral=False)
 
 
 def setup(registry: CommandRegistry):

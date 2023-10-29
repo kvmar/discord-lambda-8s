@@ -9,8 +9,7 @@ class Embedding:
         self.color = color
         self.fields = fields
         self.footer = footer
-        self.components = components
-    
+
 
     def to_dict(self):
         return {
@@ -20,7 +19,6 @@ class Embedding:
             "color": self.color if self.color else None,
             "fields": self.fields if self.fields else None,
             "footer": self.footer if self.footer else None,
-            "components": [{"type": 1, "components": self.components if self.components else None}]
         }
     
 
@@ -48,6 +46,16 @@ class Embedding:
     def set_footer(self, text: str, icon_url: str = None):
         self.footer = {"text": text, "icon_url": icon_url}
 
+
+class Components:
+    def __init__(self, components: list[dict] = []):
+        self.components = components
+
+    def to_dict(self):
+        return {
+            "components": [{"type": 1, "components": self.components if self.components else None}]
+        }
+
     def add_button(self, label: str, custom_id: str, disabled: bool, style: int = 1):
         self.components = self.components + [{"style": style, "label": label, "custom_id": custom_id, "disabled": disabled, "type": 2}]
 
@@ -65,11 +73,12 @@ class Interaction:
         self.timestamp = time.time()
     
 
-    def __create_channel_message(self, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True) -> dict:
+    def __create_channel_message(self, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True, components: list[Components] = None) -> dict:
         print(f'Creating channel message with ephemeral flag set to: {ephemeral}')
         response = {
             "content": content,
             "embeds": [embed.to_dict() for embed in embeds] if embeds else None,
+            "components": [component.to_dict() for component in components] if components else None,
             "flags": 1 << 6 if ephemeral else None
         }
         return response
@@ -82,9 +91,9 @@ class Interaction:
             raise Exception(f"Unable to defer response: {e}")
     
 
-    def send_response(self, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True) -> None:
+    def send_response(self, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True, components: list[Components] = None) -> None:
         try:
-            json = self.__create_channel_message(content, embeds, ephemeral)
+            json = self.__create_channel_message(content, embeds, ephemeral, components)
             print(f'Send Response json: {json}')
             requests.patch(self.webhook_url, json=json).raise_for_status()
         except Exception as e:
