@@ -13,15 +13,24 @@ def button_flow_tree(interaction: Interaction):
 
 def join_queue_button(guild_id: str, inter: Interaction):
   print("Join queue button clicked")
-  (embed, component) = QueueManager.add_player(inter)
+  resp = QueueManager.add_player(inter)
 
+  if resp is None:
+    return
+
+  (embed, component) = resp
   record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
   inter.edit_response(channel_id=record.channel_id, message_id=record.message_id, content=str(datetime.datetime.now()), embeds=[embed], components=[component])
 
 
 def leave_queue_button(guild_id: str, inter: Interaction):
   print("Leave queue button clicked")
-  (embed, component) = QueueManager.remove_player(inter)
+  resp = QueueManager.remove_player(inter)
+
+  if resp is None:
+    return
+
+  (embed, component) = resp
 
   record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
   inter.edit_response(channel_id=record.channel_id, message_id=record.message_id, content=str(datetime.datetime.now()), embeds=[embed], components=[component])

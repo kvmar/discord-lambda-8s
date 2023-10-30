@@ -33,13 +33,16 @@ def create_queue_resources(guild_id: str) -> (Embedding, Components):
 def add_player(inter: Interaction) -> (Embedding, Components):
     response = queue_dao.get_queue(inter.guild_id, "1")
     response.queue.append(inter.user_id)
-    queue_dao.put_queue(response)
+    resp = queue_dao.put_queue(response)
 
-    (embed, component) = update_queue_embed(response)
+    if resp is not None:
+        (embed, component) = update_queue_embed(response)
 
-    print(f'Queue record: {json.dumps(response.__dict__, default=set_default) } for guild_id: {inter.guild_id}')
+        print(f'Queue record: {json.dumps(response.__dict__, default=set_default) } for guild_id: {inter.guild_id}')
 
-    return embed, component
+        return embed, component
+
+    return None
 
 def remove_player(inter: Interaction) -> (Embedding, Components):
     response = queue_dao.get_queue(inter.guild_id, "1")
@@ -47,13 +50,15 @@ def remove_player(inter: Interaction) -> (Embedding, Components):
     if inter.user_id in response.queue:
         response.queue.remove(inter.user_id)
 
-    queue_dao.put_queue(response)
+    resp = queue_dao.put_queue(response)
 
-    (embed, component) = update_queue_embed(response)
+    if resp is not None:
+        (embed, component) = update_queue_embed(response)
 
-    print(f'Queue record: {json.dumps(response.__dict__, default=set_default) } for guild_id: {inter.guild_id}')
+        print(f'Queue record: {json.dumps(response.__dict__, default=set_default) } for guild_id: {inter.guild_id}')
 
-    return embed, component
+        return embed, component
+    return None
 
 
 def update_queue_embed(record: QueueRecord) -> (Embedding, Components):
