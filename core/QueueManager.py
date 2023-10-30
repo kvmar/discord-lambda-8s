@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 from dao import set_default
 from dao.PlayerDao import PlayerDao, PlayerRecord
@@ -101,3 +102,15 @@ def update_message_id(guild_id, msg_id, channel_id):
     response.channel_id = channel_id
 
     queue_dao.put_queue(response)
+
+def update_queue_view(record: QueueRecord, embeds: list[Embedding], components: list[Components], inter: Interaction):
+    if int(datetime.utcnow().timestamp()) < record.last_updated:
+        print(f"Queue message has expired: {record.last_updated}")
+        record.update_last_updated()
+        queue_dao.put_queue(record)
+        resp = inter.edit_response(channel_id=record.channel_id, message_id=record.message_id, embeds=embeds, components=components)
+        print(f'Queue message_id: {resp}')
+        update_message_id(inter.guild_id, resp[0], resp[1])
+    else:
+        queue_dao.put_queue(record)
+        inter.send_response(components=components, embeds=embeds, ephemeral=False)

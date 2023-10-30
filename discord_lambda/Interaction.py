@@ -117,21 +117,18 @@ class Interaction:
         except Exception as e:
             raise Exception(f"Unable to send response: {e}")
 
-    def edit_response(self, channel_id: str, message_id: str, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True, components: list[Components] = None) :
+    def edit_response(self, channel_id: str, message_id: str, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = False, components: list[Components] = None) :
         try:
-            json = self.__create_channel_message(content, embeds, ephemeral, components)
-            print(f'Send Response json: {json}')
-
             headers = {
                 'Authorization': f'Bot {os.environ.get("BOT_TOKEN")}'
             }
-            response = requests.delete(f'https://discord.com/api/v10/channels/{channel_id}/messages/{message_id}', json=json, headers=headers)
-            print(f'Got SendResponse: {response.text}')
+            response = requests.delete(f'https://discord.com/api/v10/channels/{channel_id}/messages/{message_id}', headers=headers)
+            print(f'Got DeleteResponse: {response.text}')
             response.raise_for_status()
-            print(f'Convert to JSON SendResponse: {response.json}')
+            print(f'Convert to JSON DeleteResponse: {response.json}')
             return self.send_response(embeds=embeds, components=components, ephemeral=ephemeral)
         except Exception as e:
-            raise Exception(f"Unable to send response: {e}")
+            raise Exception(f"Unable to delete response: {e}")
 
     def send_followup(self, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True) -> None:
         try:
