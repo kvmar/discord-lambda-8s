@@ -118,7 +118,7 @@ class Interaction:
             headers = {
                 'Authorization': f'Bot {os.environ.get("BOT_TOKEN")}'
             }
-            response = requests.patch(f'https://discord.com/api/v10/channels/{channel_id}/messages/{message_id}', json=json, headers={})
+            response = requests.patch(f'https://discord.com/api/v10/channels/{channel_id}/messages/{message_id}', json=json, headers=headers)
             print(f'Got SendResponse: {response.text}')
             response.raise_for_status()
             print(f'Convert to JSON SendResponse: {response.json}')
