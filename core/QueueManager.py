@@ -107,6 +107,13 @@ def team_1_won(inter: Interaction):
     resp = queue_dao.put_queue(response)
 
     if resp is not None:
+        if len(response.team2_votes) == 5 or len(response.team2_votes) == 5 or len(response.cancel_votes) == 5:
+            response = queue_dao.get_queue(inter.guild_id, "1")
+            response.clear_queue()
+            resp = queue_dao.put_queue(response)
+            if resp is None:
+                return None
+
         (embed, component) = update_queue_embed(response)
 
         print(f'Queue record: {response} for guild_id: {inter.guild_id}')
@@ -128,6 +135,13 @@ def team_2_won(inter: Interaction):
     resp = queue_dao.put_queue(response)
 
     if resp is not None:
+        if len(response.team2_votes) == 5 or len(response.team2_votes) == 5 or len(response.cancel_votes) == 5:
+            response = queue_dao.get_queue(inter.guild_id, "1")
+            response.clear_queue()
+            resp = queue_dao.put_queue(response)
+            if resp is None:
+                return None
+
         (embed, component) = update_queue_embed(response)
 
         print(f'Queue record: {response} for guild_id: {inter.guild_id}')
@@ -149,6 +163,13 @@ def cancel_match(inter: Interaction):
     resp = queue_dao.put_queue(response)
 
     if resp is not None:
+        if len(response.team2_votes) == 5 or len(response.team2_votes) == 5 or len(response.cancel_votes) == 5:
+            response = queue_dao.get_queue(inter.guild_id, "1")
+            response.clear_queue()
+            resp = queue_dao.put_queue(response)
+            if resp is None:
+                return None
+
         (embed, component) = update_queue_embed(response)
 
         print(f'Queue record: {response} for guild_id: {inter.guild_id}')
@@ -181,6 +202,7 @@ def player_pick(inter: Interaction):
     resp = queue_dao.put_queue(response)
 
     if resp is not None:
+
         (embed, component) = update_queue_embed(response)
 
         print(f'Queue record: {response} for guild_id: {inter.guild_id}')
@@ -236,7 +258,7 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         )
 
         components = get_player_pick_btns(record)
-        return [embed], components
+        return [embed], componentsv
     elif len(record.team_1) == 4 and len(record.team_2) == 4:
         team1_str = "Team 1: \n"
         for user in record.team_1:

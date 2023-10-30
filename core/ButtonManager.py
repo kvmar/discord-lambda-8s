@@ -83,6 +83,7 @@ def team_1_won_button(guild_id: str, inter: Interaction):
   (embed, component) = resp
 
   record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
+
   QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
 
 def team_2_won_button(guild_id: str, inter: Interaction):
