@@ -98,13 +98,6 @@ class Interaction:
         except Exception as e:
             raise Exception(f"Unable to defer response: {e}")
 
-
-    def pong(self, ephemeral: bool = True) -> None:
-        try:
-            requests.post(self.callback_url, json={"type": 1, "data": {"flags": 1 << 6 if ephemeral else None}}).raise_for_status()
-        except Exception as e:
-            raise Exception(f"Unable to pong response: {e}")
-
     def send_response(self, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True, components: list[Components] = None) -> \
     tuple[Any, Any]:
         try:
