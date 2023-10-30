@@ -7,6 +7,8 @@ import boto3
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 
+from dao import set_default
+
 table_name = "QueueTable"
 
 class QueueRecord:
@@ -56,7 +58,7 @@ class QueueDao:
   def put_queue(self, queue_record: QueueRecord):
     current_version = queue_record.version
     queue_record.version = queue_record.version + 1
-    json_ = json.dumps(queue_record.__dict__)
+    json_ = json.dumps(queue_record.__dict__, default=set_default)
     print(f'Putting following queue_record: {json_}')
     queue_dict = json.loads(json_, parse_float=Decimal)
 

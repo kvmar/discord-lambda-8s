@@ -20,9 +20,10 @@ queue_dao = QueueDao()
 player_dao = PlayerDao()
 
 def create_queue_resources(guild_id: str):
-    embed = Embedding("Underworld 8s", "Queue size: 0", color=0x880808)
 
     response = queue_dao.get_queue(guild_id, "1")
+    embed = Embedding("Underworld 8s", f"Queue size: {len(response.queue)}", color=0x880808)
+
     print(f'Queue record: {response} for guild_id: {guild_id}')
 
     component = Components()
