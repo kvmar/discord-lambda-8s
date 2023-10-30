@@ -1,7 +1,7 @@
 import datetime
 
 from core import QueueManager
-from discord_lambda import Interaction, Bot
+from discord_lambda import Interaction
 from dao.QueueDao import QueueDao
 
 queue_dao = QueueDao()
