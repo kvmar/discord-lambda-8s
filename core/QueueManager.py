@@ -196,6 +196,10 @@ def get_player_pick_btns(record):
             component.add_button(player_data.player_name, f'{player_pick_custom_id}#{player_data.player_id}#{queue_idx}', False, 2)
         cmpt_idx = cmpt_idx + 1
         queue_idx = queue_idx + 1
+
+    if cmpt_idx < 4:
+        component_list.append(component)
+  
     return component_list
 
 def update_message_id(guild_id, msg_id, channel_id):
