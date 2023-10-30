@@ -71,4 +71,4 @@ class PlayerDao:
 
 
   def get_player_record_attributes(self, response):
-    return PlayerRecord(player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["mp"], elo=response["elo"], sigma=response["sigma"], delta=response["delta"], version=response["version"])
+    return PlayerRecord(player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["ml"], elo=response["elo"], sigma=response["sigma"], delta=response["delta"], version=response["version"])
