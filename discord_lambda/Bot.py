@@ -5,6 +5,7 @@ import discord
 intents = discord.Intents.default()
 intents.message_content = True
 bot = discord.Client(intents=intents)
+print(os.environ.values())
 bot.run(os.environ.get('BOT_TOKEN'))
 
 async def edit_message(message_id: str, channel_id: str, guild_id: str):
