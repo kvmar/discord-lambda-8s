@@ -10,7 +10,7 @@ from botocore.exceptions import ClientError
 table_name = "QueueTable"
 
 class QueueRecord:
-  def __init__(self, guild_id: str, queue_id: str, team_1: list, team_2: list, queue: list, version: int, expiry: int, message_id: str = None, channel_id: str = None):
+  def __init__(self, guild_id: str, queue_id: str, team_1: set, team_2: set, queue: set, version: int, expiry: int, message_id: str = None, channel_id: str = None):
     self.guild_id = guild_id
     self.queue_id = queue_id
     self.team_1 = team_1
@@ -22,9 +22,9 @@ class QueueRecord:
     self.expiry = expiry
 
   def clear_queue(self):
-    self.team_1 = list()
-    self.team_2 = list()
-    self.queue = list()
+    self.team_1 = set()
+    self.team_2 = set()
+    self.queue = set()
     self.message_id = None
     self.channel_id = None
     self.update_expiry_date()
@@ -76,17 +76,17 @@ class QueueDao:
 
 
   def get_queue_record_attributes(self, response):
-    queue = list()
+    queue = set()
     for user in response['queue']:
-      queue.append(user)
+      queue.add(user)
 
-    team_1 = list()
+    team_1 = set()
     for user in response['team_1']:
-      team_1.append(user)
+      team_1.add(user)
 
-    team_2 = list()
+    team_2 = set()
     for user in response['team_2']:
-      team_2.append(user)
+      team_2.add(user)
 
 
     return QueueRecord(guild_id=response["guild_id"], queue_id=response["queue_id"], expiry=int(response["expiry"]), team_1=team_1, team_2=team_2, queue=queue, version=response["version"], message_id=response["message_id"], channel_id=response["channel_id"])

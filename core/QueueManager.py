@@ -41,7 +41,7 @@ def create_queue_resources(guild_id: str):
 
 def add_player(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")
-    response.queue.append(inter.user_id)
+    response.queue.add(inter.user_id)
     resp = queue_dao.put_queue(response)
 
     player_data = player_dao.get_player(guild_id=inter.guild_id, player_id=inter.user_id)
@@ -78,8 +78,8 @@ def start_match(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")
 
     caps = random.sample(response.queue, 2)
-    response.team_1.append(caps[0])
-    response.team_2.append(caps[0])
+    response.team_1.add(caps[0])
+    response.team_2.add(caps[0])
 
     resp = queue_dao.put_queue(response)
 
@@ -109,9 +109,9 @@ def player_pick(inter: Interaction):
     print(f'Picked player {player}')
 
     if team1_pick:
-        response.team_1.append(player)
+        response.team_1.add(player)
     else:
-        response.team_2.append(player)
+        response.team_2.add(player)
 
     resp = queue_dao.put_queue(response)
 
