@@ -18,7 +18,7 @@ def join_queue_button(guild_id: str, inter: Interaction):
   print("Join queue button clicked")
   resp = QueueManager.add_player(inter)
 
-  if resp[0] is None:
+  if resp is None:
     return
 
   (embed, component) = resp
@@ -32,7 +32,7 @@ def leave_queue_button(guild_id: str, inter: Interaction):
   print("Leave queue button clicked")
   resp = QueueManager.remove_player(inter)
 
-  if resp[0] is None:
+  if resp is None:
     return
 
   (embed, component) = resp
@@ -45,7 +45,7 @@ def start_queue_button(guild_id: str, inter: Interaction):
   print("Start queue button clicked")
   resp = QueueManager.start_match(inter)
 
-  if resp[0] is None:
+  if resp is None:
     return
 
   (embed, component) = resp
@@ -58,7 +58,7 @@ def player_pick_button(guild_id, inter):
 
   resp = QueueManager.player_pick(inter)
 
-  if resp[0] is None:
+  if resp is None:
     return
 
   (embed, component) = resp

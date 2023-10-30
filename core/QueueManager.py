@@ -57,7 +57,7 @@ def add_player(inter: Interaction):
 
         return embed, component
 
-    return None, None
+    return None
 
 def remove_player(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")
@@ -73,7 +73,7 @@ def remove_player(inter: Interaction):
         print(f'Queue record: {response} for guild_id: {inter.guild_id}')
 
         return embed, component
-    return None, None
+    return None
 
 def start_match(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")
@@ -90,7 +90,7 @@ def start_match(inter: Interaction):
         print(f'Queue record: {response} for guild_id: {inter.guild_id}')
 
         return embed, component
-    return None, None
+    return None
 
 
 def player_pick(inter: Interaction):
@@ -122,7 +122,7 @@ def player_pick(inter: Interaction):
         print(f'Queue record: {response} for guild_id: {inter.guild_id}')
 
         return embed, component
-    return None, None
+    return None
 
 
 def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
@@ -147,7 +147,7 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
             component.add_button("Start queue", start_queue_custom_id, True, 3)
 
         return [embed], [component]
-    elif len(record.team_1) != 4 and len(record.team_2) != 4:
+    elif len(record.team_1) != 4 or len(record.team_2) != 4:
         whose_pick = ""
         if len(record.team_1) + len(record.team_2) in (2, 5, 6):
             player_data = player_dao.get_player(record.guild_id, record.team_1[0])
