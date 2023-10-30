@@ -26,7 +26,6 @@ def edit_message(message_id: str, channel_id: str, guild_id: str):
     loop = asyncio.get_event_loop()
     loop.run_until_complete(close_bot())
 
-
 async def fetch_guild(guild_id: int):
     return await bot.fetch_guild(int(guild_id))
 
