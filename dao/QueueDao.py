@@ -64,7 +64,7 @@ class QueueDao:
       else:
         raise err
 
-    print(f'Queue Dao get_queue response: {response}')
+    print(f'Queue Dao put_queue response: {response}')
     return response
 
 
