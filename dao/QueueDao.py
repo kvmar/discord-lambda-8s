@@ -1,5 +1,7 @@
 import json
 import os
+from datetime import datetime, timedelta
+
 import boto3
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
@@ -9,7 +11,7 @@ from dao import set_default
 table_name = "QueueTable"
 
 class QueueRecord:
-  def __init__(self, guild_id: str, queue_id: str, team_1: list, team_2: list, queue: list, version: int, message_id: str = None, channel_id: str = None):
+  def __init__(self, guild_id: str, queue_id: str, team_1: list, team_2: list, queue: list, version: int, last_updated: float, message_id: str = None, channel_id: str = None, ):
     self.guild_id = guild_id
     self.queue_id = queue_id
     self.team_1 = team_1
@@ -18,6 +20,7 @@ class QueueRecord:
     self.version = int(version)
     self.message_id = message_id
     self.channel_id = channel_id
+    self.last_updated = last_updated
 
   def clear_queue(self):
     self.team_1 = list()
@@ -25,6 +28,9 @@ class QueueRecord:
     self.queue = list()
     self.message_id = None
     self.channel_id = None
+
+  def update_last_updated(self):
+    self.last_updated = datetime.utcnow() + timedelta(minutes=1)
 
 class QueueDao:
   def __init__(self):

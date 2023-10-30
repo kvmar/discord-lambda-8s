@@ -27,6 +27,7 @@ def create_queue_resources(guild_id: str) -> (Embedding, Components):
 
 
     response.clear_queue()
+    response.update_last_updated()
     queue_dao.put_queue(response)
 
     return embed, component

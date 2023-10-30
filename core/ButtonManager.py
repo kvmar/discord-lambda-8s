@@ -20,6 +20,9 @@ def join_queue_button(guild_id: str, inter: Interaction):
 
   (embed, component) = resp
   record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
+  record.update_last_updated()
+  queue_dao.put_queue(record)
+
   inter.edit_response(channel_id=record.channel_id, message_id=record.message_id, content=str(datetime.datetime.now()), embeds=[embed], components=[component])
 
 
@@ -33,4 +36,7 @@ def leave_queue_button(guild_id: str, inter: Interaction):
   (embed, component) = resp
 
   record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
+  record.update_last_updated()
+  queue_dao.put_queue(record)
+
   inter.edit_response(channel_id=record.channel_id, message_id=record.message_id, content=str(datetime.datetime.now()), embeds=[embed], components=[component])
