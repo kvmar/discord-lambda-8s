@@ -1,5 +1,5 @@
 from core import QueueManager
-from discord_lambda import Interaction
+from discord_lambda import Interaction, Bot
 from dao.QueueDao import QueueDao
 
 queue_dao = QueueDao()
@@ -12,4 +12,4 @@ def join_queue_button(guild_id: str, inter: Interaction):
   (embed, component) = QueueManager.update_queue_resources(guild_id)
 
   record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
-  inter.edit_response(components=[component], embeds=[embed], ephemeral=False, msg_id=record.message_id)
+  Bot.edit_message(message_id=record.message_id, channel_id=record.channel_id, guild_id=record.guild_id)
