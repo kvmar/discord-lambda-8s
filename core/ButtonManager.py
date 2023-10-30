@@ -27,7 +27,7 @@ def join_queue_button(guild_id: str, inter: Interaction):
     print(f"Queue message has expired: {record.last_updated}")
     record.update_last_updated()
     queue_dao.put_queue(record)
-    resp = inter.edit_response(channel_id=record.channel_id, message_id=record.message_id, content=str(datetime.datetime.now()), embeds=[embed], components=[component])
+    resp = inter.edit_response(channel_id=record.channel_id, message_id=record.message_id, content=str(datetime.now()), embeds=[embed], components=[component])
     print(f'Queue message_id: {resp}')
     QueueManager.update_message_id(inter.guild_id, resp[0], resp[1])
   else:
@@ -50,7 +50,7 @@ def leave_queue_button(guild_id: str, inter: Interaction):
   if int(datetime.utcnow().timestamp()) < record.last_updated:
     print(f"Queue message has expired: {record.last_updated}")
     record.update_last_updated()
-    resp = inter.edit_response(channel_id=record.channel_id, message_id=record.message_id, content=str(datetime.datetime.now()), embeds=[embed], components=[component])
+    resp = inter.edit_response(channel_id=record.channel_id, message_id=record.message_id, content=str(datetime.now()), embeds=[embed], components=[component])
     queue_dao.put_queue(record)
     print(f'Queue message_id: {resp}')
     QueueManager.update_message_id(inter.guild_id, resp[0], resp[1])
