@@ -88,6 +88,38 @@ def start_match(inter: Interaction):
     return None
 
 
+def player_pick(inter: Interaction):
+    player_id_inter = inter.user_id
+
+    response = queue_dao.get_queue(inter.guild_id, "1")
+    team1_pick = True
+    player_pick = response.team_1[0]
+    if len(response.team_1) + len(response.team_2) in (3, 4, 7):
+        player_pick = response.team_2[0]
+        team1_pick = False
+
+    if player_pick != str(player_id_inter):
+        return None
+
+    player = inter.custom_id.split("#")
+    print(f'Picked player {player}')
+
+    if team1_pick:
+        response.team_1.append(player)
+    else:
+        response.team_2.append(player)
+
+    resp = queue_dao.put_queue(response)
+
+    if resp is not None:
+        (embed, component) = update_queue_embed(response)
+
+        print(f'Queue record: {response} for guild_id: {inter.guild_id}')
+
+        return embed, component
+    return None
+
+
 def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
     if len(record.team_1) == 0 or len(record.team_2) == 0:
         queue_str = ""
@@ -165,11 +197,6 @@ def get_player_pick_btns(record):
         cmpt_idx = cmpt_idx + 1
         queue_idx = queue_idx + 1
     return component_list
-
-
-
-
-
 
 def update_message_id(guild_id, msg_id, channel_id):
     response = queue_dao.get_queue(guild_id, "1")

@@ -11,6 +11,8 @@ def button_flow_tree(interaction: Interaction):
     leave_queue_button(interaction.guild_id, interaction)
   elif interaction.custom_id == QueueManager.start_queue_custom_id:
     start_queue_button(interaction.guild_id, interaction)
+  elif QueueManager.start_queue_custom_id in interaction.custom_id:
+    player_pick_button(interaction.guild_id, interaction)
 
 def join_queue_button(guild_id: str, inter: Interaction):
   print("Join queue button clicked")
@@ -51,4 +53,16 @@ def start_queue_button(guild_id: str, inter: Interaction):
   record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
   QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
 
+def player_pick_button(guild_id, inter):
+  print(f"Player pick button clicked: {inter.custom_id}")
+
+  resp = QueueManager.player_pick(inter)
+
+  if resp is None:
+    return
+
+  (embed, component) = resp
+
+  record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
+  QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
 
