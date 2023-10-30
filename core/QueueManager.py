@@ -42,7 +42,7 @@ def add_player(inter: Interaction) -> (Embedding, Components):
     return (embed, component)
 
 
-def update_queue_embed(self, record: QueueRecord):
+def update_queue_embed(record: QueueRecord):
     queue_str = ""
     for user in record.queue:
         queue_str = queue_str + user + "\n"
