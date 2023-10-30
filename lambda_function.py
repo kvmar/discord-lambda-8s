@@ -28,9 +28,8 @@ def lambda_handler(event, context):
     interaction = Interaction(event.get("body-json"), os.environ.get('APP_ID'))
 
     if interaction.data.get("component_type") == 2:
-        interaction.defer(ephemeral=True)
-        ButtonManager.button_flow_tree(interaction)
         interaction.pong(ephemeral=True)
+        ButtonManager.button_flow_tree(interaction)
         return
 
 
