@@ -13,6 +13,10 @@ def button_flow_tree(interaction: Interaction):
     start_queue_button(interaction.guild_id, interaction)
   elif QueueManager.player_pick_custom_id in interaction.custom_id:
     player_pick_button(interaction.guild_id, interaction)
+  elif interaction.custom_id == QueueManager.team_1_won_custom_id:
+    start_queue_button(interaction.guild_id, interaction)
+  elif interaction.custom_id == QueueManager.team_2_won_custom_id:
+    start_queue_button(interaction.guild_id, interaction)
 
 def join_queue_button(guild_id: str, inter: Interaction):
   print("Join queue button clicked")
@@ -65,4 +69,31 @@ def player_pick_button(guild_id, inter):
 
   record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
   QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
+
+
+def team_1_won_button(guild_id: str, inter: Interaction):
+  print("Team 1 Won button clicked")
+  resp = QueueManager.team_1_won(inter)
+
+  if resp is None:
+    return
+
+  (embed, component) = resp
+
+  record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
+  QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
+
+def team_2_won_button(guild_id: str, inter: Interaction):
+  print("Team 2 Won button clicked")
+  resp = QueueManager.team_2_won(inter)
+
+  if resp is None:
+    return
+
+  (embed, component) = resp
+
+  record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
+  QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
+
+
 
