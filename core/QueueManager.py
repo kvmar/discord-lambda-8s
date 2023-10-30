@@ -79,8 +79,8 @@ def start_match(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")
 
     caps = random.sample(response.queue, 2)
-    response.team_1.add(caps[0])
-    response.team_2.add(caps[0])
+    response.team_1.append(caps[0])
+    response.team_2.append(caps[0])
 
     resp = queue_dao.put_queue(response)
 
@@ -110,9 +110,9 @@ def player_pick(inter: Interaction):
     print(f'Picked player {player}')
 
     if team1_pick:
-        response.team_1.add(player)
+        response.team_1.append(player)
     else:
-        response.team_2.add(player)
+        response.team_2.append(player)
 
     resp = queue_dao.put_queue(response)
 
