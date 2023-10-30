@@ -21,7 +21,7 @@ class QueueRecord:
     self.version = int(version)
     self.message_id = message_id
     self.channel_id = channel_id
-    self.last_updated = last_updated
+    self.expiry = last_updated
 
   def clear_queue(self):
     self.team_1 = list()
@@ -29,11 +29,11 @@ class QueueRecord:
     self.queue = list()
     self.message_id = None
     self.channel_id = None
-    self.update_last_updated()
+    self.update_expiry_date()
 
-  def update_last_updated(self):
+  def update_expiry_date(self):
     time = datetime.utcnow() + timedelta(minutes=1)
-    self.last_updated = int(time.timestamp())
+    self.expiry = int(time.timestamp())
 
 class QueueDao:
   def __init__(self):

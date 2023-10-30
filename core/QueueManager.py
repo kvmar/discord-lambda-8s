@@ -26,7 +26,7 @@ def create_queue_resources(guild_id: str) -> (Embedding, Components):
 
 
     response.clear_queue()
-    response.update_last_updated()
+    response.update_expiry_date()
 
     queue_dao.put_queue(response)
 
@@ -102,9 +102,10 @@ def update_message_id(guild_id, msg_id, channel_id):
     queue_dao.put_queue(response)
 
 def update_queue_view(record: QueueRecord, embeds: list[Embedding], components: list[Components], inter: Interaction):
-    if int(datetime.utcnow().timestamp()) < record.last_updated:
-        print(f"Queue message has expired: {record.last_updated}")
-        record.update_last_updated()
+    curr_time = int(datetime.utcnow().timestamp())
+    if  curr_time > record.expiry:
+        print(f"Queue message has expired: {record.expiry} for curr_time: {curr_time}")
+        record.update_expiry_date()
         queue_dao.put_queue(record)
         resp = inter.edit_response(channel_id=record.channel_id, message_id=record.message_id, embeds=embeds, components=components)
         print(f'Queue message_id: {resp}')
