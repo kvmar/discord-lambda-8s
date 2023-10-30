@@ -135,6 +135,27 @@ def team_2_won(inter: Interaction):
         return embed, component
     return None
 
+def cancel_match(inter: Interaction):
+    response = queue_dao.get_queue(inter.guild_id, "1")
+    if inter.user_id not in response.cancel_votes:
+        response.cancel_votes.append(inter.user_id)
+
+    if inter.user_id in response.team1_votes:
+        response.team1_votes.remove(inter.user_id)
+
+    if inter.user_id in response.team2_votes:
+        response.cancel_votes.remove(inter.user_id)
+
+    resp = queue_dao.put_queue(response)
+
+    if resp is not None:
+        (embed, component) = update_queue_embed(response)
+
+        print(f'Queue record: {response} for guild_id: {inter.guild_id}')
+
+        return embed, component
+    return None
+
 
 def player_pick(inter: Interaction):
     player_id_inter = inter.user_id
