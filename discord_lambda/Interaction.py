@@ -1,3 +1,4 @@
+import os
 from typing import Tuple, Any
 
 import requests
@@ -113,7 +114,11 @@ class Interaction:
         try:
             json = self.__create_channel_message(content, embeds, ephemeral, components)
             print(f'Send Response json: {json}')
-            response = requests.patch(f'https://discord.com/api/v10/channels/{channel_id}/messages/{message_id}', json=json)
+
+            headers = {
+                'Authorization': f'Bot {os.environ.get("BOT_TOKEN")}'
+            }
+            response = requests.patch(f'https://discord.com/api/v10/channels/{channel_id}/messages/{message_id}', json=json, headers={})
             print(f'Got SendResponse: {response.text}')
             response.raise_for_status()
             print(f'Convert to JSON SendResponse: {response.json}')
