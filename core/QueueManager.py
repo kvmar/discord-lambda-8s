@@ -1,7 +1,5 @@
-import json
 from datetime import datetime
 
-from dao import set_default
 from dao.PlayerDao import PlayerDao, PlayerRecord
 from dao.QueueDao import QueueDao, QueueRecord
 from discord_lambda import Embedding, Interaction

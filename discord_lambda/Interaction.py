@@ -127,7 +127,8 @@ class Interaction:
             response.raise_for_status()
             print(f'Convert to JSON DeleteResponse: {response.json}')
 
-            response = requests.post(f'https://discord.com/api/v10/channels/{channel_id}/messages/{message_id}', headers=headers)
+            json = self.__create_channel_message(content, embeds, ephemeral, components)
+            response = requests.post(f'https://discord.com/api/v10/channels/{channel_id}/messages', json=json, headers=headers)
             print(f'Got SendResponse: {response.text}')
             response.raise_for_status()
             print(f'Convert to JSON SendResponse: {response.json}')
