@@ -28,11 +28,12 @@ def lambda_handler(event, context):
     interaction = Interaction(event.get("body-json"), os.environ.get('APP_ID'))
 
     if interaction.data.get("component_type") == 2:
+        interaction.pong(ephemeral=True)
+
         try:
             ButtonManager.button_flow_tree(interaction)
         except Exception as e:
             interaction.send_response(embeds=[Embedding(":x: Error", f"The request could not be completed:\n`{e}`", color=0xFF0000)])
-        interaction.pong(ephemeral=True)
         return
 
 
