@@ -42,7 +42,9 @@ def create_queue_resources(guild_id: str):
 
 def add_player(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")
-    response.queue.add(inter.user_id)
+    if inter.user_id not in response.queue:
+        response.queue.add(inter.user_id)
+
     resp = queue_dao.put_queue(response)
 
     player_data = player_dao.get_player(guild_id=inter.guild_id, player_id=inter.user_id)
