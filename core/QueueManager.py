@@ -1,6 +1,7 @@
 import json
 
 from dao import set_default
+from dao.PlayerDao import PlayerDao, PlayerRecord
 from dao.QueueDao import QueueDao, QueueRecord
 from discord_lambda import Embedding, Interaction
 from discord_lambda import Components
@@ -11,6 +12,7 @@ leave_queue_custom_id = "leave_queue"
 start_queue_custom_id = "start_queue"
 
 queue_dao = QueueDao()
+player_dao = PlayerDao()
 
 def create_queue_resources(guild_id: str) -> (Embedding, Components):
     embed = Embedding("Underworld 8s", "Queue size: 0", color=0x880808)
@@ -34,6 +36,11 @@ def add_player(inter: Interaction) -> (Embedding, Components):
     response = queue_dao.get_queue(inter.guild_id, "1")
     response.queue.append(inter.user_id)
     resp = queue_dao.put_queue(response)
+
+    player_data = player_dao.get_player(guild_id=inter.guild_id, player_id=inter.user_id)
+
+    if resp is None:
+        player_dao.put_player(PlayerRecord(guild_id=inter.guild_id, player_id=inter.user_id, player_name=inter.username))
 
     if resp is not None:
         (embed, component) = update_queue_embed(response)
@@ -64,7 +71,8 @@ def remove_player(inter: Interaction) -> (Embedding, Components):
 def update_queue_embed(record: QueueRecord) -> (Embedding, Components):
     queue_str = ""
     for user in record.queue:
-        queue_str = queue_str + user + "\n"
+        player_data = player_dao.get_player(record.guild_id, user)
+        queue_str = queue_str + player_data.player_name + "\n"
 
     embed = Embedding(
         "Underworld 8s",
