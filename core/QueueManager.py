@@ -10,7 +10,11 @@ import random
 join_queue_custom_id = "join_queue"
 leave_queue_custom_id = "leave_queue"
 start_queue_custom_id = "start_queue"
-player_pick_custom_id = "start_queue"
+player_pick_custom_id = "player_pick"
+cancel_match_custom_id = "cancel_match"
+cancel_match_2_custom_id = "cancel_match_2"
+team_1_won_custom_id = "team_1_won"
+team_2_won_custom_id = "team_2_won"
 
 queue_dao = QueueDao()
 player_dao = PlayerDao()
@@ -142,7 +146,7 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
             component.add_button("Start queue", start_queue_custom_id, True, 3)
 
         return [embed], [component]
-    else:
+    elif len(record.team_1) != 4 and len(record.team_2) != 4:
         whose_pick = ""
         if len(record.team_1) + len(record.team_2) in (2, 5, 6):
             player_data = player_dao.get_player(record.guild_id, record.team_1[0])
@@ -167,9 +171,30 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         )
 
         components = get_player_pick_btns(record)
-
-
         return [embed], components
+    else:
+        team1_str = "Team 1: \n"
+        for user in record.team_1:
+            player_data = player_dao.get_player(record.guild_id, user)
+            team1_str = team1_str + player_data.player_name + "\n"
+
+        team2_str = "Team 2: \n"
+        for user in record.team_2:
+            player_data = player_dao.get_player(record.guild_id, user)
+            team2_str = team2_str + player_data.player_name + "\n"
+
+        embed = Embedding(
+            "Underworld 8s",
+            f"{team1_str}\n{team2_str}",
+            color=0x880808,
+        )
+
+        component = Components()
+        component.add_button("Team 1 Won", team_1_won_custom_id, False, 1)
+        component.add_button("Team 2 Won", team_2_won_custom_id, False, 2)
+        component.add_button("Cancel Match", cancel_match_2_custom_id, False, 4)
+        return [embed], [component]
+
 
 
 def get_player_pick_btns(record):
@@ -179,7 +204,7 @@ def get_player_pick_btns(record):
     component_list = list()
     component = Components()
 
-    picks = record.team_1 + record.team_2
+    picks = record.team_1 + record.team_2 + "cancel"
 
     for user in record.queue:
         player_data = player_dao.get_player(record.guild_id, user)
@@ -192,6 +217,8 @@ def get_player_pick_btns(record):
             continue
         elif user in picks:
             component.add_button(player_data.player_name, f'{player_pick_custom_id}#{player_data.player_id}#{queue_idx}', True, 2)
+        elif user == "cancel":
+            component.add_button("Cancel Match", f'{cancel_match_custom_id}', False, 4)
         else:
             component.add_button(player_data.player_name, f'{player_pick_custom_id}#{player_data.player_id}#{queue_idx}', False, 2)
         cmpt_idx = cmpt_idx + 1
@@ -199,7 +226,7 @@ def get_player_pick_btns(record):
 
     if cmpt_idx < 4:
         component_list.append(component)
-  
+
     return component_list
 
 def update_message_id(guild_id, msg_id, channel_id):
