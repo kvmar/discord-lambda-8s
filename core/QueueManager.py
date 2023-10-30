@@ -192,9 +192,9 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         )
 
         component = Components()
-        component.add_button("Team 1 Won", team_1_won_custom_id, False, 1)
-        component.add_button("Team 2 Won", team_2_won_custom_id, False, 2)
-        component.add_button("Cancel Match", cancel_match_custom_id, False, 4)
+        component.add_button(f"Team 1 Won - {len(record.team1_votes)}", team_1_won_custom_id, False, 1)
+        component.add_button(f"Team 2 Won - {len(record.team2_votes)}", team_2_won_custom_id, False, 2)
+        component.add_button(f"Cancel Match - {len(record.cancel_votes)}", cancel_match_custom_id, False, 4)
         return [embed], [component]
 
 
