@@ -101,7 +101,7 @@ def player_pick(inter: Interaction):
     if player_pick != str(player_id_inter):
         return None
 
-    player = inter.custom_id.split("#")
+    player = inter.custom_id.split("#")[1]
     print(f'Picked player {player}')
 
     if team1_pick:
