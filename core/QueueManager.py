@@ -187,7 +187,7 @@ def get_player_pick_btns(record):
             component_list.append(component)
             component = Components()
             cmpt_idx = 0
-        if user == record.team_1[0] or user == record.team_1[0]:
+        if user == record.team_1[0] or user == record.team_2[0]:
             print("Skipping creating a cap button")
             continue
         elif user in picks:
