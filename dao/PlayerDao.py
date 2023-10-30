@@ -11,7 +11,7 @@ from dao import set_default
 table_name = "PlayerTable"
 
 class PlayerRecord:
-  def __init__(self, guild_id: str, player_id: str, player_name: str, mw: int = 0, ml: int = 0, elo: float = 25.0, sigma: float = 8.33, delta: str = "+0.0", version: int = 1):
+  def __init__(self, guild_id: str, player_id: str, player_name: str, mw: int = 0, ml: int = 0, elo: float = 25.0, sigma: float = 8.33, delta: str = "+0.0", version: int = 0):
     self.guild_id = guild_id
     self.player_id = player_id
     self.player_name = player_name
@@ -54,7 +54,7 @@ class PlayerDao:
 
     response = None
     try:
-      response = self.table.put_item(Item=player_dict, ConditionExpression=Attr("version").eq(current_version))
+      response = self.table.put_item(Item=player_dict, ConditionExpression=Attr("version").eq(current_version) if current_version == 0 else None)
     except ClientError as err:
       if err.response["Error"]["Code"] == 'ConditionalCheckFailedException':
         # Somebody changed the item in the db while we were changing it!
@@ -68,4 +68,4 @@ class PlayerDao:
 
 
   def get_player_record_attributes(self, response):
-    return PlayerRecord(player_id=response["player_id"], guild_id=response["guild_id"], mw=response["mw"], ml=response["mp"], elo=response["elo"], sigma=response["sigma"], delta=response["delta"], version=response["version"])
+    return PlayerRecord(player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["mp"], elo=response["elo"], sigma=response["sigma"], delta=response["delta"], version=response["version"])
