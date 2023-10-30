@@ -173,7 +173,7 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
 
         components = get_player_pick_btns(record)
         return [embed], components
-    else:
+    elif len(record.team_1) == 4 and len(record.team_2) == 4:
         team1_str = "Team 1: \n"
         for user in record.team_1:
             player_data = player_dao.get_player(record.guild_id, user)
