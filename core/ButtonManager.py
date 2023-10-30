@@ -10,7 +10,7 @@ def button_flow_tree(interaction: Interaction):
   elif interaction.custom_id == QueueManager.leave_queue_custom_id:
     leave_queue_button(interaction.guild_id, interaction)
   elif interaction.custom_id == QueueManager.start_queue_custom_id:
-    start_queue_button(interaction.guild, interaction)
+    start_queue_button(interaction.guild_id, interaction)
 
 def join_queue_button(guild_id: str, inter: Interaction):
   print("Join queue button clicked")
