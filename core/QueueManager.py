@@ -12,7 +12,6 @@ leave_queue_custom_id = "leave_queue"
 start_queue_custom_id = "start_queue"
 player_pick_custom_id = "player_pick"
 cancel_match_custom_id = "cancel_match"
-cancel_match_2_custom_id = "cancel_match_2"
 team_1_won_custom_id = "team_1_won"
 team_2_won_custom_id = "team_2_won"
 
@@ -195,7 +194,7 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         component = Components()
         component.add_button("Team 1 Won", team_1_won_custom_id, False, 1)
         component.add_button("Team 2 Won", team_2_won_custom_id, False, 2)
-        component.add_button("Cancel Match", cancel_match_2_custom_id, False, 4)
+        component.add_button("Cancel Match", cancel_match_custom_id, False, 4)
         return [embed], [component]
 
 
