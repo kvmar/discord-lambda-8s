@@ -204,7 +204,7 @@ def get_player_pick_btns(record):
     component_list = list()
     component = Components()
 
-    picks = record.team_1 + record.team_2 + "cancel"
+    picks = record.team_1 + record.team_2
 
     for user in record.queue:
         player_data = player_dao.get_player(record.guild_id, user)
@@ -217,12 +217,17 @@ def get_player_pick_btns(record):
             continue
         elif user in picks:
             component.add_button(player_data.player_name, f'{player_pick_custom_id}#{player_data.player_id}#{queue_idx}', True, 2)
-        elif user == "cancel":
-            component.add_button("Cancel Match", f'{cancel_match_custom_id}', False, 4)
         else:
             component.add_button(player_data.player_name, f'{player_pick_custom_id}#{player_data.player_id}#{queue_idx}', False, 2)
         cmpt_idx = cmpt_idx + 1
         queue_idx = queue_idx + 1
+
+    if (cmpt_idx == 4):
+        component_list.append(component)
+        component = Components()
+        cmpt_idx = 0
+
+    component.add_button("Cancel Match", cancel_match_custom_id, False, 4)
 
     if cmpt_idx < 4:
         component_list.append(component)
