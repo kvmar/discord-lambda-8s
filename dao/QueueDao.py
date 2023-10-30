@@ -9,7 +9,7 @@ from dao import set_default
 table_name = "QueueTable"
 
 class QueueRecord:
-  def __init__(self, guild_id: str, queue_id: str, team_1: set, team_2: set, queue: set, version: int, message_id: str = None, channel_id: str = None):
+  def __init__(self, guild_id: str, queue_id: str, team_1: list, team_2: list, queue: list, version: int, message_id: str = None, channel_id: str = None):
     self.guild_id = guild_id
     self.queue_id = queue_id
     self.team_1 = team_1
@@ -20,9 +20,9 @@ class QueueRecord:
     self.channel_id = channel_id
 
   def clear_queue(self):
-    self.team_1 = set()
-    self.team_2 = set()
-    self.queue = set()
+    self.team_1 = list()
+    self.team_2 = list()
+    self.queue = list()
     self.message_id = None
     self.channel_id = None
 
@@ -69,15 +69,15 @@ class QueueDao:
 
 
   def get_queue_record_attributes(self, response):
-    queue = set()
+    queue = list()
     for user in response['queue']:
       queue.add(user)
 
-    team_1 = set()
+    team_1 = list()
     for user in response['team_1']:
       team_1.add(user)
 
-    team_2 = set()
+    team_2 = list()
     for user in response['team_2']:
       team_2.add(user)
 

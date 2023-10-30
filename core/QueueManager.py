@@ -41,6 +41,20 @@ def add_player(inter: Interaction) -> (Embedding, Components):
 
     return embed, component
 
+def remove_player(inter: Interaction) -> (Embedding, Components):
+    response = queue_dao.get_queue(inter.guild_id, "1")
+
+    if inter.user_id in response.queue:
+        response.queue.remove(inter.user_id)
+
+    queue_dao.put_queue(response)
+
+    (embed, component) = update_queue_embed(response)
+
+    print(f'Queue record: {json.dumps(response.__dict__, default=set_default) } for guild_id: {inter.guild_id}')
+
+    return embed, component
+
 
 def update_queue_embed(record: QueueRecord) -> (Embedding, Components):
     queue_str = ""
