@@ -144,7 +144,7 @@ def cancel_match(inter: Interaction):
         response.team1_votes.remove(inter.user_id)
 
     if inter.user_id in response.team2_votes:
-        response.cancel_votes.remove(inter.user_id)
+        response.team2_votes.remove(inter.user_id)
 
     resp = queue_dao.put_queue(response)
 

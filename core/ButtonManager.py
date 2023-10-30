@@ -98,7 +98,7 @@ def team_2_won_button(guild_id: str, inter: Interaction):
   QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
 
 def cancel_match_button(guild_id: str, inter: Interaction):
-  print("Team 2 Won button clicked")
+  print("Cancel Match button clicked")
   resp = QueueManager.cancel_match(inter)
 
   if resp is None:
