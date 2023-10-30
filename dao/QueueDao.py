@@ -29,10 +29,11 @@ class QueueRecord:
     self.queue = list()
     self.message_id = None
     self.channel_id = None
+    self.update_last_updated()
 
   def update_last_updated(self):
     time = datetime.utcnow() + timedelta(minutes=1)
-    self.last_updated = time.timestamp()
+    self.last_updated = int(time.timestamp())
 
 class QueueDao:
   def __init__(self):
