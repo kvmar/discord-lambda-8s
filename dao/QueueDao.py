@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime, timedelta
+from decimal import Decimal
 
 import boto3
 from boto3.dynamodb.conditions import Attr
@@ -59,7 +60,7 @@ class QueueDao:
     queue_record.version = queue_record.version + 1
     json_ = json.dumps(queue_record.__dict__, default=set_default)
     print(f'Putting following queue_record: {json_}')
-    queue_dict = json.loads(json_)
+    queue_dict = json.loads(json_, parse_float=Decimal)
 
     response = None
     try:
