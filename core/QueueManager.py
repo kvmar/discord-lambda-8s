@@ -57,7 +57,7 @@ def add_player(inter: Interaction):
 
         return embed, component
 
-    return None
+    return None, None
 
 def remove_player(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")
@@ -73,7 +73,7 @@ def remove_player(inter: Interaction):
         print(f'Queue record: {response} for guild_id: {inter.guild_id}')
 
         return embed, component
-    return None
+    return None, None
 
 def start_match(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")
@@ -90,7 +90,7 @@ def start_match(inter: Interaction):
         print(f'Queue record: {response} for guild_id: {inter.guild_id}')
 
         return embed, component
-    return None
+    return None, None
 
 
 def player_pick(inter: Interaction):
@@ -122,7 +122,7 @@ def player_pick(inter: Interaction):
         print(f'Queue record: {response} for guild_id: {inter.guild_id}')
 
         return embed, component
-    return None
+    return None, None
 
 
 def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
