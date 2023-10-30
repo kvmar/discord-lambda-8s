@@ -258,7 +258,7 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         )
 
         components = get_player_pick_btns(record)
-        return [embed], componentsv
+        return [embed], components
     elif len(record.team_1) == 4 and len(record.team_2) == 4:
         team1_str = "Team 1: \n"
         for user in record.team_1:
