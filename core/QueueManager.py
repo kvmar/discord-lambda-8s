@@ -133,7 +133,7 @@ def update_queue_embed(record: QueueRecord) -> (Embedding, Components):
             color=0x880808,
         )
 
-        
+
         return embed, None
 
 

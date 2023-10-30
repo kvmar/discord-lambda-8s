@@ -41,7 +41,7 @@ def leave_queue_button(guild_id: str, inter: Interaction):
 
 def start_queue_button(guild_id: str, inter: Interaction):
   print("Start queue button clicked")
-  resp = QueueManager.remove_player(inter)
+  resp = QueueManager.start_match(inter)
 
   if resp is None:
     return
