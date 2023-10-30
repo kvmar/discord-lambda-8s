@@ -27,7 +27,7 @@ def create_queue_resources(guild_id: str) -> (Embedding, Components):
     response.clear_queue()
     queue_dao.put_queue(response)
 
-    return (embed, component)
+    return embed, component
 
 
 def add_player(inter: Interaction) -> (Embedding, Components):
@@ -39,10 +39,10 @@ def add_player(inter: Interaction) -> (Embedding, Components):
 
     print(f'Queue record: {json.dumps(response.__dict__, default=set_default) } for guild_id: {inter.guild_id}')
 
-    return (embed, component)
+    return embed, component
 
 
-def update_queue_embed(record: QueueRecord):
+def update_queue_embed(record: QueueRecord) -> (Embedding, Components):
     queue_str = ""
     for user in record.queue:
         queue_str = queue_str + user + "\n"
@@ -57,7 +57,7 @@ def update_queue_embed(record: QueueRecord):
     component.add_button("Join queue", join_queue_custom_id, False, 1)
     component.add_button("Leave queue", leave_queue_custom_id, False, 4)
     component.add_button("Start queue", start_queue_custom_id, True, 3)
-    return (embed, component)
+    return embed, component
 
 def update_message_id(guild_id, msg_id, channel_id):
     response = queue_dao.get_queue(guild_id, "1")
