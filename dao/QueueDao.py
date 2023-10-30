@@ -43,7 +43,7 @@ class QueueDao:
       }
     )
 
-    print(f'Queue Dao get_queue response: {response["Item"]}')
+    print(f'Queue Dao get_queue response: {response}')
     return self.get_queue_record_attributes(response["Item"])
 
   def put_queue(self, queue_record: QueueRecord):

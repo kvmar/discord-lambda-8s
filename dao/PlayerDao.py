@@ -37,7 +37,7 @@ class PlayerDao:
       }
     )
 
-    print(f'Player Dao get_queue response: {response["Item"]}')
+    print(f'Player Dao get_queue response: {response}')
     if response["Item"] is None:
       return None
 
