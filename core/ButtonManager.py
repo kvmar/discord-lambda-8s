@@ -11,7 +11,7 @@ def button_flow_tree(interaction: Interaction):
     leave_queue_button(interaction.guild_id, interaction)
   elif interaction.custom_id == QueueManager.start_queue_custom_id:
     start_queue_button(interaction.guild_id, interaction)
-  elif QueueManager.start_queue_custom_id in interaction.custom_id:
+  elif QueueManager.player_pick_custom_id in interaction.custom_id:
     player_pick_button(interaction.guild_id, interaction)
 
 def join_queue_button(guild_id: str, inter: Interaction):
