@@ -53,6 +53,8 @@ class QueueDao:
     return self.get_queue_record_attributes(response["Item"])
 
   def put_queue(self, queue_record: QueueRecord):
+    queue_record.update_last_updated()
+
     current_version = queue_record.version
     queue_record.version = queue_record.version + 1
     json_ = json.dumps(queue_record.__dict__, default=set_default)
@@ -88,4 +90,4 @@ class QueueDao:
       team_2.append(user)
 
 
-    return QueueRecord(guild_id=response["guild_id"], queue_id=response["queue_id"], team_1=team_1, team_2=team_2, queue=queue, version=response["version"], message_id=response["message_id"], channel_id=response["channel_id"])
+    return QueueRecord(guild_id=response["guild_id"], queue_id=response["queue_id"], last_updated=response["last_updated"], team_1=team_1, team_2=team_2, queue=queue, version=response["version"], message_id=response["message_id"], channel_id=response["channel_id"])
