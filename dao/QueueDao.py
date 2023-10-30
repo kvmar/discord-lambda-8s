@@ -58,7 +58,7 @@ class QueueDao:
 
     current_version = queue_record.version
     queue_record.version = queue_record.version + 1
-    json_ = json.dumps(queue_record.__dict__, default=set_default)
+    json_ = json.dumps(queue_record.__dict__)
     print(f'Putting following queue_record: {json_}')
     queue_dict = json.loads(json_, parse_float=Decimal)
 

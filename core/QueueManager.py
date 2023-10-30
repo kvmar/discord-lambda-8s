@@ -18,7 +18,7 @@ def create_queue_resources(guild_id: str) -> (Embedding, Components):
     embed = Embedding("Underworld 8s", "Queue size: 0", color=0x880808)
 
     response = queue_dao.get_queue(guild_id, "1")
-    print(f'Queue record: {json.dumps(response.__dict__, default=set_default) } for guild_id: {guild_id}')
+    print(f'Queue record: {response} for guild_id: {guild_id}')
 
     component = Components()
     component.add_button("Join queue", join_queue_custom_id, False, 1)
@@ -45,7 +45,7 @@ def add_player(inter: Interaction) -> (Embedding, Components):
     if resp is not None:
         (embed, component) = update_queue_embed(response)
 
-        print(f'Queue record: {json.dumps(response.__dict__, default=set_default) } for guild_id: {inter.guild_id}')
+        print(f'Queue record: {response} for guild_id: {inter.guild_id}')
 
         return embed, component
 
@@ -62,7 +62,7 @@ def remove_player(inter: Interaction) -> (Embedding, Components):
     if resp is not None:
         (embed, component) = update_queue_embed(response)
 
-        print(f'Queue record: {json.dumps(response.__dict__, default=set_default) } for guild_id: {inter.guild_id}')
+        print(f'Queue record: {response} for guild_id: {inter.guild_id}')
 
         return embed, component
     return None
@@ -93,7 +93,7 @@ def update_queue_embed(record: QueueRecord) -> (Embedding, Components):
 
 def update_message_id(guild_id, msg_id, channel_id):
     response = queue_dao.get_queue(guild_id, "1")
-    print(f'Queue record: {json.dumps(response.__dict__, default=set_default) } for guild_id: {guild_id}')
+    print(f'Queue record: {response} for guild_id: {guild_id}')
 
     response.message_id = msg_id
     response.channel_id = channel_id
