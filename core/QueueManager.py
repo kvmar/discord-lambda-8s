@@ -107,7 +107,7 @@ def team_1_won(inter: Interaction):
     resp = queue_dao.put_queue(response)
 
     if resp is not None:
-        if len(response.team2_votes) == 5 or len(response.team2_votes) == 5 or len(response.cancel_votes) == 5:
+        if len(response.team1_votes) == 5:
             response = queue_dao.get_queue(inter.guild_id, "1")
             response.clear_queue()
             resp = queue_dao.put_queue(response)
@@ -135,7 +135,7 @@ def team_2_won(inter: Interaction):
     resp = queue_dao.put_queue(response)
 
     if resp is not None:
-        if len(response.team2_votes) == 5 or len(response.team2_votes) == 5 or len(response.cancel_votes) == 5:
+        if len(response.team2_votes) == 5:
             response = queue_dao.get_queue(inter.guild_id, "1")
             response.clear_queue()
             resp = queue_dao.put_queue(response)
@@ -163,7 +163,7 @@ def cancel_match(inter: Interaction):
     resp = queue_dao.put_queue(response)
 
     if resp is not None:
-        if len(response.team2_votes) == 5 or len(response.team2_votes) == 5 or len(response.cancel_votes) == 5:
+        if len(response.cancel_votes) == 5:
             response = queue_dao.get_queue(inter.guild_id, "1")
             response.clear_queue()
             resp = queue_dao.put_queue(response)
