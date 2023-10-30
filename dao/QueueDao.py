@@ -12,7 +12,7 @@ from dao import set_default
 table_name = "QueueTable"
 
 class QueueRecord:
-  def __init__(self, guild_id: str, queue_id: str, team_1: list, team_2: list, queue: list, version: int, last_updated: float, message_id: str = None, channel_id: str = None):
+  def __init__(self, guild_id: str, queue_id: str, team_1: list, team_2: list, queue: list, version: int, last_updated: int, message_id: str = None, channel_id: str = None):
     self.guild_id = guild_id
     self.queue_id = queue_id
     self.team_1 = team_1
@@ -55,8 +55,6 @@ class QueueDao:
     return self.get_queue_record_attributes(response["Item"])
 
   def put_queue(self, queue_record: QueueRecord):
-    queue_record.update_last_updated()
-
     current_version = queue_record.version
     queue_record.version = queue_record.version + 1
     json_ = json.dumps(queue_record.__dict__)
