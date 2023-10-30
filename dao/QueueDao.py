@@ -7,8 +7,6 @@ import boto3
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 
-from dao import set_default
-
 table_name = "QueueTable"
 
 class QueueRecord:
@@ -32,7 +30,7 @@ class QueueRecord:
     self.update_expiry_date()
 
   def update_expiry_date(self):
-    time = datetime.utcnow() + timedelta(minutes=1)
+    time = datetime.utcnow() + timedelta(minutes=10)
     self.expiry = int(time.timestamp())
 
 class QueueDao:

@@ -4,6 +4,7 @@ from dao.PlayerDao import PlayerDao, PlayerRecord
 from dao.QueueDao import QueueDao, QueueRecord
 from discord_lambda import Embedding, Interaction
 from discord_lambda import Components
+import random
 
 
 join_queue_custom_id = "join_queue"
@@ -68,29 +69,76 @@ def remove_player(inter: Interaction) -> (Embedding, Components):
         return embed, component
     return None
 
+def start_match(inter: Interaction) -> (Embedding, Components):
+    response = queue_dao.get_queue(inter.guild_id, "1")
+
+    caps = random.sample(response.queue, 2)
+    response.team_1.append(caps[0])
+    response.team_2.append(caps[0])
+
+    resp = queue_dao.put_queue(response)
+
+    if resp is not None:
+        (embed, component) = update_queue_embed(response)
+
+        print(f'Queue record: {response} for guild_id: {inter.guild_id}')
+
+        return embed, component
+    return None
+
 
 def update_queue_embed(record: QueueRecord) -> (Embedding, Components):
-    queue_str = ""
-    for user in record.queue:
-        player_data = player_dao.get_player(record.guild_id, user)
-        queue_str = queue_str + player_data.player_name + "\n"
+    if len(record.team_1) == 0 or len(record.team_2) == 0:
+        queue_str = ""
+        for user in record.queue:
+            player_data = player_dao.get_player(record.guild_id, user)
+            queue_str = queue_str + player_data.player_name + "\n"
 
-    embed = Embedding(
-        "Underworld 8s",
-        f'Queue size: {len(record.queue)}\n\n{queue_str}',
-        color=0x880808,
-    )
+        embed = Embedding(
+            "Underworld 8s",
+            f'Queue size: {len(record.queue)}\n\n{queue_str}',
+            color=0x880808,
+        )
+        component = Components()
+        component.add_button("Join queue", join_queue_custom_id, False, 1)
+        component.add_button("Leave queue", leave_queue_custom_id, False, 4)
 
-    component = Components()
-    component.add_button("Join queue", join_queue_custom_id, False, 1)
-    component.add_button("Leave queue", leave_queue_custom_id, False, 4)
+        if len(record.queue) >= 8:
+            component.add_button("Start queue", start_queue_custom_id, False, 3)
+        else:
+            component.add_button("Start queue", start_queue_custom_id, True, 3)
 
-    if len(record.queue) >= 8:
-        component.add_button("Start queue", start_queue_custom_id, False, 3)
+        return [embed], [component]
     else:
-        component.add_button("Start queue", start_queue_custom_id, True, 3)
+        whose_pick = ""
+        if len(record.team_1) + len(record.team_2) in (2, 5, 6):
+            player_data = player_dao.get_player(record.guild_id, record.team_1[0])
+            whose_pick = player_data.player_name + " its your turn to pick!"
+        if len(record.team_1) + len(record.team_2) in (3, 4, 7):
+            player_data = player_dao.get_player(record.guild_id, record.team_2[0])
+            whose_pick = player_data.player_name + " its your turn to pick!"
+        team1_str = "Team 1: \n"
+        for user in record.team_1:
+            player_data = player_dao.get_player(record.guild_id, user)
+            team1_str = team1_str + player_data.player_name + "\n"
 
-    return embed, component
+        team2_str = "Team 2: \n"
+        for user in record.team_2:
+            player_data = player_dao.get_player(record.guild_id, user)
+            team2_str = team2_str + player_data.player_name + "\n"
+
+        embed = Embedding(
+            "Underworld 8s",
+            f"{whose_pick}\n\n{team1_str}\n{team2_str}",
+            color=0x880808,
+        )
+
+        
+        return embed, None
+
+
+
+
 
 def update_message_id(guild_id, msg_id, channel_id):
     response = queue_dao.get_queue(guild_id, "1")
