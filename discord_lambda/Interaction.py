@@ -125,10 +125,11 @@ class Interaction:
             headers = {
                 'Authorization': f'Bot {os.environ.get("BOT_TOKEN")}'
             }
-            response = requests.patch(f'https://discord.com/api/v10/channels/{channel_id}/messages/{message_id}', json=json, headers=headers)
+            response = requests.delete(f'https://discord.com/api/v10/channels/{channel_id}/messages/{message_id}', json=json, headers=headers)
             print(f'Got SendResponse: {response.text}')
             response.raise_for_status()
             print(f'Convert to JSON SendResponse: {response.json}')
+            return self.send_response(embeds=embeds, components=components, ephemeral=ephemeral)
         except Exception as e:
             raise Exception(f"Unable to send response: {e}")
 
