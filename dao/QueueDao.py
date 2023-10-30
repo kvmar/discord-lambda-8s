@@ -71,15 +71,15 @@ class QueueDao:
   def get_queue_record_attributes(self, response):
     queue = list()
     for user in response['queue']:
-      queue.add(user)
+      queue.append(user)
 
     team_1 = list()
     for user in response['team_1']:
-      team_1.add(user)
+      team_1.append(user)
 
     team_2 = list()
     for user in response['team_2']:
-      team_2.add(user)
+      team_2.append(user)
 
 
     return QueueRecord(guild_id=response["guild_id"], queue_id=response["queue_id"], team_1=team_1, team_2=team_2, queue=queue, version=response["version"], message_id=response["message_id"], channel_id=response["channel_id"])
