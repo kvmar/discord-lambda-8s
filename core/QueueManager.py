@@ -155,7 +155,10 @@ def get_player_pick_btns(record):
             component_list.append(component)
             component = Components()
             cmpt_idx = 0
-        if user in picks:
+        if user == record.team_1[0] or user == record.team_1[0]:
+            print("Skipping creating a cap button")
+            continue
+        elif user in picks:
             component.add_button(player_data.player_name, f'{player_pick_custom_id}#{player_data.player_id}#{queue_idx}', True, 2)
         else:
             component.add_button(player_data.player_name, f'{player_pick_custom_id}#{player_data.player_id}#{queue_idx}', False, 2)
