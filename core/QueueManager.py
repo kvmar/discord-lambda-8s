@@ -71,6 +71,10 @@ def update_queue_embed(record: QueueRecord) -> (Embedding, Components):
     component.add_button("Join queue", join_queue_custom_id, False, 1)
     component.add_button("Leave queue", leave_queue_custom_id, False, 4)
     component.add_button("Start queue", start_queue_custom_id, True, 3)
+    
+    if len(record.queue) >= 8:
+        component.components[2] = component.add_button("Start queue", start_queue_custom_id, False, 3)
+
     return embed, component
 
 def update_message_id(guild_id, msg_id, channel_id):

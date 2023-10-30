@@ -20,7 +20,7 @@ def join_queue_button(guild_id: str, inter: Interaction):
 
 
 def leave_queue_button(guild_id: str, inter: Interaction):
-  print("Join queue button clicked")
+  print("Leave queue button clicked")
   (embed, component) = QueueManager.remove_player(inter)
 
   record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
