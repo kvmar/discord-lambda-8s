@@ -32,7 +32,8 @@ def lambda_handler(event, context):
             interaction.pong(ephemeral=True)
             ButtonManager.button_flow_tree(interaction)
         except Exception as e:
-            interaction.send_followup(embeds=[Embedding(":x: Error", f"The request could not be completed:\n`{e}`", color=0xFF0000)], ephemeral=True)
+            interaction.send_response(embeds=[Embedding(":x: Error", f"The request could not be completed:\n`{e}`", color=0xFF0000)], ephemeral=True)
+            raise e
         return
 
 
@@ -48,3 +49,4 @@ def lambda_handler(event, context):
             func(interaction, **args)
         except Exception as e:
             interaction.send_response(embeds=[Embedding(":x: Error", f"The request could not be completed:\n`{e}`", color=0xFF0000)], ephemeral=True)
+            raise e
