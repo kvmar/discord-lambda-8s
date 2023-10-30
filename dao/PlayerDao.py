@@ -1,5 +1,7 @@
 import json
 import os
+from decimal import Decimal
+
 import boto3
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
@@ -9,7 +11,7 @@ from dao import set_default
 table_name = "PlayerTable"
 
 class PlayerRecord:
-  def __init__(self, guild_id: str, player_id: str, player_name: str, mw: int = 0, ml: int = 0, elo: float = 25.0, sigma: float = 8.33, delta: str = "+0.0", version: int = 1):
+  def __init__(self, guild_id: str, player_id: str, player_name: str, mw: int = 0, ml: int = 0, elo: decimal = 25.0, sigma: float = 8.33, delta: str = "+0.0", version: int = 1):
     self.guild_id = guild_id
     self.player_id = player_id
     self.player_name = player_name
@@ -48,7 +50,7 @@ class PlayerDao:
     player_record.version = player_record.version + 1
     json_ = json.dumps(player_record.__dict__, default=set_default)
     print(f'Putting following player_record: {json_}')
-    player_dict = json.loads(json_)
+    player_dict = json.loads(json_, parse_float=Decimal)
 
     response = None
     try:
