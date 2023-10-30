@@ -109,6 +109,17 @@ class Interaction:
         except Exception as e:
             raise Exception(f"Unable to send response: {e}")
 
+    def edit_response(self, channel_id: str, message_id: str, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True, components: list[Components] = None) :
+        try:
+            json = self.__create_channel_message(content, embeds, ephemeral, components)
+            print(f'Send Response json: {json}')
+            response = requests.patch(f'https://discord.com/api/v10/channels/{channel_id}/messages/{message_id}', json=json)
+            print(f'Got SendResponse: {response.text}')
+            response.raise_for_status()
+            print(f'Convert to JSON SendResponse: {response.json}')
+        except Exception as e:
+            raise Exception(f"Unable to send response: {e}")
+
     def send_followup(self, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True) -> None:
         try:
             requests.post(self.webhook_url, json=self.__create_channel_message(content, embeds, ephemeral)).raise_for_status()
