@@ -14,7 +14,7 @@ start_queue_custom_id = "start_queue"
 queue_dao = QueueDao()
 player_dao = PlayerDao()
 
-def create_queue_resources(guild_id: str) -> (Embedding, Components):
+def create_queue_resources(guild_id: str):
     embed = Embedding("Underworld 8s", "Queue size: 0", color=0x880808)
 
     response = queue_dao.get_queue(guild_id, "1")
@@ -34,7 +34,7 @@ def create_queue_resources(guild_id: str) -> (Embedding, Components):
     return embed, component
 
 
-def add_player(inter: Interaction) -> (Embedding, Components):
+def add_player(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")
     response.queue.append(inter.user_id)
     resp = queue_dao.put_queue(response)
@@ -53,7 +53,7 @@ def add_player(inter: Interaction) -> (Embedding, Components):
 
     return None
 
-def remove_player(inter: Interaction) -> (Embedding, Components):
+def remove_player(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")
 
     if inter.user_id in response.queue:
@@ -69,7 +69,7 @@ def remove_player(inter: Interaction) -> (Embedding, Components):
         return embed, component
     return None
 
-def start_match(inter: Interaction) -> (Embedding, Components):
+def start_match(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")
 
     caps = random.sample(response.queue, 2)
@@ -87,7 +87,7 @@ def start_match(inter: Interaction) -> (Embedding, Components):
     return None
 
 
-def update_queue_embed(record: QueueRecord) -> (Embedding, Components):
+def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
     if len(record.team_1) == 0 or len(record.team_2) == 0:
         queue_str = ""
         for user in record.queue:
@@ -134,7 +134,7 @@ def update_queue_embed(record: QueueRecord) -> (Embedding, Components):
         )
 
 
-        return embed, None
+        return [embed], None
 
 
 
