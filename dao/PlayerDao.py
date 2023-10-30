@@ -54,7 +54,7 @@ class PlayerDao:
 
     response = None
     try:
-      response = self.table.put_item(Item=player_dict, ConditionExpression=Attr("version").eq(current_version) if current_version == 0 else None)
+      response = self.table.put_item(Item=player_dict, ConditionExpression=(Attr("version").eq(current_version) if current_version != 0 else None))
     except ClientError as err:
       if err.response["Error"]["Code"] == 'ConditionalCheckFailedException':
         # Somebody changed the item in the db while we were changing it!
