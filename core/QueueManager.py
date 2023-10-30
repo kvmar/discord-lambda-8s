@@ -39,7 +39,7 @@ def add_player(inter: Interaction) -> (Embedding, Components):
 
     player_data = player_dao.get_player(guild_id=inter.guild_id, player_id=inter.user_id)
 
-    if resp is None:
+    if player_data is None:
         player_dao.put_player(PlayerRecord(guild_id=inter.guild_id, player_id=inter.user_id, player_name=inter.username))
 
     if resp is not None:
