@@ -82,4 +82,4 @@ class QueueDao:
       team_2.add(user)
 
 
-    return QueueRecord(guild_id=response["guild_id"], queue_id=response["queue_id"], team_1=team_1, team_2=team_2, queue=queue, version=response["version"], message_id=response["id"], channel_id=response["channel_id"])
+    return QueueRecord(guild_id=response["guild_id"], queue_id=response["queue_id"], team_1=team_1, team_2=team_2, queue=queue, version=response["version"], message_id=response["message_id"], channel_id=response["channel_id"])
