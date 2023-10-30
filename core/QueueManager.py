@@ -78,7 +78,9 @@ def update_queue_embed(record: QueueRecord) -> (Embedding, Components):
     component.add_button("Start queue", start_queue_custom_id, True, 3)
 
     if len(record.queue) >= 8:
-        component.components[2] = component.add_button("Start queue", start_queue_custom_id, False, 3)
+        component.add_button("Start queue", start_queue_custom_id, True, 3)
+    else:
+        component.add_button("Start queue", start_queue_custom_id, False, 3)
 
     return embed, component
 
