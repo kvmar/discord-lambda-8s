@@ -11,7 +11,7 @@ from dao import set_default
 table_name = "PlayerTable"
 
 class PlayerRecord:
-  def __init__(self, guild_id: str, player_id: str, player_name: str, mw: int = 0, ml: int = 0, elo: decimal = 25.0, sigma: float = 8.33, delta: str = "+0.0", version: int = 1):
+  def __init__(self, guild_id: str, player_id: str, player_name: str, mw: int = 0, ml: int = 0, elo: float = 25.0, sigma: float = 8.33, delta: str = "+0.0", version: int = 1):
     self.guild_id = guild_id
     self.player_id = player_id
     self.player_name = player_name
