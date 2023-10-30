@@ -32,7 +32,7 @@ def create_queue_resources(guild_id: str) -> (Embedding, Components):
 
 def add_player(inter: Interaction) -> (Embedding, Components):
     response = queue_dao.get_queue(inter.guild_id, "1")
-    response.queue.add(inter.id)
+    response.queue.add(inter.user_id)
     queue_dao.put_queue(response)
 
     (embed, component) = update_queue_embed(response)
