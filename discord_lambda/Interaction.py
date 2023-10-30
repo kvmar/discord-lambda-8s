@@ -113,7 +113,7 @@ class Interaction:
             print(f'Got SendResponse: {response.text}')
             response.raise_for_status()
             print(f'Convert to JSON SendResponse: {response.json}')
-            return (response.json()['id'], response.json()['channel_id'])
+            return response.json()['id'], response.json()['channel_id']
         except Exception as e:
             raise Exception(f"Unable to send response: {e}")
 
@@ -126,7 +126,12 @@ class Interaction:
             print(f'Got DeleteResponse: {response.text}')
             response.raise_for_status()
             print(f'Convert to JSON DeleteResponse: {response.json}')
-            return self.send_response(embeds=embeds, components=components, ephemeral=ephemeral)
+
+            response = requests.post(f'https://discord.com/api/v10/channels/{channel_id}/messages/{message_id}', headers=headers)
+            print(f'Got SendResponse: {response.text}')
+            response.raise_for_status()
+            print(f'Convert to JSON SendResponse: {response.json}')
+            return response.json()['id'], response.json()['channel_id']
         except Exception as e:
             raise Exception(f"Unable to delete response: {e}")
 
