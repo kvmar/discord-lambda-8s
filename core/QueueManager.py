@@ -10,6 +10,7 @@ import random
 join_queue_custom_id = "join_queue"
 leave_queue_custom_id = "leave_queue"
 start_queue_custom_id = "start_queue"
+player_pick_custom_id = "start_queue"
 
 queue_dao = QueueDao()
 player_dao = PlayerDao()
@@ -133,8 +134,35 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
             color=0x880808,
         )
 
+        components = get_player_pick_btns(record)
 
-        return [embed], None
+
+        return [embed], components
+
+
+def get_player_pick_btns(record):
+    cmpt_idx = 0
+    queue_idx = 0
+
+    component_list = list()
+    component = Components()
+
+    picks = record.team_1 + record.team_2
+
+    for user in record.queue:
+        player_data = player_dao.get_player(record.guild_id, user)
+        if cmpt_idx == 4:
+            component_list.append(component)
+            component = Components()
+            cmpt_idx = 0
+        if user in picks:
+            component.add_button(player_data.player_name, f'{player_pick_custom_id}#{player_data.player_id}#{queue_idx}', True, 2)
+        else:
+            component.add_button(player_data.player_name, f'{player_pick_custom_id}#{player_data.player_id}#{queue_idx}', False, 2)
+        cmpt_idx = cmpt_idx + 1
+        queue_idx = queue_idx + 1
+    return component_list
+
 
 
 
