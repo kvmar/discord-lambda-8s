@@ -42,9 +42,11 @@ def update_queue_resources(guild_id: str) -> (Embedding, Components):
 
     return (embed, component)
 
-def update_message_id(guild_id, msg_id):
+def update_message_id(guild_id, msg_id, channel_id):
     response = queue_dao.get_queue(guild_id, "1")
     print(f'Queue record: {json.dumps(response.__dict__, default=set_default) } for guild_id: {guild_id}')
 
     response.message_id = msg_id
+    response.channel_id = channel_id
+
     queue_dao.put_queue(response)

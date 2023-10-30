@@ -1,3 +1,5 @@
+from typing import Tuple, Any
+
 import requests
 import time
 
@@ -94,7 +96,8 @@ class Interaction:
             raise Exception(f"Unable to defer response: {e}")
     
 
-    def send_response(self, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True, components: list[Components] = None) -> None:
+    def send_response(self, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True, components: list[Components] = None) -> \
+    tuple[Any, Any]:
         try:
             json = self.__create_channel_message(content, embeds, ephemeral, components)
             print(f'Send Response json: {json}')
@@ -102,7 +105,7 @@ class Interaction:
             print(f'Got SendResponse: {response.text}')
             response.raise_for_status()
             print(f'Convert to JSON SendResponse: {response.json}')
-            return response.json()['webhook_id']
+            return (response.json()['id'], response.json()['channel_id'])
         except Exception as e:
             raise Exception(f"Unable to send response: {e}")
 
