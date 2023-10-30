@@ -31,7 +31,8 @@ class QueueRecord:
     self.channel_id = None
 
   def update_last_updated(self):
-    self.last_updated = datetime.utcnow() + timedelta(minutes=1)
+    time = datetime.utcnow() + timedelta(minutes=1)
+    self.last_updated = time.timestamp()
 
 class QueueDao:
   def __init__(self):
