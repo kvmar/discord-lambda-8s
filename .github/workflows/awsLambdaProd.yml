@@ -69,7 +69,7 @@ jobs:
           aws lambda update-function-configuration --function-name $function_name --layers $layer_arn
   
   upload_source:
-    environment: DEV
+    environment: PROD
     if: github.repository != 'jaARke/discord-lambda-py'
     name: Upload Source
     runs-on: ubuntu-latest
