@@ -35,7 +35,6 @@ def create_queue_resources(guild_id: str):
 
 
     response.clear_queue()
-    response.update_expiry_date()
 
     queue_dao.put_queue(response)
 
@@ -120,7 +119,7 @@ def team_1_won(inter: Interaction):
             response = queue_dao.get_queue(inter.guild_id, "1")
             team1 = response.team_1
             team2 = response.team_2
-            response.clear_queue()
+            response.clear_queue(reset_expiry=False)
             resp = queue_dao.put_queue(response)
             ts.post_match(win_team=team1, lose_team=team2, guild_id=inter.guild_id)
             inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id)])
@@ -154,7 +153,7 @@ def team_2_won(inter: Interaction):
             response = queue_dao.get_queue(inter.guild_id, "1")
             team1 = response.team_1
             team2 = response.team_2
-            response.clear_queue()
+            response.clear_queue(reset_expiry=False)
             resp = queue_dao.put_queue(response)
             ts.post_match(win_team=team2, lose_team=team1, guild_id=inter.guild_id)
             inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id)])
@@ -207,7 +206,7 @@ def cancel_match(inter: Interaction):
     if resp is not None:
         if len(response.cancel_votes) > 4:
             response = queue_dao.get_queue(inter.guild_id, "1")
-            response.clear_queue()
+            response.clear_queue(reset_expiry=False)
             resp = queue_dao.put_queue(response)
             if resp is None:
                 return None

@@ -34,7 +34,7 @@ class QueueRecord:
     self.leaderboard_channel_id = leaderboard_channel_id
     self.leaderboard_message_id = leaderboard_message_id
 
-  def clear_queue(self):
+  def clear_queue(self, reset_expiry: bool = True):
     self.team_1 = list()
     self.team_2 = list()
     self.queue = list()
@@ -42,7 +42,9 @@ class QueueRecord:
     self.team1_votes = list()
     self.team2_votes = list()
     self.maps = list()
-    self.update_expiry_date()
+    self.message_id = None
+    if reset_expiry:
+      self.update_expiry_date()
 
   def update_expiry_date(self):
     time = datetime.utcnow() + timedelta(minutes=10)
