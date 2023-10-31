@@ -73,6 +73,10 @@ class Interaction:
         self.id = interaction.get("id")
         self.user_id = interaction.get("member").get("user").get("id")
         self.username = interaction.get("member").get("user").get("global_name")
+        if self.username is None:
+            self.username = interaction.get("member").get("user").get("username")
+
+
         self.data = interaction.get("data")
         self.custom_id = interaction.get("data").get("custom_id")
         self.guild_id = interaction.get("guild").get("id")
