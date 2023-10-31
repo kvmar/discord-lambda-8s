@@ -23,7 +23,7 @@ ts = TrueSkillAccessor()
 
 def create_queue_resources(guild_id: str):
 
-    response = queue_dao.get_queue(guild_id)
+    response = queue_dao.get_queue(guild_id=guild_id)
     embed = Embedding("Underworld 8s", f"Queue size: {len(response.queue)}", color=0x880808)
 
     print(f'Queue record: {response} for guild_id: {guild_id}')
@@ -42,7 +42,7 @@ def create_queue_resources(guild_id: str):
 
 
 def add_player(inter: Interaction):
-    response = queue_dao.get_queue(inter.guild_id)
+    response = queue_dao.get_queue(guild_id=inter.guild_id)
     if inter.user_id not in response.queue:
         response.queue.append(inter.user_id)
 
@@ -63,7 +63,7 @@ def add_player(inter: Interaction):
     return None
 
 def remove_player(inter: Interaction):
-    response = queue_dao.get_queue(inter.guild_id)
+    response = queue_dao.get_queue(guild_id=inter.guild_id)
 
     if inter.user_id in response.queue:
         response.queue.remove(inter.user_id)
@@ -79,7 +79,7 @@ def remove_player(inter: Interaction):
     return None
 
 def start_match(inter: Interaction):
-    response = queue_dao.get_queue(inter.guild_id)
+    response = queue_dao.get_queue(guild_id=inter.guild_id)
 
     caps = random.sample(response.queue, 2)
     response.team_1 = list()
@@ -103,7 +103,7 @@ def start_match(inter: Interaction):
     return None
 
 def team_1_won(inter: Interaction):
-    response = queue_dao.get_queue(inter.guild_id)
+    response = queue_dao.get_queue(guild_id=inter.guild_id)
     if inter.user_id not in response.team_1 and inter.user_id not in response.team_2:
         return None
 
@@ -121,7 +121,7 @@ def team_1_won(inter: Interaction):
     if resp is not None:
         if len(response.team1_votes) == 5:
             print(f"Posting team 1 win: {response.team_1} and team 2 lose: {response.team_2}")
-            response = queue_dao.get_queue(inter.guild_id)
+            response = queue_dao.get_queue(guild_id=inter.guild_id)
             team1 = response.team_1
             team2 = response.team_2
             response.clear_queue(reset_expiry=False)
@@ -140,7 +140,7 @@ def team_1_won(inter: Interaction):
     return None
 
 def team_2_won(inter: Interaction):
-    response = queue_dao.get_queue(inter.guild_id)
+    response = queue_dao.get_queue(guild_id=inter.guild_id)
     if inter.user_id not in response.team_1 and inter.user_id not in response.team_2:
         return None
 
@@ -158,7 +158,7 @@ def team_2_won(inter: Interaction):
     if resp is not None:
         if len(response.team2_votes) == 5:
             print(f"Posting team 1 lose: {response.team_1} and team 2 win: {response.team_2}")
-            response = queue_dao.get_queue(inter.guild_id)
+            response = queue_dao.get_queue(guild_id=inter.guild_id)
             team1 = response.team_1
             team2 = response.team_2
             response.clear_queue(reset_expiry=False)
@@ -199,7 +199,7 @@ def generate_match_done_embed(team1, team2, guild_id):
     )
 
 def cancel_match(inter: Interaction):
-    response = queue_dao.get_queue(inter.guild_id)
+    response = queue_dao.get_queue(guild_id=inter.guild_id)
 
     if len(response.team_1) == 4 and len(response.team_2) == 4:
         if inter.user_id not in response.team_1 and inter.user_id not in response.team_2:
@@ -218,7 +218,7 @@ def cancel_match(inter: Interaction):
 
     if resp is not None:
         if len(response.cancel_votes) > 4:
-            response = queue_dao.get_queue(inter.guild_id)
+            response = queue_dao.get_queue(guild_id=inter.guild_id)
             response.clear_queue(reset_expiry=False)
             resp = queue_dao.put_queue(response)
             if resp is None:
@@ -235,10 +235,10 @@ def cancel_match(inter: Interaction):
 def player_pick(inter: Interaction):
     player_id_inter = inter.user_id
 
-    response = queue_dao.get_queue(inter.guild_id)
+    response = queue_dao.get_queue(guild_id=inter.guild_id)
     if len(response.team_1) == 4 or len(response.team_2) == 4:
         return None
-    
+
     team1_pick = True
     player_pick = response.team_1[0]
     if len(response.team_1) + len(response.team_2) in (3, 4, 7):
@@ -383,7 +383,7 @@ def get_player_pick_btns(record):
     return component_list
 
 def update_message_id(guild_id, msg_id, channel_id):
-    response = queue_dao.get_queue(guild_id)
+    response = queue_dao.get_queue(guild_id=guild_id)
     print(f'Queue record: {response} for guild_id: {guild_id}')
 
     response.message_id = msg_id

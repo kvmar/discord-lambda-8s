@@ -61,7 +61,7 @@ class QueueDao:
     dynamodb = boto3.resource('dynamodb', region_name="us-east-1")
     self.table = dynamodb.Table(table_name)
 
-  def get_queue(self, guild_id: str, queue_id: str):
+  def get_queue(self, guild_id: str, queue_id: str = "1"):
     response = self.table.get_item(
       Key={
         'guild_id': guild_id,
