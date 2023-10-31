@@ -127,7 +127,16 @@ class Interaction:
             response.raise_for_status()
             print(f'Convert to JSON DeleteResponse: {response.json}')
 
+            return self.send_message(channel_id=channel_id, embeds=embeds, components=components)
+        except Exception as e:
+            raise Exception(f"Unable to delete response: {e}")
+
+    def send_message(self, channel_id: str, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = False, components: list[Components] = None):
+        try:
             json = self.__create_channel_message(content, embeds, ephemeral, components)
+            headers = {
+                'Authorization': f'Bot {os.environ.get("BOT_TOKEN")}'
+            }
             response = requests.post(f'https://discord.com/api/v10/channels/{channel_id}/messages', json=json, headers=headers)
             print(f'Got SendResponse: {response.text}')
             response.raise_for_status()

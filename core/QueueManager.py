@@ -117,6 +117,7 @@ def team_1_won(inter: Interaction):
             response.clear_queue()
             resp = queue_dao.put_queue(response)
             ts.post_match(win_team=team1, lose_team=team2, guild_id=inter.guild_id)
+            inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id)])
             if resp is None:
                 return None
 
@@ -149,6 +150,7 @@ def team_2_won(inter: Interaction):
             response.clear_queue()
             resp = queue_dao.put_queue(response)
             ts.post_match(win_team=team2, lose_team=team1, guild_id=inter.guild_id)
+            inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id)])
             if resp is None:
                 return None
 
@@ -158,6 +160,27 @@ def team_2_won(inter: Interaction):
 
         return embed, component
     return None
+
+
+def generate_match_done_embed(team1, team2, guild_id):
+    team_str = "Team 1:\n"
+    for user in team1:
+        player_data = player_dao.get_player(guild_id=guild_id, player_id=user)
+
+        player_str = player_data.player_name + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + ")\n"
+        team_str = team_str + player_str
+
+    for user in team2:
+        player_data = player_dao.get_player(guild_id=guild_id, player_id=user)
+
+        player_str = player_data.player_name + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + ")\n"
+        team_str = team_str + player_str
+
+    return Embedding(
+        "Match Result",
+        f'{team_str}',
+        color=0x880808,
+    )
 
 def cancel_match(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")

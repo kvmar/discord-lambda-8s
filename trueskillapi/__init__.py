@@ -57,7 +57,11 @@ class TrueSkillAccessor:
         for user in team_ratings:
             user.mw = int(user.mw) + lost
             user.ml = int(user.ml) + won
+
             user.delta = str(float(new_ratings[tuple_idx][idx].mu) - float(user.elo))
+            if float(new_ratings[tuple_idx][idx].mu) - float(user.elo) >= 0:
+                user.delta = "+" + user.delta
+
             user.elo = float(new_ratings[tuple_idx][idx].mu)
             user.sigma = float(new_ratings[tuple_idx][idx].sigma)
             print(f"Writing player_data record to {user}")
