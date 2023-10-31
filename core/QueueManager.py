@@ -84,7 +84,12 @@ def start_match(inter: Interaction):
 
     caps = random.sample(response.queue, 2)
     response.team_1.append(caps[0])
-    response.team_2.append(caps[0])
+    response.team_2.append(caps[1])
+
+    map_picks = random.sample(response.map_set, 3)
+    response.maps.append(map_picks[0])
+    response.maps.append(map_picks[1])
+    response.maps.append(map_picks[2])
 
     resp = queue_dao.put_queue(response)
 
@@ -307,9 +312,13 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
             player_data = player_dao.get_player(record.guild_id, user)
             team2_str = team2_str + player_data.player_name + "\n"
 
+        map_str = "Maps: \n"
+        for map in record.maps:
+            map_str = map_str + map + "\n"
+
         embed = Embedding(
             "Underworld 8s",
-            f"{team1_str}\n{team2_str}",
+            f"{team1_str}\n{team2_str}\n{map_str}",
             color=0x880808,
         )
 
