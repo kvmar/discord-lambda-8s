@@ -104,7 +104,7 @@ def start_match(inter: Interaction):
 
 def team_1_won(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")
-    if inter.user_id not in response.team_1 or inter.user_id not in response.team_2:
+    if inter.user_id not in response.team_1 and inter.user_id not in response.team_2:
         return None
 
     if inter.user_id not in response.team1_votes:
@@ -141,7 +141,7 @@ def team_1_won(inter: Interaction):
 
 def team_2_won(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")
-    if inter.user_id not in response.team_1 or inter.user_id not in response.team_2:
+    if inter.user_id not in response.team_1 and inter.user_id not in response.team_2:
         return None
 
     if inter.user_id not in response.team2_votes:
@@ -200,9 +200,9 @@ def generate_match_done_embed(team1, team2, guild_id):
 
 def cancel_match(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")
-    if inter.user_id not in response.team_1 or inter.user_id not in response.team_2:
+    if inter.user_id not in response.team_1 and inter.user_id not in response.team_2:
         return None
-    
+
     if inter.user_id not in response.cancel_votes:
         response.cancel_votes.append(inter.user_id)
 
