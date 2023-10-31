@@ -1,9 +1,7 @@
-import pandas as pd
-
 from dao.PlayerDao import PlayerDao
 from dao.QueueDao import QueueRecord, QueueDao
 from discord_lambda import Interaction
-import dataframe_image as dfi
+from table2ascii import table2ascii as t2a, PresetStyle
 
 
 queue_dao = QueueDao()
@@ -34,20 +32,16 @@ def post_leaderboard(queue_record: QueueRecord, inter: Interaction):
             table.append(user_data)
             rank = rank + 1
 
-
-    df = pd.DataFrame(table, columns=["Rank", "User", "P", "W", "L", "SR", "Change"], index=None)
-
-    file_name = "mytable.png"
-    if df.shape[0]:
-        try:
-            dfi.export(df.style.hide(axis='index'),"mytable.png")
-        except Exception as e:
-            print("Error exporting leaderboard: " + str(e))
-
+    # In your command:
+    output = t2a(
+        header=["Rank", "User", "P", "W", "L", "SR", "Change"],
+        body=table,
+        style=PresetStyle.thin_compact
+    )
     queue_record = queue_dao.get_queue(queue_id=queue_record.queue_id, guild_id=queue_record.guild_id)
     if len(queue_record.leaderboard_message_id) > 0:
         inter.delete_message(message_id=queue_record.leaderboard_message_id, channel_id=queue_record.leaderboard_channel_id)
-    inter.send_file(file_name=file_name, channel_id=queue_record.leaderboard_channel_id)
+    inter.send_message(content=f"```\n{output}\n```", channel_id=queue_record.leaderboard_channel_id)
 
 
 
