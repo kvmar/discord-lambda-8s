@@ -29,7 +29,7 @@ def join_queue_button(guild_id: str, inter: Interaction):
 
   (embed, component) = resp
 
-  record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
+  record = queue_dao.get_queue(guild_id=guild_id)
   QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
 
 
@@ -43,7 +43,7 @@ def leave_queue_button(guild_id: str, inter: Interaction):
 
   (embed, component) = resp
 
-  record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
+  record = queue_dao.get_queue(guild_id=guild_id)
   QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
 
 
@@ -56,7 +56,7 @@ def start_queue_button(guild_id: str, inter: Interaction):
 
   (embed, component) = resp
 
-  record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
+  record = queue_dao.get_queue(guild_id=guild_id)
   record.team1_votes = list()
   record.team2_votes = list()
   record.cancel_votes = list()
@@ -72,7 +72,7 @@ def player_pick_button(guild_id, inter):
 
   (embed, component) = resp
 
-  record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
+  record = queue_dao.get_queue(guild_id=guild_id)
   QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
 
   if len(record.team_1) == 4 and len(record.team_2) == 4:
@@ -94,7 +94,7 @@ def team_1_won_button(guild_id: str, inter: Interaction):
 
   (embed, component) = resp
 
-  record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
+  record = queue_dao.get_queue(guild_id=guild_id)
 
   QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
 
@@ -107,7 +107,7 @@ def team_2_won_button(guild_id: str, inter: Interaction):
 
   (embed, component) = resp
 
-  record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
+  record = queue_dao.get_queue(guild_id=guild_id)
   QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
 
 def cancel_match_button(guild_id: str, inter: Interaction):
@@ -119,7 +119,7 @@ def cancel_match_button(guild_id: str, inter: Interaction):
 
   (embed, component) = resp
 
-  record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
+  record = queue_dao.get_queue(guild_id=guild_id)
   QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
 
 
