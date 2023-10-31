@@ -5,6 +5,8 @@ Description:
 
 Version: 6.1.0
 """
+from decimal import Decimal
+
 from trueskill import TrueSkill
 from trueskill import Rating
 
@@ -55,7 +57,7 @@ class TrueSkillAccessor:
         for user in team_ratings:
             user.mw = user.mw + lost
             user.ml = user.ml + won
-            user.delta = float(new_ratings[tuple_idx][idx].mu) - float(user.elo)
+            user.delta = str(float(new_ratings[tuple_idx][idx].mu) - float(user.elo))
             user.elo = float(new_ratings[tuple_idx][idx].mu)
             user.sigma = float(new_ratings[tuple_idx][idx].sigma)
             player_dao.put_player(user)
