@@ -70,13 +70,17 @@ class PlayerDao:
     print(f'PlayerDao put_player response: {response}')
     return response
 
-  def get_player_by_guild_id(self, guild_id: str):
+  def get_players_by_guild_id(self, guild_id: str) -> list[PlayerRecord]:
       response = self.table.query(
         IndexName='guild_id-index',
         KeyConditionExpression=Key('guild_id').eq(guild_id)
       )
 
-      print(f'Player Dao get_player response: {response}')
+      print(f'Player Dao get_players_by_guild_id response: {response}')
+      player_list = list()
+      for player in response['Items']:
+        player_list.append(self.get_player_record_attributes(player))
+      return player_list
 
   def get_player_record_attributes(self, response):
       return PlayerRecord(player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["ml"], elo=response["elo"], sigma=response["sigma"], delta=response["delta"], version=response["version"])
