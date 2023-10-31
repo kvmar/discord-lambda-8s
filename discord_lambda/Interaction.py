@@ -117,19 +117,21 @@ class Interaction:
         except Exception as e:
             raise Exception(f"Unable to send response: {e}")
 
-    def edit_response(self, channel_id: str, message_id: str, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = False, components: list[Components] = None) :
-        try:
-            headers = {
-                'Authorization': f'Bot {os.environ.get("BOT_TOKEN")}'
-            }
-            response = requests.delete(f'https://discord.com/api/v10/channels/{channel_id}/messages/{message_id}', headers=headers)
-            print(f'Got DeleteResponse: {response.text}')
-            response.raise_for_status()
-            print(f'Convert to JSON DeleteResponse: {response.json}')
-        except Exception as e:
-            print(f"Unable to delete response: {e}")
-        return self.send_message(channel_id=channel_id, embeds=embeds, components=components)
+    def delete_message(self, message_id: str, channel_id: str):
+       try:
+           headers = {
+               'Authorization': f'Bot {os.environ.get("BOT_TOKEN")}'
+           }
+           response = requests.delete(f'https://discord.com/api/v10/channels/{channel_id}/messages/{message_id}', headers=headers)
+           print(f'Got DeleteResponse: {response.text}')
+           response.raise_for_status()
+           print(f'Convert to JSON DeleteResponse: {response.json}')
+       except Exception as e:
+           print(f"Unable to delete response: {e}")
 
+    def edit_response(self, channel_id: str, message_id: str, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = False, components: list[Components] = None) :
+        self.delete_message(message_id=message_id, channel_id=channel_id)
+        return self.send_message(channel_id=channel_id, embeds=embeds, components=components)
 
     def send_message(self, channel_id: str, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = False, components: list[Components] = None):
         try:
@@ -144,6 +146,22 @@ class Interaction:
             return response.json()['id'], response.json()['channel_id']
         except Exception as e:
             raise Exception(f"Unable to send message: {e}")
+
+    def send_file(self, channel_id: str, file_name: str):
+        try:
+            headers = {
+                'Authorization': f'Bot {os.environ.get("BOT_TOKEN")}'
+            }
+            files = {
+                'file': (open(file_name, 'rb')),
+            }
+            response = requests.post(f'https://discord.com/api/v10/channels/{channel_id}/messages', headers=headers, files=files)
+            print(f'Got SendResponse: {response.text}')
+            response.raise_for_status()
+            print(f'Convert to JSON SendResponse: {response.json}')
+            return response.json()['id'], response.json()['channel_id']
+        except Exception as e:
+            print(f"Unable to send message: {e}")
 
     def move_member(self, channel_id: str, guild_id: str, user_id: str):
         try:
