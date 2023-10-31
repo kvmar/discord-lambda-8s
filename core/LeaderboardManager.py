@@ -40,9 +40,9 @@ def post_leaderboard(queue_record: QueueRecord, inter: Interaction):
     file_name = "mytable.png"
     if df.shape[0]:
         try:
-            dfi.export(df.style.hide(axis='index'),"mytable.png")
+            dfi.export(df.style.hide(axis='index'),"mytable.png", dpi=1000,  table_conversion='matplotlib')
         except Exception as e:
-            print("Error exporting leaderboard: " + e)
+            print("Error exporting leaderboard: " + str(e))
 
     queue_record = queue_dao.get_queue(queue_id=queue_record.queue_id, guild_id=queue_record.guild_id)
     if len(queue_record.leaderboard_message_id) > 0:
