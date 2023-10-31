@@ -176,9 +176,9 @@ class Interaction:
                 "channel_id": channel_id
             }
             response = requests.patch(f'https://discord.com/api/v10/guilds/{guild_id}/members/{user_id}', json=json, headers=headers)
-            print(f'Got SendResponse: {response.text}')
+            print(f'Got MoveResponse: {response.text}')
             response.raise_for_status()
-            print(f'Convert to JSON SendResponse: {response.json}')
+            print(f'Convert to JSON MoveResponse: {response.json}')
         except Exception as e:
             print(f"Unable to move user: {e}")
 

@@ -75,8 +75,10 @@ def player_pick_button(guild_id, inter):
   if len(record.team_1) == 4 and len(record.team_2) == 4:
     print("Moving members to team queue")
     for user in record.team_1:
+      print(f"Moving team 1 to: {record.team_1_channel_id}")
       inter.move_member(guild_id=inter.guild_id, channel_id=record.team_1_channel_id, user_id=user)
     for user in record.team_2:
+      print(f"Moving team 2 to: {record.team_2_channel_id}")
       inter.move_member(guild_id=inter.guild_id, channel_id=record.team_2_channel_id, user_id=user)
 
 
