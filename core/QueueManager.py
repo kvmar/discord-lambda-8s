@@ -360,7 +360,7 @@ def get_player_pick_btns(record):
         component = Components()
         cmpt_idx = 0
 
-    component.add_button("Cancel Match", cancel_match_custom_id, False, 4)
+    component.add_button(f"Cancel Match - {len(record.cancel_votes)}", cancel_match_custom_id, False, 4)
 
     if cmpt_idx < 4:
         component_list.append(component)

@@ -42,7 +42,6 @@ class QueueRecord:
     self.team1_votes = list()
     self.team2_votes = list()
     self.maps = list()
-    self.message_id = None
     self.update_expiry_date()
 
   def update_expiry_date(self):
