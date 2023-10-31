@@ -18,6 +18,7 @@ team_2_won_custom_id = "team_2_won"
 
 queue_dao = QueueDao()
 player_dao = PlayerDao()
+ts = TrueSkillAccessor()
 
 def create_queue_resources(guild_id: str):
 
@@ -114,7 +115,7 @@ def team_1_won(inter: Interaction):
             team2 = response.team_2
             response.clear_queue()
             resp = queue_dao.put_queue(response)
-            TrueSkillAccessor.post_match(team1, team2, inter.guild_id)
+            ts.post_match(win_team=team1, lose_team=team2, guild_id=inter.guild_id)
             if resp is None:
                 return None
 
@@ -145,7 +146,7 @@ def team_2_won(inter: Interaction):
             team2 = response.team_2
             response.clear_queue()
             resp = queue_dao.put_queue(response)
-            TrueSkillAccessor.post_match(team2, team1, inter.guild_id)
+            ts.post_match(win_team=team2, lose_team=team1, guild_id=inter.guild_id)
             if resp is None:
                 return None
 
