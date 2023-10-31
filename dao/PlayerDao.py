@@ -11,6 +11,9 @@ from dao import DecimalEncoder
 
 table_name = "PlayerTable"
 
+if os.environ.get('BOT_TOKEN') == "PROD":
+  table_name = "PlayerTableProd"
+
 class PlayerRecord:
   def __init__(self, guild_id: str, player_id: str, player_name: str, mw: int = 0, ml: int = 0, elo: float = 25.0, sigma: float = 8.33, delta: str = "+0.0", version: int = 0):
     self.guild_id = guild_id

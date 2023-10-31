@@ -11,6 +11,9 @@ from dao import set_default
 
 table_name = "QueueTable"
 
+if os.environ.get('BOT_TOKEN') == "PROD":
+  table_name = "QueueTableProd"
+
 class QueueRecord:
   def __init__(self, guild_id: str, queue_id: str, team_1: list, team_2: list, queue: list, cancel_votes: list, team1_votes: list, team2_votes: list, maps: list, map_set: list, version: int, expiry: int, result_channel_id: str,
       team_1_channel_id: str, team_2_channel_id: str, leaderboard_channel_id: str, leaderboard_message_id: str,message_id: str = None, channel_id: str = None):
