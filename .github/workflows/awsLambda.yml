@@ -2,7 +2,7 @@ name: Deploy to Lambda
 
 on:
   push:
-    branches: [test]
+    branches: [dev]
   workflow_dispatch:
 
 jobs:
