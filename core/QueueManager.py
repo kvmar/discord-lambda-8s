@@ -200,8 +200,10 @@ def generate_match_done_embed(team1, team2, guild_id):
 
 def cancel_match(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")
-    if inter.user_id not in response.team_1 and inter.user_id not in response.team_2:
-        return None
+
+    if len(response.team_1) == 4 and len(response.team_2) == 4:
+        if inter.user_id not in response.team_1 and inter.user_id not in response.team_2:
+            return None
 
     if inter.user_id not in response.cancel_votes:
         response.cancel_votes.append(inter.user_id)
