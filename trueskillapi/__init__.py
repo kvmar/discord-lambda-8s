@@ -55,8 +55,8 @@ class TrueSkillAccessor:
             lost = lost + 1
 
         for user in team_ratings:
-            user.mw = user.mw + lost
-            user.ml = user.ml + won
+            user.mw = int(user.mw) + lost
+            user.ml = int(user.ml) + won
             user.delta = str(float(new_ratings[tuple_idx][idx].mu) - float(user.elo))
             user.elo = float(new_ratings[tuple_idx][idx].mu)
             user.sigma = float(new_ratings[tuple_idx][idx].sigma)
