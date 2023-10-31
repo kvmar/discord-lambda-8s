@@ -11,7 +11,7 @@ from dao import set_default
 
 table_name = "QueueTable"
 
-if os.environ.get('BOT_TOKEN') == "PROD":
+if os.environ.get('BOT_ENV') == "PROD":
   table_name = "QueueTableProd"
 
 class QueueRecord:

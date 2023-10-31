@@ -17,7 +17,7 @@ def verify_signature(event: dict) -> None:
 
 
 def lambda_handler(event, context):
-    print(f'Received API Event: {event} on stage {os.environ.get("BOT_TOKEN")}')
+    print(f'Received API Event: {event} on stage {os.environ.get("BOT_ENV")}')
 
     try:
         verify_signature(event)

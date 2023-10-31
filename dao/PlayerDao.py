@@ -11,7 +11,7 @@ from dao import DecimalEncoder
 
 table_name = "PlayerTable"
 
-if os.environ.get('BOT_TOKEN') == "PROD":
+if os.environ.get('BOT_ENV') == "PROD":
   table_name = "PlayerTableProd"
 
 class PlayerRecord:
