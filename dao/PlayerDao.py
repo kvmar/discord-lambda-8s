@@ -6,7 +6,7 @@ import boto3
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 
-from dao import set_default
+from dao import set_default, DecimalEncoder
 
 table_name = "PlayerTable"
 
@@ -48,7 +48,7 @@ class PlayerDao:
   def put_player(self, player_record: PlayerRecord):
     current_version = player_record.version
     player_record.version = player_record.version + 1
-    json_ = json.dumps(player_record.__dict__)
+    json_ = json.dumps(player_record.__dict__, cls=DecimalEncoder)
     print(f'Putting following player_record: {json_}')
     player_dict = json.loads(json_, parse_float=Decimal)
 

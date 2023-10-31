@@ -60,6 +60,7 @@ class TrueSkillAccessor:
             user.delta = str(float(new_ratings[tuple_idx][idx].mu) - float(user.elo))
             user.elo = float(new_ratings[tuple_idx][idx].mu)
             user.sigma = float(new_ratings[tuple_idx][idx].sigma)
+            print(f"Writing player_data record to {user}")
             player_dao.put_player(user)
             idx = idx + 1
 
