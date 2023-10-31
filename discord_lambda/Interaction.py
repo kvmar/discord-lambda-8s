@@ -153,7 +153,7 @@ class Interaction:
             json = {
                 "channel_id": channel_id
             }
-            response = requests.post(f'https://discord.com/api/v10/guilds/{guild_id}/members/{user_id}', json=json, headers=headers)
+            response = requests.patch(f'https://discord.com/api/v10/guilds/{guild_id}/members/{user_id}', json=json, headers=headers)
             print(f'Got SendResponse: {response.text}')
             response.raise_for_status()
             print(f'Convert to JSON SendResponse: {response.json}')
