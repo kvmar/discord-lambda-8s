@@ -110,6 +110,7 @@ def team_1_won(inter: Interaction):
 
     if resp is not None:
         if len(response.team1_votes) == 5:
+            print(f"Posting team 1 win: {response.team_1} and team 2 lose: {response.team_2}")
             response = queue_dao.get_queue(inter.guild_id, "1")
             team1 = response.team_1
             team2 = response.team_2
@@ -141,6 +142,7 @@ def team_2_won(inter: Interaction):
 
     if resp is not None:
         if len(response.team2_votes) == 5:
+            print(f"Posting team 1 lose: {response.team_1} and team 2 win: {response.team_2}")
             response = queue_dao.get_queue(inter.guild_id, "1")
             team1 = response.team_1
             team2 = response.team_2
