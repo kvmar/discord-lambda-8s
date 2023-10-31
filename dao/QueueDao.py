@@ -117,6 +117,6 @@ class QueueDao:
 
     return QueueRecord(guild_id=response["guild_id"], queue_id=response["queue_id"], expiry=int(response["expiry"]),
                        team_1=team_1, team_2=team_2, queue=queue, cancel_votes=cancel_votes,
-                       result_channel_id=response["result_chanel_id"],
+                       result_channel_id=response["result_channel_id"],
                        team1_votes=team1_votes, team2_votes=team2_votes, maps=maps,
                        version=response["version"], message_id=response["message_id"], channel_id=response["channel_id"])
