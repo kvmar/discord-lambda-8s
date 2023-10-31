@@ -40,7 +40,7 @@ def post_leaderboard(queue_record: QueueRecord, inter: Interaction):
     file_name = "mytable.png"
     if df.shape[0]:
         try:
-            dfi.export(df.style.hide(axis='index'),"mytable.png", dpi=1000,  table_conversion='matplotlib')
+            dfi.export(df.style.hide(axis='index'),"mytable.png")
         except Exception as e:
             print("Error exporting leaderboard: " + str(e))
 
