@@ -82,6 +82,8 @@ def start_match(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")
 
     caps = random.sample(response.queue, 2)
+    response.team_1 = list()
+    response.team_2 = list()
     response.team_1.append(caps[0])
     response.team_2.append(caps[1])
 
@@ -102,6 +104,9 @@ def start_match(inter: Interaction):
 
 def team_1_won(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")
+    if inter.user_id not in response.team_1 or inter.user_id not in response.team_2:
+        return None
+
     if inter.user_id not in response.team1_votes:
         response.team1_votes.append(inter.user_id)
 
@@ -136,6 +141,9 @@ def team_1_won(inter: Interaction):
 
 def team_2_won(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")
+    if inter.user_id not in response.team_1 or inter.user_id not in response.team_2:
+        return None
+
     if inter.user_id not in response.team2_votes:
         response.team2_votes.append(inter.user_id)
 
@@ -192,6 +200,9 @@ def generate_match_done_embed(team1, team2, guild_id):
 
 def cancel_match(inter: Interaction):
     response = queue_dao.get_queue(inter.guild_id, "1")
+    if inter.user_id not in response.team_1 or inter.user_id not in response.team_2:
+        return None
+    
     if inter.user_id not in response.cancel_votes:
         response.cancel_votes.append(inter.user_id)
 
