@@ -24,10 +24,10 @@ class TrueSkillAccessor:
         win_team_ratings_tuple = list()
         lose_team_ratings_tuple = list()
         for user in win_team_ratings:
-            win_team_ratings_tuple.append(Rating(user.elo, user.sigma))
+            win_team_ratings_tuple.append(Rating(float(user.elo), float(user.sigma)))
 
         for user in lose_team_ratings:
-            lose_team_ratings_tuple.append(Rating(user.elo, user.sigma))
+            lose_team_ratings_tuple.append(Rating(float(user.elo), float(user.sigma)))
 
         new_ratings = self.env.rate([tuple(win_team_ratings_tuple), tuple(lose_team_ratings_tuple)], ranks=[0, 1])
 
@@ -55,9 +55,9 @@ class TrueSkillAccessor:
         for user in team_ratings:
             user.mw = user.mw + lost
             user.ml = user.ml + won
-            user.delta = new_ratings[tuple_idx][idx].mu - user.elo
-            user.elo = new_ratings[tuple_idx][idx].mu
-            user.sigma = new_ratings[tuple_idx][idx].sigma
+            user.delta = float(new_ratings[tuple_idx][idx].mu) - float(user.elo)
+            user.elo = float(new_ratings[tuple_idx][idx].mu)
+            user.sigma = float(new_ratings[tuple_idx][idx].sigma)
             player_dao.put_player(user)
             idx = idx + 1
 
