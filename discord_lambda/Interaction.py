@@ -157,7 +157,6 @@ class Interaction:
             print(f'Got SendResponse: {response.text}')
             response.raise_for_status()
             print(f'Convert to JSON SendResponse: {response.json}')
-            return response.json()['id'], response.json()['channel_id']
         except Exception as e:
             print(f"Unable to move user: {e}")
 
