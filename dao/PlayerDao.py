@@ -73,7 +73,7 @@ class PlayerDao:
   def get_player_by_guild_id(self, guild_id: str):
       response = self.table.query(
         IndexName='guild_id-index',
-        KeyConditionExpression=Key('video_id').eq(guild_id)
+        KeyConditionExpression=Key('guild_id').eq(guild_id)
       )
 
       print(f'Player Dao get_player response: {response}')
