@@ -41,7 +41,10 @@ def post_leaderboard(queue_record: QueueRecord, inter: Interaction):
     queue_record = queue_dao.get_queue(queue_id=queue_record.queue_id, guild_id=queue_record.guild_id)
     if len(queue_record.leaderboard_message_id) > 0:
         inter.delete_message(message_id=queue_record.leaderboard_message_id, channel_id=queue_record.leaderboard_channel_id)
-    inter.send_message(content=f"```\n{output}\n```", channel_id=queue_record.leaderboard_channel_id)
+    resp = inter.send_message(content=f"```\n{output}\n```", channel_id=queue_record.leaderboard_channel_id)
+    queue_record.leaderboard_message_id = resp[0]
+    queue_dao.put_queue(queue_record=queue_record)
+
 
 
 
