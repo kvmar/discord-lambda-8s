@@ -4,6 +4,7 @@ from decimal import Decimal
 
 import boto3
 from boto3.dynamodb.conditions import Attr
+from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
 from dao import DecimalEncoder
@@ -69,6 +70,13 @@ class PlayerDao:
     print(f'PlayerDao put_player response: {response}')
     return response
 
+  def get_player_by_guild_id(self, guild_id: str):
+      response = self.table.query(
+        IndexName='guild_id-index',
+        KeyConditionExpression=Key('video_id').eq(guild_id)
+      )
+
+      print(f'Player Dao get_player response: {response}')
 
   def get_player_record_attributes(self, response):
-    return PlayerRecord(player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["ml"], elo=response["elo"], sigma=response["sigma"], delta=response["delta"], version=response["version"])
+      return PlayerRecord(player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["ml"], elo=response["elo"], sigma=response["sigma"], delta=response["delta"], version=response["version"])

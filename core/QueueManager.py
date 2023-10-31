@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from core import LeaderboardManager
 from dao.PlayerDao import PlayerDao, PlayerRecord
 from dao.QueueDao import QueueDao, QueueRecord
 from discord_lambda import Embedding, Interaction
@@ -118,6 +119,7 @@ def team_1_won(inter: Interaction):
             resp = queue_dao.put_queue(response)
             ts.post_match(win_team=team1, lose_team=team2, guild_id=inter.guild_id)
             inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id)])
+            LeaderboardManager.post_leaderboard()
             if resp is None:
                 return None
 
@@ -151,6 +153,7 @@ def team_2_won(inter: Interaction):
             resp = queue_dao.put_queue(response)
             ts.post_match(win_team=team2, lose_team=team1, guild_id=inter.guild_id)
             inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id)])
+            LeaderboardManager.post_leaderboard()
             if resp is None:
                 return None
 

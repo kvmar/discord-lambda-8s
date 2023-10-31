@@ -126,10 +126,10 @@ class Interaction:
             print(f'Got DeleteResponse: {response.text}')
             response.raise_for_status()
             print(f'Convert to JSON DeleteResponse: {response.json}')
-
-            return self.send_message(channel_id=channel_id, embeds=embeds, components=components)
         except Exception as e:
-            raise Exception(f"Unable to delete response: {e}")
+            print(f"Unable to delete response: {e}")
+        return self.send_message(channel_id=channel_id, embeds=embeds, components=components)
+
 
     def send_message(self, channel_id: str, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = False, components: list[Components] = None):
         try:
@@ -143,7 +143,7 @@ class Interaction:
             print(f'Convert to JSON SendResponse: {response.json}')
             return response.json()['id'], response.json()['channel_id']
         except Exception as e:
-            raise Exception(f"Unable to delete response: {e}")
+            raise Exception(f"Unable to send message: {e}")
 
     def move_member(self, channel_id: str, guild_id: str, user_id: str):
         try:
