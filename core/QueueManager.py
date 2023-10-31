@@ -170,6 +170,7 @@ def generate_match_done_embed(team1, team2, guild_id):
         player_str = player_data.player_name + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + ")\n"
         team_str = team_str + player_str
 
+    team_str = team_str + "\nTeam 2:\n"
     for user in team2:
         player_data = player_dao.get_player(guild_id=guild_id, player_id=user)
 

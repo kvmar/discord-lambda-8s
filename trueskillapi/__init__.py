@@ -58,7 +58,7 @@ class TrueSkillAccessor:
             user.mw = int(user.mw) + lost
             user.ml = int(user.ml) + won
 
-            user.delta = str(float(new_ratings[tuple_idx][idx].mu) - float(user.elo))
+            user.delta = str(int(float(new_ratings[tuple_idx][idx].mu) - float(user.elo) * 100))
             if float(new_ratings[tuple_idx][idx].mu) - float(user.elo) >= 0:
                 user.delta = "+" + user.delta
 
