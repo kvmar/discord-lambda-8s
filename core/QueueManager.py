@@ -6,6 +6,7 @@ from discord_lambda import Embedding, Interaction
 from discord_lambda import Components
 import random
 
+from trueskillapi import TrueSkillAccessor
 
 join_queue_custom_id = "join_queue"
 leave_queue_custom_id = "leave_queue"
@@ -109,8 +110,11 @@ def team_1_won(inter: Interaction):
     if resp is not None:
         if len(response.team1_votes) == 5:
             response = queue_dao.get_queue(inter.guild_id, "1")
+            team1 = response.team_1
+            team2 = response.team_2
             response.clear_queue()
             resp = queue_dao.put_queue(response)
+            TrueSkillAccessor.post_match(team1, team2)
             if resp is None:
                 return None
 
@@ -137,8 +141,11 @@ def team_2_won(inter: Interaction):
     if resp is not None:
         if len(response.team2_votes) == 5:
             response = queue_dao.get_queue(inter.guild_id, "1")
+            team1 = response.team_1
+            team2 = response.team_2
             response.clear_queue()
             resp = queue_dao.put_queue(response)
+            TrueSkillAccessor.post_match(team2, team1)
             if resp is None:
                 return None
 
@@ -163,7 +170,7 @@ def cancel_match(inter: Interaction):
     resp = queue_dao.put_queue(response)
 
     if resp is not None:
-        if len(response.cancel_votes) == 5:
+        if len(response.cancel_votes) > 4:
             response = queue_dao.get_queue(inter.guild_id, "1")
             response.clear_queue()
             resp = queue_dao.put_queue(response)
