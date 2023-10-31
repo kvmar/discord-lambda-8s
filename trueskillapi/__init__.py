@@ -37,7 +37,7 @@ class TrueSkillAccessor:
     def get_player_data(self, team: list, guild_id: str) -> list[PlayerRecord]:
         player_data_list = list()
         for user in team:
-            player_data = player_dao.get_player(user, guild_id)
+            player_data = player_dao.get_player(player_id=user, guild_id=guild_id)
             player_data_list.append(player_data)
             print(f'Got user_id: {player_data.player_id}, player_name: {player_data.player_name}, elo: {player_data.elo}, sigma: {player_data.sigma}')
         return player_data_list
