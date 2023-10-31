@@ -48,7 +48,7 @@ class PlayerDao:
   def put_player(self, player_record: PlayerRecord):
     current_version = player_record.version
     player_record.version = player_record.version + 1
-    json_ = json.dumps(player_record.__dict__, default=set_default)
+    json_ = json.dumps(player_record.__dict__)
     print(f'Putting following player_record: {json_}')
     player_dict = json.loads(json_, parse_float=Decimal)
 
