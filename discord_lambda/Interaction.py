@@ -145,6 +145,22 @@ class Interaction:
         except Exception as e:
             raise Exception(f"Unable to delete response: {e}")
 
+    def move_member(self, channel_id: str, guild_id: str, user_id: str):
+        try:
+            headers = {
+                'Authorization': f'Bot {os.environ.get("BOT_TOKEN")}'
+            }
+            json = {
+                "channel_id": channel_id
+            }
+            response = requests.post(f'https://discord.com/api/v10//guilds/{guild_id}/members/{user_id}', json=json, headers=headers)
+            print(f'Got SendResponse: {response.text}')
+            response.raise_for_status()
+            print(f'Convert to JSON SendResponse: {response.json}')
+            return response.json()['id'], response.json()['channel_id']
+        except Exception as e:
+            print(f"Unable to move user: {e}")
+
     def send_followup(self, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True) -> None:
         try:
             requests.post(self.webhook_url, json=self.__create_channel_message(content, embeds, ephemeral)).raise_for_status()

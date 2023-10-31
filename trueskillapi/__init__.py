@@ -5,8 +5,6 @@ Description:
 
 Version: 6.1.0
 """
-from decimal import Decimal
-
 from trueskill import TrueSkill
 from trueskill import Rating
 

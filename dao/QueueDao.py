@@ -12,7 +12,8 @@ from dao import set_default
 table_name = "QueueTable"
 
 class QueueRecord:
-  def __init__(self, guild_id: str, queue_id: str, team_1: list, team_2: list, queue: list, cancel_votes: list, team1_votes: list, team2_votes: list, maps: list, version: int, expiry: int, result_channel_id: str, message_id: str = None, channel_id: str = None):
+  def __init__(self, guild_id: str, queue_id: str, team_1: list, team_2: list, queue: list, cancel_votes: list, team1_votes: list, team2_votes: list, maps: list, version: int, expiry: int, result_channel_id: str,
+      team_1_channel_id: str, team_2_channel_id: str, message_id: str = None, channel_id: str = None):
     self.guild_id = guild_id
     self.queue_id = queue_id
     self.team_1 = team_1
@@ -25,6 +26,8 @@ class QueueRecord:
     self.version = int(version)
     self.message_id = message_id
     self.channel_id = channel_id
+    self.team_1_channel_id = team_1_channel_id
+    self.team_2_channel_id = team_2_channel_id
     self.expiry = expiry
     self.result_channel_id = result_channel_id
 
@@ -118,5 +121,6 @@ class QueueDao:
     return QueueRecord(guild_id=response["guild_id"], queue_id=response["queue_id"], expiry=int(response["expiry"]),
                        team_1=team_1, team_2=team_2, queue=queue, cancel_votes=cancel_votes,
                        result_channel_id=response["result_channel_id"],
+                       team_1_channel_id=response["team_1_channel_id"], team_2_channel_id=response["team_2_channel_id"],
                        team1_votes=team1_votes, team2_votes=team2_votes, maps=maps,
                        version=response["version"], message_id=response["message_id"], channel_id=response["channel_id"])

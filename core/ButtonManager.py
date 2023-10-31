@@ -72,6 +72,13 @@ def player_pick_button(guild_id, inter):
   record = queue_dao.get_queue(guild_id=guild_id, queue_id="1")
   QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
 
+  if len(record.team_1) == 4 and len(record.team_1) == 4:
+    print("Moving members to team queue")
+    for user in record.team_1:
+      inter.move_member(guild_id=inter.guild_id, channel_id=record.team_1_channel_id, user_id=user)
+    for user in record.team_2:
+      inter.move_member(guild_id=inter.guild_id, channel_id=record.team_2_channel_id, user_id=user)
+
 
 def team_1_won_button(guild_id: str, inter: Interaction):
   print("Team 1 Won button clicked")
