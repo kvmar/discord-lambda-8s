@@ -46,8 +46,8 @@ jobs:
 
           PYTHONPATH=python/lib/python3.9/site-packages python -m discord_lambda.CommandRegistryPickler
           
-          rm -rf python/lib/python3.9/site-packages/boto3
-          rm -rf python/lib/python3.9/site-packages/botocore
+          sudo rm -rf python/lib/python3.9/site-packages/boto3
+          sudo rm -rf python/lib/python3.9/site-packages/botocore
           zip --quiet -r $release_id python CommandRegistry.pickle
 
           echo "Uploading $release_id to $release_bucket_uri"
