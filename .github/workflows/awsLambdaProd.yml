@@ -1,9 +1,8 @@
 name: Deploy to Lambda
 
 on:
-  release:
-    types: [published]
-    branches: [master]  # TODO: Branches to trigger workflow on push
+  push:
+    branches: [master]
   workflow_dispatch:
 
 jobs:
