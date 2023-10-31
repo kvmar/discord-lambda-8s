@@ -1,0 +1,103 @@
+name: Deploy to Lambda
+
+on:
+  release:
+    branches: [master]  # TODO: Branches to trigger workflow on push
+  workflow_dispatch:
+
+jobs:
+  upload_deps:
+    environment: DEV
+    if: github.repository != 'jaARke/discord-lambda-py'
+    name: Upload Dependencies
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Setup Python 3.9
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+
+      - name: Upload Dependencies
+        env:
+          release_bucket: discord-api-dep
+          release_bucket_uri: s3://discord-api-dep
+          release_id: deps.zip
+          release_layer: discordapideps
+          function_name: DiscordApiLambda
+          APP_ID: ${{ secrets.APP_ID }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          # Package up the dependencies
+          mkdir -p python/lib/python3.9/site-packages
+
+          docker run -v "$PWD":/var/task "public.ecr.aws/sam/build-python3.9" /bin/sh -c "pip install -r requirements.txt -t python/lib/python3.9/site-packages/; exit"
+
+          PYTHONPATH=python/lib/python3.9/site-packages python -m discord_lambda.CommandRegistryPickler
+          
+          sudo rm -rf python/lib/python3.9/site-packages/boto3
+          sudo rm -rf python/lib/python3.9/site-packages/botocore
+          zip --quiet -r $release_id python CommandRegistry.pickle
+
+          echo "Uploading $release_id to $release_bucket_uri"
+          aws s3 cp $release_id $release_bucket_uri
+          aws lambda publish-layer-version --layer-name $release_layer  --content S3Bucket=$release_bucket,S3Key=$release_id --compatible-runtimes python3.9
+
+          # Get the previous layer version number
+          prev_layer_version=$(aws lambda list-layer-versions --layer-name $release_layer --query 'LayerVersions[1].Version' --output text)
+
+          # Delete the previous layer version
+          aws lambda delete-layer-version --layer-name $release_layer --version-number $prev_layer_version
+
+          # Get the new layer version ARN
+          layer_arn=$(aws lambda list-layer-versions --layer-name $release_layer --query 'LayerVersions[0].LayerVersionArn' --output text)
+
+          # Update the lambda function to use the new layer
+          aws lambda update-function-configuration --function-name $function_name --layers $layer_arn
+  
+  upload_source:
+    environment: DEV
+    if: github.repository != 'jaARke/discord-lambda-py'
+    name: Upload Source
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      - name: zip
+        uses: montudor/action-zip@v0.1.0
+        with:
+          args: zip -qq -r ./bundle.zip ./
+        
+      - name: default deploy
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: us-east-1
+          function_name: DiscordApiLambda
+          zip_file: bundle.zip
+          environment: 
+            APP_ID=${{ secrets.APP_ID }},
+            PUBLIC_KEY=${{ secrets.PUBLIC_KEY }},
+            BOT_TOKEN=${{ secrets.BOT_TOKEN }}
+            BOT_ENV=DEV2
+            # Add your environment variables below in the same format as above
+
+
+      
+
+      
