@@ -17,9 +17,9 @@ class TrueSkillAccessor:
     def __init__(self) -> None:
         self.env = TrueSkill(draw_probability=0)
 
-    async def post_match(self, win_team: list, lose_team: list):
-        win_team_ratings = self.get_player_data(win_team)
-        lose_team_ratings = self.get_player_data(lose_team)
+    async def post_match(self, win_team: list, lose_team: list, guild_id: str):
+        win_team_ratings = self.get_player_data(win_team, guild_id)
+        lose_team_ratings = self.get_player_data(lose_team, guild_id)
 
         win_team_ratings_tuple = list()
         lose_team_ratings_tuple = list()

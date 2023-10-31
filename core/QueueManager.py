@@ -114,7 +114,7 @@ def team_1_won(inter: Interaction):
             team2 = response.team_2
             response.clear_queue()
             resp = queue_dao.put_queue(response)
-            TrueSkillAccessor.post_match(team1, team2)
+            TrueSkillAccessor.post_match(team1, team2, inter.guild_id)
             if resp is None:
                 return None
 
@@ -145,7 +145,7 @@ def team_2_won(inter: Interaction):
             team2 = response.team_2
             response.clear_queue()
             resp = queue_dao.put_queue(response)
-            TrueSkillAccessor.post_match(team2, team1)
+            TrueSkillAccessor.post_match(team2, team1, inter.guild_id)
             if resp is None:
                 return None
 
