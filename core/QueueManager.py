@@ -21,17 +21,17 @@ queue_dao = QueueDao()
 player_dao = PlayerDao()
 ts = TrueSkillAccessor()
 
-def create_queue_resources(guild_id: str):
+def create_queue_resources(guild_id: str, queue_name: str):
 
-    response = queue_dao.get_queue(guild_id=guild_id)
-    embed = Embedding("Underworld 8s", f"Queue size: {len(response.queue)}", color=0x880808)
+    response = queue_dao.get_queue(guild_id=guild_id, queue_id=queue_name)
+    embed = Embedding(f"Underworld 8s {queue_name}", f"Queue size: {len(response.queue)}", color=0x880808)
 
     print(f'Queue record: {response} for guild_id: {guild_id}')
 
     component = Components()
-    component.add_button("Join queue", join_queue_custom_id, False, 1)
-    component.add_button("Leave queue", leave_queue_custom_id, False, 4)
-    component.add_button("Start queue", start_queue_custom_id, True, 3)
+    component.add_button("Join queue", f"join_queue_custom_id#{queue_name}", False, 1)
+    component.add_button("Leave queue", f"leave_queue_custom_id#{queue_name}", False, 4)
+    component.add_button("Start queue", f"start_queue_custom_id#{queue_name}", True, 3)
 
 
     response.clear_queue()
@@ -41,8 +41,8 @@ def create_queue_resources(guild_id: str):
     return embed, component
 
 
-def add_player(inter: Interaction):
-    response = queue_dao.get_queue(guild_id=inter.guild_id)
+def add_player(inter: Interaction, queue_id: str):
+    response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
     if inter.user_id not in response.queue:
         response.queue.append(inter.user_id)
 
@@ -62,8 +62,8 @@ def add_player(inter: Interaction):
 
     return None
 
-def remove_player(inter: Interaction):
-    response = queue_dao.get_queue(guild_id=inter.guild_id)
+def remove_player(inter: Interaction, queue_id: str):
+    response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
 
     if inter.user_id in response.queue:
         response.queue.remove(inter.user_id)
@@ -78,8 +78,8 @@ def remove_player(inter: Interaction):
         return embed, component
     return None
 
-def start_match(inter: Interaction):
-    response = queue_dao.get_queue(guild_id=inter.guild_id)
+def start_match(inter: Interaction, queue_id: str):
+    response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
 
     caps = random.sample(response.queue, 2)
     response.team_1 = list()
@@ -102,8 +102,8 @@ def start_match(inter: Interaction):
         return embed, component
     return None
 
-def team_1_won(inter: Interaction):
-    response = queue_dao.get_queue(guild_id=inter.guild_id)
+def team_1_won(inter: Interaction, queue_id: str):
+    response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
     if inter.user_id not in response.team_1 and inter.user_id not in response.team_2:
         return None
 
@@ -121,13 +121,13 @@ def team_1_won(inter: Interaction):
     if resp is not None:
         if len(response.team1_votes) == 5:
             print(f"Posting team 1 win: {response.team_1} and team 2 lose: {response.team_2}")
-            response = queue_dao.get_queue(guild_id=inter.guild_id)
+            response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
             team1 = response.team_1
             team2 = response.team_2
             response.clear_queue(reset_expiry=False)
             resp = queue_dao.put_queue(response)
             ts.post_match(win_team=team1, lose_team=team2, guild_id=inter.guild_id)
-            inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id)])
+            inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id, queue_record=response)])
             LeaderboardManager.post_leaderboard(queue_record=response, inter=inter)
             if resp is None:
                 return None
@@ -139,8 +139,8 @@ def team_1_won(inter: Interaction):
         return embed, component
     return None
 
-def team_2_won(inter: Interaction):
-    response = queue_dao.get_queue(guild_id=inter.guild_id)
+def team_2_won(inter: Interaction, queue_id: str):
+    response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
     if inter.user_id not in response.team_1 and inter.user_id not in response.team_2:
         return None
 
@@ -158,13 +158,13 @@ def team_2_won(inter: Interaction):
     if resp is not None:
         if len(response.team2_votes) == 5:
             print(f"Posting team 1 lose: {response.team_1} and team 2 win: {response.team_2}")
-            response = queue_dao.get_queue(guild_id=inter.guild_id)
+            response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
             team1 = response.team_1
             team2 = response.team_2
             response.clear_queue(reset_expiry=False)
             resp = queue_dao.put_queue(response)
             ts.post_match(win_team=team2, lose_team=team1, guild_id=inter.guild_id)
-            inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id)])
+            inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id, queue_record=response)])
             LeaderboardManager.post_leaderboard(queue_record=response, inter=inter)
             if resp is None:
                 return None
@@ -177,7 +177,7 @@ def team_2_won(inter: Interaction):
     return None
 
 
-def generate_match_done_embed(team1, team2, guild_id):
+def generate_match_done_embed(team1, team2, guild_id, queue_record: QueueRecord):
     team_str = "Team 1:\n"
     for user in team1:
         player_data = player_dao.get_player(guild_id=guild_id, player_id=user)
@@ -193,13 +193,13 @@ def generate_match_done_embed(team1, team2, guild_id):
         team_str = team_str + player_str
 
     return Embedding(
-        "Match Result",
+        f"Match Result - {queue_record.queue_id}",
         f'{team_str}',
         color=0x880808,
     )
 
-def cancel_match(inter: Interaction):
-    response = queue_dao.get_queue(guild_id=inter.guild_id)
+def cancel_match(inter: Interaction, queue_id: str):
+    response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
 
     if len(response.team_1) == 4 and len(response.team_2) == 4:
         if inter.user_id not in response.team_1 and inter.user_id not in response.team_2:
@@ -218,7 +218,7 @@ def cancel_match(inter: Interaction):
 
     if resp is not None:
         if len(response.cancel_votes) > 4:
-            response = queue_dao.get_queue(guild_id=inter.guild_id)
+            response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
             response.clear_queue(reset_expiry=False)
             resp = queue_dao.put_queue(response)
             if resp is None:
@@ -232,10 +232,9 @@ def cancel_match(inter: Interaction):
     return None
 
 
-def player_pick(inter: Interaction):
+def player_pick(inter: Interaction, queue_id: str):
     player_id_inter = inter.user_id
-
-    response = queue_dao.get_queue(guild_id=inter.guild_id)
+    response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
     if len(response.team_1) == 4 and len(response.team_2) == 4:
         return None
 
@@ -276,18 +275,18 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
             queue_str = queue_str + player_data.player_name + "\n"
 
         embed = Embedding(
-            "Underworld 8s",
+            f"Underworld 8s {record.queue_id}",
             f'Queue size: {len(record.queue)}\n\n{queue_str}',
             color=0x880808,
         )
         component = Components()
-        component.add_button("Join queue", join_queue_custom_id, False, 1)
-        component.add_button("Leave queue", leave_queue_custom_id, False, 4)
+        component.add_button("Join queue", f"join_queue_custom_id#{record.queue_id}", False, 1)
+        component.add_button("Leave queue", f"leave_queue_custom_id#{record.queue_id}", False, 4)
 
         if len(record.queue) >= 8:
-            component.add_button("Start queue", start_queue_custom_id, False, 3)
+            component.add_button("Start queue", f"start_queue_custom_id#{record.queue_id}", False, 3)
         else:
-            component.add_button("Start queue", start_queue_custom_id, True, 3)
+            component.add_button("Start queue", f"start_queue_custom_id#{record.queue_id}", True, 3)
 
         return [embed], [component]
     elif len(record.team_1) != 4 or len(record.team_2) != 4:
@@ -309,12 +308,12 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
             team2_str = team2_str + player_data.player_name + "\n"
 
         embed = Embedding(
-            "Underworld 8s",
+            f"Underworld 8s {record.queue_id}",
             f"{whose_pick}\n\n{team1_str}\n{team2_str}",
             color=0x880808,
         )
 
-        components = get_player_pick_btns(record)
+        components = get_player_pick_btns(record, record.queue_id)
         return [embed], components
     elif len(record.team_1) == 4 and len(record.team_2) == 4:
         team1_str = "Team 1: \n"
@@ -332,22 +331,21 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
             map_str = map_str + map + "\n"
 
         embed = Embedding(
-            "Underworld 8s",
+            f"Underworld 8s {record.queue_id}",
             f"{team1_str}\n{team2_str}\n{map_str}",
             color=0x880808,
         )
 
         component = Components()
-        component.add_button(f"Team 1 Won - {len(record.team1_votes)}", team_1_won_custom_id, False, 1)
-        component.add_button(f"Team 2 Won - {len(record.team2_votes)}", team_2_won_custom_id, False, 2)
-        component.add_button(f"Cancel Match - {len(record.cancel_votes)}", cancel_match_custom_id, False, 4)
+        component.add_button(f"Team 1 Won - {len(record.team1_votes)}", f"team_1_won_custom_id#{record.queue_id}", False, 1)
+        component.add_button(f"Team 2 Won - {len(record.team2_votes)}", f"team_2_won_custom_id#{record.queue_id}", False, 2)
+        component.add_button(f"Cancel Match - {len(record.cancel_votes)}", f"cancel_match_custom_id#{record.queue_id}", False, 4)
         return [embed], [component]
 
 
 
-def get_player_pick_btns(record):
+def get_player_pick_btns(record, queue_id: str):
     cmpt_idx = 0
-    queue_idx = 0
 
     component_list = list()
     component = Components()
@@ -364,26 +362,25 @@ def get_player_pick_btns(record):
             print("Skipping creating a cap button")
             continue
         elif user in picks:
-            component.add_button(player_data.player_name, f'{player_pick_custom_id}#{player_data.player_id}#{queue_idx}', True, 2)
+            component.add_button(player_data.player_name, f'{player_pick_custom_id}#{player_data.player_id}#{queue_id}', True, 2)
         else:
-            component.add_button(player_data.player_name, f'{player_pick_custom_id}#{player_data.player_id}#{queue_idx}', False, 2)
+            component.add_button(player_data.player_name, f'{player_pick_custom_id}#{player_data.player_id}#{queue_id}', False, 2)
         cmpt_idx = cmpt_idx + 1
-        queue_idx = queue_idx + 1
 
     if (cmpt_idx == 4):
         component_list.append(component)
         component = Components()
         cmpt_idx = 0
 
-    component.add_button(f"Cancel Match - {len(record.cancel_votes)}", cancel_match_custom_id, False, 4)
+    component.add_button(f"Cancel Match - {len(record.cancel_votes)}", f"cancel_match_custom_id#{record.queue_id}", False, 4)
 
     if cmpt_idx < 4:
         component_list.append(component)
 
     return component_list
 
-def update_message_id(guild_id, msg_id, channel_id):
-    response = queue_dao.get_queue(guild_id=guild_id)
+def update_message_id(guild_id, msg_id, channel_id, queue_id):
+    response = queue_dao.get_queue(guild_id=guild_id, queue_id=queue_id)
     print(f'Queue record: {response} for guild_id: {guild_id}')
 
     response.message_id = msg_id
@@ -399,7 +396,7 @@ def update_queue_view(record: QueueRecord, embeds: list[Embedding], components: 
         queue_dao.put_queue(record)
         resp = inter.edit_response(channel_id=record.channel_id, message_id=record.message_id, embeds=embeds, components=components)
         print(f'Queue message_id: {resp}')
-        update_message_id(inter.guild_id, resp[0], resp[1])
+        update_message_id(inter.guild_id, resp[0], resp[1], record.queue_id)
     else:
         queue_dao.put_queue(record)
         inter.send_response(components=components, embeds=embeds, ephemeral=False)
