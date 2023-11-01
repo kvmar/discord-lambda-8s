@@ -407,7 +407,7 @@ def update_queue_view(record: QueueRecord, embeds: list[Embedding], components: 
         print(f"Queue message has expired: {record.expiry} for curr_time: {curr_time}")
         record.update_expiry_date()
         queue_dao.put_queue(record)
-        resp = inter.edit_response(content=content, channel_id=record.channel_id, message_id=record.message_id, embeds=embeds, components=components)
+        resp = inter.edit_response(channel_id=record.channel_id, message_id=record.message_id, embeds=embeds, components=components)
         print(f'Queue message_id: {resp}')
         update_message_id(inter.guild_id, resp[0], resp[1], record.queue_id)
     else:
