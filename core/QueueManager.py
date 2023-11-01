@@ -87,7 +87,7 @@ def start_match(inter: Interaction, queue_id: str):
     response.team_1.append(caps[0])
     response.team_2.append(caps[1])
 
-    map_picks = random.sample(response.map_set, 3)
+    map_picks = get_maps(queue_record=response)
     response.maps.append(map_picks[0])
     response.maps.append(map_picks[1])
     response.maps.append(map_picks[2])
@@ -101,6 +101,19 @@ def start_match(inter: Interaction, queue_id: str):
 
         return embed, component
     return None
+
+def get_maps(queue_record: QueueRecord):
+    if "Variant" in queue_record.queue_id:
+        variant_maps = ["Al Bagra SND", "Mercado SND", "Hotel SND", "Embassy SND", "Asilo SND"]
+        hp_maps = random.sample(queue_record.map_set, 3)
+        variant_maps = random.sample(variant_maps, 1)
+        map_picks = hp_maps + variant_maps
+        return map_picks
+    map_picks = random.sample(queue_record.map_set, 3)
+    return map_picks
+        
+
+
 
 def team_1_won(inter: Interaction, queue_id: str):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
