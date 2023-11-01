@@ -1,3 +1,4 @@
+from dao.LeaderboardDao import LeaderboardDao
 from dao.PlayerDao import PlayerDao
 from dao.QueueDao import QueueRecord, QueueDao
 from discord_lambda import Interaction
@@ -5,11 +6,12 @@ from table2ascii import table2ascii as t2a, PresetStyle
 
 
 queue_dao = QueueDao()
-player_data = PlayerDao()
+player_dao = PlayerDao()
+leaderboard_dao = LeaderboardDao()
 
 def post_leaderboard(queue_record: QueueRecord, inter: Interaction):
     print("Posting leaderboard")
-    player_list = player_data.get_players_by_guild_id(queue_record.guild_id)
+    player_list = player_dao.get_players_by_guild_id(queue_record.guild_id)
 
     sorted_player_list = sorted(player_list, key=lambda x: x.elo, reverse=True)
 
@@ -38,12 +40,18 @@ def post_leaderboard(queue_record: QueueRecord, inter: Interaction):
         body=table,
         style=PresetStyle.thin_compact
     )
-    queue_record = queue_dao.get_queue(queue_id=queue_record.queue_id, guild_id=queue_record.guild_id)
-    if len(queue_record.leaderboard_message_id) > 0:
-        inter.delete_message(message_id=queue_record.leaderboard_message_id, channel_id=queue_record.leaderboard_channel_id)
-    resp = inter.send_message(content=f"```\n{output}\n```", channel_id=queue_record.leaderboard_channel_id)
-    queue_record.leaderboard_message_id = resp[0]
-    queue_dao.put_queue(queue_record=queue_record)
+
+    leaderboard_record = leaderboard_dao.get_leaderboard_record_attributes(queue_record.guild_id)
+    if len(leaderboard_record.leaderboard_message_id) > 0:
+        inter.delete_message(message_id=leaderboard_record.leaderboard_message_id, channel_id=leaderboard_record.leaderboard_channel_id)
+    resp = inter.send_message(content=f"```\n{output}\n```", channel_id=leaderboard_record.leaderboard_channel_id)
+
+    # If conditional write thrown then delete message
+    leaderboard_record.leaderboard_message_id = resp[0]
+    leaderboard_resp = leaderboard_dao.put_leaderboard(leaderboard_record)
+    if leaderboard_resp is None:
+        inter.delete_message(message_id=leaderboard_record.leaderboard_message_id, channel_id=leaderboard_record.leaderboard_channel_id)
+
 
 
 
