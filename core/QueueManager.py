@@ -127,7 +127,7 @@ def team_1_won(inter: Interaction, queue_id: str):
             response.clear_queue(reset_expiry=False)
             resp = queue_dao.put_queue(response)
             ts.post_match(win_team=team1, lose_team=team2, guild_id=inter.guild_id)
-            inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id)])
+            inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id, queue_record=response)])
             LeaderboardManager.post_leaderboard(queue_record=response, inter=inter)
             if resp is None:
                 return None
@@ -164,7 +164,7 @@ def team_2_won(inter: Interaction, queue_id: str):
             response.clear_queue(reset_expiry=False)
             resp = queue_dao.put_queue(response)
             ts.post_match(win_team=team2, lose_team=team1, guild_id=inter.guild_id)
-            inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id)])
+            inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id, queue_record=response)])
             LeaderboardManager.post_leaderboard(queue_record=response, inter=inter)
             if resp is None:
                 return None
@@ -177,7 +177,7 @@ def team_2_won(inter: Interaction, queue_id: str):
     return None
 
 
-def generate_match_done_embed(team1, team2, guild_id):
+def generate_match_done_embed(team1, team2, guild_id, queue_record: QueueRecord):
     team_str = "Team 1:\n"
     for user in team1:
         player_data = player_dao.get_player(guild_id=guild_id, player_id=user)
@@ -193,7 +193,7 @@ def generate_match_done_embed(team1, team2, guild_id):
         team_str = team_str + player_str
 
     return Embedding(
-        "Match Result",
+        f"Match Result - {queue_record.queue_id}",
         f'{team_str}',
         color=0x880808,
     )
