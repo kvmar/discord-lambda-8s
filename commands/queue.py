@@ -1,12 +1,12 @@
 from core import QueueManager
 from discord_lambda import Embedding, CommandRegistry, Interaction, CommandArg
 
-def queue(inter: Interaction, queue_name: str) -> None:
+def queue(inter: Interaction, queue_name: str = "1") -> None:
   embed = None
   component = None
   print(f"Creating queue with: {queue_name} in guild_id: {inter.guild_id}")
 
-  (embed, component) = QueueManager.create_queue_resources(inter.guild_id)
+  (embed, component) = QueueManager.create_queue_resources(inter.guild_id, queue_name)
 
   resp = inter.send_response(components=[component], embeds=[embed], ephemeral=False)
   print(f'Queue message_id: {resp}')
