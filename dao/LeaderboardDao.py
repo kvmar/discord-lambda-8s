@@ -63,4 +63,4 @@ class LeaderboardDao:
 
 
   def get_leaderboard_record_attributes(self, response):
-    return LeaderboardRecord(guild_id=response["guild_id"], leaderboard_channel_id=response["leaderboard_channel_id"], version=response["leaderboard_message_id"], version=response["version"])
+    return LeaderboardRecord(guild_id=response["guild_id"], leaderboard_channel_id=response["leaderboard_channel_id"], version=response["version"])
