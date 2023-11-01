@@ -236,7 +236,7 @@ def player_pick(inter: Interaction):
     player_id_inter = inter.user_id
 
     response = queue_dao.get_queue(guild_id=inter.guild_id)
-    if len(response.team_1) == 4 or len(response.team_2) == 4:
+    if len(response.team_1) == 4 and len(response.team_2) == 4:
         return None
 
     team1_pick = True
