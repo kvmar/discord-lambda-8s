@@ -275,18 +275,18 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
             queue_str = queue_str + player_data.player_name + "\n"
 
         embed = Embedding(
-            "Underworld 8s",
+            f"Underworld 8s {record.queue_id}",
             f'Queue size: {len(record.queue)}\n\n{queue_str}',
             color=0x880808,
         )
         component = Components()
-        component.add_button("Join queue", join_queue_custom_id, False, 1)
-        component.add_button("Leave queue", leave_queue_custom_id, False, 4)
+        component.add_button("Join queue", f"join_queue_custom_id#{record.queue_id}", False, 1)
+        component.add_button("Leave queue", f"leave_queue_custom_id#{record.queue_id}", False, 4)
 
         if len(record.queue) >= 8:
-            component.add_button("Start queue", start_queue_custom_id, False, 3)
+            component.add_button("Start queue", f"start_queue_custom_id#{record.queue_id}", False, 3)
         else:
-            component.add_button("Start queue", start_queue_custom_id, True, 3)
+            component.add_button("Start queue", f"start_queue_custom_id#{record.queue_id}", True, 3)
 
         return [embed], [component]
     elif len(record.team_1) != 4 or len(record.team_2) != 4:
@@ -337,9 +337,9 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         )
 
         component = Components()
-        component.add_button(f"Team 1 Won - {len(record.team1_votes)}", team_1_won_custom_id, False, 1)
-        component.add_button(f"Team 2 Won - {len(record.team2_votes)}", team_2_won_custom_id, False, 2)
-        component.add_button(f"Cancel Match - {len(record.cancel_votes)}", cancel_match_custom_id, False, 4)
+        component.add_button(f"Team 1 Won - {len(record.team1_votes)}", f"team_1_won_custom_id#{record.queue_id}", False, 1)
+        component.add_button(f"Team 2 Won - {len(record.team2_votes)}", f"team_2_won_custom_id#{record.queue_id}", False, 2)
+        component.add_button(f"Cancel Match - {len(record.cancel_votes)}", f"cancel_match_custom_id#{record.queue_id}", False, 4)
         return [embed], [component]
 
 
@@ -372,7 +372,7 @@ def get_player_pick_btns(record, queue_id: str):
         component = Components()
         cmpt_idx = 0
 
-    component.add_button(f"Cancel Match - {len(record.cancel_votes)}", cancel_match_custom_id, False, 4)
+    component.add_button(f"Cancel Match - {len(record.cancel_votes)}", f"cancel_match_custom_id#{record.queue_id}", False, 4)
 
     if cmpt_idx < 4:
         component_list.append(component)
