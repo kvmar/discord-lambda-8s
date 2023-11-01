@@ -7,7 +7,7 @@ import boto3
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 
-from dao import set_default
+from dao import set_default, DecimalEncoder
 
 table_name = "GuildToLeaderboardMappingTable"
 
@@ -19,7 +19,7 @@ class LeaderboardRecord:
     self.guild_id = guild_id
     self.leaderboard_channel_id = leaderboard_channel_id
     self.leaderboard_message_id = leaderboard_message_id
-    self.version = version
+    self.version = int(version)
 
 class LeaderboardDao:
   def __init__(self):
