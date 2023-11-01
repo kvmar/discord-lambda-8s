@@ -24,7 +24,7 @@ ts = TrueSkillAccessor()
 def create_queue_resources(guild_id: str, queue_name: str):
 
     response = queue_dao.get_queue(guild_id=guild_id, queue_id=queue_name)
-    embed = Embedding("Underworld 8s", f"Queue size: {len(response.queue)}", color=0x880808)
+    embed = Embedding(f"Underworld 8s {queue_name}", f"Queue size: {len(response.queue)}", color=0x880808)
 
     print(f'Queue record: {response} for guild_id: {guild_id}')
 

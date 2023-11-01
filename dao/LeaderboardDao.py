@@ -43,7 +43,7 @@ class LeaderboardDao:
   def put_leaderboard(self, leaderboard_record: LeaderboardRecord):
     current_version = leaderboard_record.version
     leaderboard_record.version = leaderboard_record.version + 1
-    json_ = json.dumps(leaderboard_record.__dict__, default=set_default)
+    json_ = json.dumps(leaderboard_record.__dict__, cls=DecimalEncoder)
     print(f'Putting following queue_record: {json_}')
     leaderboard_dict = json.loads(json_, parse_float=Decimal)
 
