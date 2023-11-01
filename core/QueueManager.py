@@ -105,7 +105,7 @@ def start_match(inter: Interaction, queue_id: str):
 def get_maps(queue_record: QueueRecord):
     if "Variant" in queue_record.queue_id:
         variant_maps = ["Al Bagra SND", "Mercado SND", "Hotel SND", "Embassy SND", "Asilo SND"]
-        hp_maps = random.sample(queue_record.map_set, 3)
+        hp_maps = random.sample(queue_record.map_set, 2)
         variant_maps = random.sample(variant_maps, 1)
         map_picks = hp_maps + variant_maps
         return map_picks
