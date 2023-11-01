@@ -405,10 +405,6 @@ def update_queue_view(record: QueueRecord, embeds: list[Embedding], components: 
     curr_time = int(datetime.utcnow().timestamp())
     if  curr_time > record.expiry:
         print(f"Queue message has expired: {record.expiry} for curr_time: {curr_time}")
-        content = None
-        if len(record.team_1) == 0 and len(record.team_2) == 0:
-            record.clear_queue()
-            content = "Resetting queue after 10 mins"
         record.update_expiry_date()
         queue_dao.put_queue(record)
         resp = inter.edit_response(content=content, channel_id=record.channel_id, message_id=record.message_id, embeds=embeds, components=components)
