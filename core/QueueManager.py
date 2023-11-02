@@ -92,6 +92,7 @@ def start_match(inter: Interaction, queue_id: str):
     response.team_1.append(caps[0])
     response.team_2.append(caps[1])
 
+    response.maps = list()
     map_picks = get_maps(queue_record=response)
     response.maps.append(map_picks[0])
     response.maps.append(map_picks[1])
