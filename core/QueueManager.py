@@ -43,6 +43,10 @@ def create_queue_resources(guild_id: str, queue_name: str):
 
 def add_player(inter: Interaction, queue_id: str):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
+    curr_time = int(datetime.utcnow().timestamp())
+    if curr_time > response.expiry and len(response.team_1) == 0 and len(response.team_2) == 0:
+        response.clear_queue(reset_expiry=False)
+
     if inter.user_id not in response.queue:
         response.queue.append(inter.user_id)
 
