@@ -83,10 +83,30 @@ def remove_player(inter: Interaction, queue_id: str):
         return embed, component
     return None
 
+
+def findMinSRDiff(queue: QueueRecord):
+    player_list = list()
+    for user in queue.queue:
+        player = player_dao.get_player(guild_id=queue.guild_id, player_id=user)
+        player_list.append(player)
+
+    player_list_sorted = sorted(player_list, key= lambda x: x.elo)
+    diff = 10**20
+
+    caps = list()
+    for i in range(len(player_list)-1):
+        if player_list_sorted[i+1] - player_list_sorted[i] < diff:
+            diff = player_list_sorted[i+1] - player_list_sorted[i]
+            caps = list()
+            caps.append(player_list_sorted[i+1].player_id)
+            caps.append(player_list_sorted[i].player_id)
+    
+    return caps
+
 def start_match(inter: Interaction, queue_id: str):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
 
-    caps = random.sample(response.queue, 2)
+    caps = findMinSRDiff(response.queue)
     response.team_1 = list()
     response.team_2 = list()
     response.team_1.append(caps[0])
