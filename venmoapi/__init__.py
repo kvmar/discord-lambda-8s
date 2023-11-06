@@ -15,7 +15,7 @@ from dao.PlayerDao import PlayerDao
 player_dao = PlayerDao()
 player_bank_dao = PlayerBankDao()
 
-base_api = "https://api.venmo.com/v1/"
+base_api = "https://api.venmo.com/v1"
 
 class VenmoApiAccessor:
     def __init__(self) -> None:
