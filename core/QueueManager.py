@@ -106,7 +106,7 @@ def findMinSRDiff(queue: QueueRecord):
 def start_match(inter: Interaction, queue_id: str):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
 
-    caps = findMinSRDiff(response.queue)
+    caps = findMinSRDiff(response)
     response.team_1 = list()
     response.team_2 = list()
     response.team_1.append(caps[0])
