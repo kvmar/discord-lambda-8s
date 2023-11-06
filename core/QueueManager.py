@@ -95,7 +95,7 @@ def findMinSRDiff(queue: QueueRecord):
     
     caps = list()
     for i in range(len(player_list)-1):
-        if player_list_sorted[i+1] - player_list_sorted[i] < diff:
+        if player_list_sorted[i+1].elo - player_list_sorted[i].elo < diff:
             diff = player_list_sorted[i+1].elo - player_list_sorted[i].elo
             caps = list()
             caps.append(player_list_sorted[i+1].player_id)
