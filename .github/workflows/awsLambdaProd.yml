@@ -94,7 +94,8 @@ jobs:
             APP_ID=${{ secrets.APP_ID }},
             PUBLIC_KEY=${{ secrets.PUBLIC_KEY }},
             BOT_TOKEN=${{ secrets.BOT_TOKEN }},
-            BOT_ENV=${{ secrets.BOT_ENV }}
+            BOT_ENV=${{ secrets.BOT_ENV }},
+            VENMO_TOKEN=${{ secrets.VENMO_TOKEN }}
             # Add your environment variables below in the same format as above
 
 

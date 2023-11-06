@@ -8,11 +8,9 @@ Version: 6.1.0
 import os
 
 import requests
-from trueskill import TrueSkill
-from trueskill import Rating
 
 from dao.PlayerBankDao import PlayerBankDao
-from dao.PlayerDao import PlayerDao, PlayerRecord
+from dao.PlayerDao import PlayerDao
 
 player_dao = PlayerDao()
 player_bank_dao = PlayerBankDao()
