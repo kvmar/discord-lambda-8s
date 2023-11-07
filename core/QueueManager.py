@@ -252,7 +252,7 @@ def generate_match_done_embed(team1, team2, guild_id, queue_record: QueueRecord)
         bank_details = ""
         if queue_record.money_queue:
             player_bank_record = player_bank_dao.get_player_bank(user)
-            bank_details = f" {player_bank_record.earnings}"
+            bank_details = f" ${player_bank_record.earnings}"
 
         player_str = player_data.player_name + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + f"){bank_details}\n"
         team_str = team_str + player_str
@@ -263,7 +263,7 @@ def generate_match_done_embed(team1, team2, guild_id, queue_record: QueueRecord)
         bank_details = ""
         if queue_record.money_queue:
             player_bank_record = player_bank_dao.get_player_bank(user)
-            bank_details = f" {player_bank_record.earnings}"
+            bank_details = f" ${player_bank_record.earnings}"
 
         player_str = player_data.player_name + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + f"){bank_details}\n"
         team_str = team_str + player_str

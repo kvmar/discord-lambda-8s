@@ -8,7 +8,7 @@ player_bank_dao = PlayerBankDao()
 player_dao = PlayerDao()
 
 def balance(inter: Interaction) -> None:
-  player_record = player_bank_dao.get_player_bank(inter.user_id)
+  player_record = player_dao.get_player(inter.user_id)
   if player_record is None:
     embed = Embedding("Kali 8s Bot", f"{inter.username} you must play 1 free 8s match before playing for money :smiley:", color=0x00FF00)
     inter.send_response(embeds=[embed], ephemeral=False)
