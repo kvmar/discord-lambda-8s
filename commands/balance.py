@@ -27,6 +27,7 @@ def balance(inter: Interaction) -> None:
       player_bank_record.curr_transaction_id = None
       player_bank_record.credits = player_bank_record.credits + 1
       player_bank_dao.put_player_bank(player_record=player_bank_record)
+      player_bank_record = player_bank_dao.get_player_bank(player_id=inter.user_id)
     else:
       deposit_on_hold = " There is a $1 deposit still pending completion on Venmo"
 

@@ -31,6 +31,7 @@ def deposit(inter: Interaction) -> None:
         player_bank_record.curr_transaction_id = None
         player_bank_record.credits = player_bank_record.credits + 1
         player_bank_dao.put_player_bank(player_record=player_bank_record)
+        player_bank_record = player_bank_dao.get_player_bank(player_id=inter.user_id)
       else:
           embed = Embedding("Kali 8s Bot", f"{player_record.player_name} please accept your previous deposit Venmo request before depositing again :smiley:", color=0x00FF00)
           inter.send_response(embeds=[embed], ephemeral=False)
