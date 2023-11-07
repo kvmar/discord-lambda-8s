@@ -92,7 +92,7 @@ def findMinSRDiff(queue: QueueRecord):
 
     player_list_sorted = sorted(player_list, key= lambda x: x.elo)
     diff = 10**20
-
+    
     caps = list()
     for i in range(len(player_list)-1):
         if player_list_sorted[i+1] - player_list_sorted[i] < diff:
@@ -100,9 +100,9 @@ def findMinSRDiff(queue: QueueRecord):
             caps = list()
             caps.append(player_list_sorted[i+1].player_id)
             caps.append(player_list_sorted[i].player_id)
-
+    
     return caps
-
+        
 def start_match(inter: Interaction, queue_id: str):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
 
