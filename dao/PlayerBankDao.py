@@ -21,10 +21,10 @@ class PlayerBankRecord:
     self.venmo_user = venmo_user
     self.registration_id = registration_id
     self.registration_complete = registration_complete
-    self.credits = credits
+    self.credits = int(credits)
     self.curr_transaction_id = curr_transaction_id
-    self.earnings = earnings
-    self.version = version
+    self.earnings = int(earnings)
+    self.version = int(version)
 
 class PlayerBankDao:
   def __init__(self):
