@@ -19,7 +19,7 @@ def deposit(inter: Interaction) -> None:
     inter.send_response(embeds=[embed], ephemeral=False)
     return
 
-  if player_bank_record.credits > 10:
+  if player_bank_record.credits >= 10:
     embed = Embedding("Kali 8s Bot", f"{inter.username} you cannot have a credit balance greater than 10 :smiley:", color=0x00FF00)
     inter.send_response(embeds=[embed], ephemeral=False)
     return
