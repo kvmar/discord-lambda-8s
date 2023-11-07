@@ -51,7 +51,7 @@ def add_player(inter: Interaction, queue_id: str):
     if response.money_queue:
         player_bank_record = player_bank_dao.get_player_bank(player_id=inter.user_id)
         if player_bank_record is None:
-            embed = Embedding("Kali 8s Bot", f"{player_data.player_name} register to Money 8s first :smiley:", color=0x00FF00)
+            embed = Embedding("Kali 8s Bot", f"{player_data.player_name} register to Money 8s first using /register :smiley:", color=0x00FF00)
             inter.send_message(channel_id=response.channel_id, embeds=[embed], ephemeral=False)
             return
 
@@ -60,7 +60,7 @@ def add_player(inter: Interaction, queue_id: str):
             inter.send_message(channel_id=response.channel_id, embeds=[embed], ephemeral=False)
             return
 
-        if not player_bank_record.credits < 1:
+        if player_bank_record.credits < 1:
             embed = Embedding("Kali 8s Bot", f"{player_data.player_name} you need atleast a balance of $1 to join queue :smiley:", color=0x00FF00)
             inter.send_message(channel_id=response.channel_id, embeds=[embed], ephemeral=False)
             return
