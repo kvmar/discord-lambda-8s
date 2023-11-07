@@ -15,13 +15,15 @@ if os.environ.get('BOT_ENV') == "PROD":
   table_name = "PlayerBankTableProd"
 
 class PlayerBankRecord:
-  def __init__(self, player_id: str, venmo_user: str = None, registration_id: str = None, credits: int = 0, curr_transaction_id: str = None, registration_complete: bool = False, version: int = 0):
+  def __init__(self, player_id: str, venmo_user: str = None, registration_id: str = None, credits: int = 0, earnings: int = 0,
+      curr_transaction_id: str = None, registration_complete: bool = False, version: int = 0):
     self.player_id = player_id
     self.venmo_user = venmo_user
     self.registration_id = registration_id
     self.registration_complete = registration_complete
     self.credits = credits
     self.curr_transaction_id = curr_transaction_id
+    self.earnings = earnings
     self.version = version
 
 class PlayerBankDao:
@@ -72,4 +74,5 @@ class PlayerBankDao:
 
   def get_player_bank_record_attributes(self, response):
       return PlayerBankRecord(player_id=response["player_id"], registration_id=response['registration_id'], venmo_user=response['venmo_user'],
-                              registration_complete=response['registration_complete'], credits=response["credits"], curr_transaction_id=response["curr_transaction_id"], version=response["version"])
+                              registration_complete=response['registration_complete'], credits=response["credits"], earnings=response["earnings"],
+                              curr_transaction_id=response["curr_transaction_id"], version=response["version"])

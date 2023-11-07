@@ -23,7 +23,7 @@ def register(inter: Interaction, venmo_user: str) -> None:
     return
 
   payment_id = venmo.register_user(inter.user_id, inter.guild_id, venmo_user)
-  embed = Embedding("Kali 8s Bot", f"Sent 8s registration fee for user {inter.username} with venmo: {venmo_user} and payment id: {payment_id} :smiley:.\n "
+  embed = Embedding("Kali 8s Bot", f"Sent $1 Money 8s registration fee for user {inter.username} with venmo: {venmo_user} :smiley:.\n "
                                    f"Please accept Venmo request to complete registration then type /register again", color=0x00FF00)
   player_bank_record = PlayerBankRecord(player_id=inter.user_id, registration_id=payment_id, venmo_user=venmo_user)
   player_bank_dao.put_player_bank(player_bank_record)
