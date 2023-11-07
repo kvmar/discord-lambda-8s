@@ -64,7 +64,7 @@ class VenmoApiAccessor:
                 "Content-Type": "application/json"
             }
 
-            response = requests.post(f'{base_api}/payments/{payment_id}', headers=headers)
+            response = requests.get(f'{base_api}/payments/{payment_id}', headers=headers)
             print(f'Got SendResponse: {response.text}')
             response.raise_for_status()
             print(f'Convert to JSON SendResponse: {response.json}')
