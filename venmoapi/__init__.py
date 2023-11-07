@@ -35,7 +35,9 @@ class VenmoApiAccessor:
     def request_payment(self, venmo_user: str, description: str):
         try:
             headers = {
-                "Authorization": f"Bearer {os.environ.get('VENMO_TOKEN')}"
+                "Authorization": f"Bearer {os.environ.get('VENMO_TOKEN')}",
+                "User-Agent": "Venmo/7.44.0 (iPhone; iOS 13.0; Scale/2.0",
+                "Content-Type": "application/json"
             }
 
             json = {
