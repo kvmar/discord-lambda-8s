@@ -46,21 +46,22 @@ def create_queue_resources(guild_id: str, queue_name: str):
 
 def add_player(inter: Interaction, queue_id: str):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
+    player_data = player_dao.get_player(guild_id=inter.guild_id, player_id=inter.user_id)
 
     if response.money_queue:
         player_bank_record = player_bank_dao.get_player_bank(player_id=inter.user_id)
         if player_bank_record is None:
-            embed = Embedding("Kali 8s Bot", f"Register to Money 8s before checking balance using /register :smiley:", color=0x00FF00)
+            embed = Embedding("Kali 8s Bot", f"{player_data.player_name} register to Money 8s first :smiley:", color=0x00FF00)
             inter.send_message(channel_id=response.channel_id, embeds=[embed], ephemeral=False)
             return
 
         if not player_bank_record.registration_complete:
-            embed = Embedding("Kali 8s Bot", f"Registration still pending for user {inter.username} with venmo: {player_bank_record.venmo_user}. Please accept venmo request :smiley:", color=0x00FF00)
+            embed = Embedding("Kali 8s Bot", f"Registration still pending for user {player_data.player_name} with venmo: {player_bank_record.venmo_user}. Please accept venmo request :smiley:", color=0x00FF00)
             inter.send_message(channel_id=response.channel_id, embeds=[embed], ephemeral=False)
             return
 
         if not player_bank_record.credits < 1:
-            embed = Embedding("Kali 8s Bot", f"{inter.username} you need atleast a balance of $1 to join queue :smiley:", color=0x00FF00)
+            embed = Embedding("Kali 8s Bot", f"{player_data.player_name} you need atleast a balance of $1 to join queue :smiley:", color=0x00FF00)
             inter.send_message(channel_id=response.channel_id, embeds=[embed], ephemeral=False)
             return
 
