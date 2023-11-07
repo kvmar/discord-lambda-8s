@@ -124,7 +124,7 @@ class QueueDao:
       maps.append(map)
 
     money_queue = False
-    if response['money_queue'] is not None:
+    if response.get("money_queue") is not None:
       money_queue = response['money_queue']
 
     return QueueRecord(guild_id=response["guild_id"], queue_id=response["queue_id"], expiry=int(response["expiry"]),
