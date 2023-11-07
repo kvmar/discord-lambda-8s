@@ -51,7 +51,7 @@ def add_player(inter: Interaction, queue_id: str):
     if response.money_queue:
         if player_data is None:
             embed = Embedding("Kali 8s Bot", f"{inter.username} you must play 1 free 8s match before playing for money :smiley:", color=0x00FF00)
-            inter.send_response(embeds=[embed], ephemeral=False)
+            inter.send_message(channel_id=response.channel_id, embeds=[embed], ephemeral=False)
             return
 
         player_bank_record = player_bank_dao.get_player_bank(player_id=inter.user_id)
