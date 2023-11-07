@@ -15,7 +15,7 @@ if os.environ.get('BOT_ENV') == "PROD":
   table_name = "QueueTableProd"
 
 class QueueRecord:
-  def __init__(self, guild_id: str, queue_id: str, team_1: list, team_2: list, queue: list, cancel_votes: list, team1_votes: list, team2_votes: list, maps: list, map_set: list, version: int, expiry: int, result_channel_id: str,
+  def __init__(self, guild_id: str, money_queue, queue_id: str, team_1: list, team_2: list, queue: list, cancel_votes: list, team1_votes: list, team2_votes: list, maps: list, map_set: list, version: int, expiry: int, result_channel_id: str,
       team_1_channel_id: str, team_2_channel_id: str, message_id: str = None, channel_id: str = None):
     self.guild_id = guild_id
     self.queue_id = queue_id
@@ -33,6 +33,7 @@ class QueueRecord:
     self.team_1_channel_id = team_1_channel_id
     self.team_2_channel_id = team_2_channel_id
     self.expiry = expiry
+    self.money_queue = money_queue
     self.result_channel_id = result_channel_id
 
 
@@ -122,8 +123,13 @@ class QueueDao:
     for map in response['maps']:
       maps.append(map)
 
+    money_queue = False
+    if response['money_queue'] is not None:
+      money_queue = response['money_queue']
+
     return QueueRecord(guild_id=response["guild_id"], queue_id=response["queue_id"], expiry=int(response["expiry"]),
                        team_1=team_1, team_2=team_2, queue=queue, cancel_votes=cancel_votes,
+                       money_queue=money_queue,
                        map_set=response["map_set"],
                        result_channel_id=response["result_channel_id"],
                        team_1_channel_id=response["team_1_channel_id"], team_2_channel_id=response["team_2_channel_id"],

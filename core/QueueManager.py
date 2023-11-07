@@ -8,6 +8,7 @@ from discord_lambda import Components
 import random
 
 from trueskillapi import TrueSkillAccessor
+from venmoapi import VenmoApiAccessor
 
 join_queue_custom_id = "join_queue"
 leave_queue_custom_id = "leave_queue"
@@ -20,6 +21,7 @@ team_2_won_custom_id = "team_2_won"
 queue_dao = QueueDao()
 player_dao = PlayerDao()
 ts = TrueSkillAccessor()
+venmo = VenmoApiAccessor()
 
 def create_queue_resources(guild_id: str, queue_name: str):
 
@@ -165,6 +167,9 @@ def team_1_won(inter: Interaction, queue_id: str):
             response.clear_queue(reset_expiry=False)
             resp = queue_dao.put_queue(response)
             ts.post_match(win_team=team1, lose_team=team2, guild_id=inter.guild_id)
+
+            if response.money_queue:
+                venmo.post_match(win_team=team1, lose_team=team2)
             inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id, queue_record=response)])
             LeaderboardManager.post_leaderboard(queue_record=response, inter=inter)
             if resp is None:
@@ -202,6 +207,9 @@ def team_2_won(inter: Interaction, queue_id: str):
             response.clear_queue(reset_expiry=False)
             resp = queue_dao.put_queue(response)
             ts.post_match(win_team=team2, lose_team=team1, guild_id=inter.guild_id)
+
+            if response.money_queue:
+                venmo.post_match(win_team=team2, lose_team=team1)
             inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id, queue_record=response)])
             LeaderboardManager.post_leaderboard(queue_record=response, inter=inter)
             if resp is None:

@@ -32,6 +32,25 @@ class VenmoApiAccessor:
         print(payment_id)
         return payment_id
 
+    def post_match(self, win_team, lose_team):
+        complete_teams = win_team + lose_team
+        for user in complete_teams:
+            player_bank_record = player_bank_dao.get_player_bank(player_id=user)
+            if player_bank_record.credits <= 1:
+                raise Exception(f"User has balance less than 1 {player_bank_record}")
+
+        for user in win_team:
+            player_bank_record = player_bank_dao.get_player_bank(player_id=user)
+            player_bank_record.credits = player_bank_record.credits + 1
+            player_bank_record.earnings = player_bank_record.credits + 1
+            player_bank_dao.put_player_bank(player_bank_record)
+
+        for user in lose_team:
+            player_bank_record = player_bank_dao.get_player_bank(player_id=user)
+            player_bank_record.credits = player_bank_record.credits - 1
+            player_bank_record.earnings = player_bank_record.credits - 1
+            player_bank_dao.put_player_bank(player_bank_record)
+
     def withdraw(self, player_id: str):
         pass
 
