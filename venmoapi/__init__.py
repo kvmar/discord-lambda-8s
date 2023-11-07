@@ -11,6 +11,7 @@ import requests
 
 from dao.PlayerBankDao import PlayerBankDao
 from dao.PlayerDao import PlayerDao
+from discord_lambda import Embedding
 
 player_dao = PlayerDao()
 player_bank_dao = PlayerBankDao()
@@ -32,7 +33,7 @@ class VenmoApiAccessor:
         print(payment_id)
         return payment_id
 
-    def post_match(self, win_team, lose_team):
+    def post_match(self, win_team, lose_team, interaction):
         complete_teams = win_team + lose_team
         for user in complete_teams:
             player_bank_record = player_bank_dao.get_player_bank(player_id=user)

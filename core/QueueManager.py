@@ -190,7 +190,7 @@ def team_1_won(inter: Interaction, queue_id: str):
             ts.post_match(win_team=team1, lose_team=team2, guild_id=inter.guild_id)
 
             if response.money_queue:
-                venmo.post_match(win_team=team1, lose_team=team2)
+                venmo.post_match(win_team=team1, lose_team=team2, interaction=inter)
             inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id, queue_record=response)])
             LeaderboardManager.post_leaderboard(queue_record=response, inter=inter)
             if resp is None:
@@ -230,7 +230,7 @@ def team_2_won(inter: Interaction, queue_id: str):
             ts.post_match(win_team=team2, lose_team=team1, guild_id=inter.guild_id)
 
             if response.money_queue:
-                venmo.post_match(win_team=team2, lose_team=team1)
+                venmo.post_match(win_team=team2, lose_team=team1, interaction=inter)
             inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id, queue_record=response)])
             LeaderboardManager.post_leaderboard(queue_record=response, inter=inter)
             if resp is None:
@@ -248,15 +248,23 @@ def generate_match_done_embed(team1, team2, guild_id, queue_record: QueueRecord)
     team_str = "Team 1:\n"
     for user in team1:
         player_data = player_dao.get_player(guild_id=guild_id, player_id=user)
+        bank_details = ""
+        if queue_record.money_queue:
+            player_bank_record = player_bank_dao.get_player_bank(user)
+            bank_details = f" {player_bank_record.earnings}"
 
-        player_str = player_data.player_name + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + ")\n"
+        player_str = player_data.player_name + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + f"){bank_details}\n"
         team_str = team_str + player_str
 
     team_str = team_str + "\nTeam 2:\n"
     for user in team2:
         player_data = player_dao.get_player(guild_id=guild_id, player_id=user)
+        bank_details = ""
+        if queue_record.money_queue:
+            player_bank_record = player_bank_dao.get_player_bank(user)
+            bank_details = f" {player_bank_record.earnings}"
 
-        player_str = player_data.player_name + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + ")\n"
+        player_str = player_data.player_name + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + f"){bank_details}\n"
         team_str = team_str + player_str
 
     return Embedding(
