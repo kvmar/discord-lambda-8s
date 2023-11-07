@@ -100,7 +100,7 @@ def findMinSRDiff(queue: QueueRecord):
             caps = list()
             caps.append(player_list_sorted[i+1].player_id)
             caps.append(player_list_sorted[i].player_id)
-    
+
     return caps
 
 def start_match(inter: Interaction, queue_id: str):
