@@ -31,7 +31,7 @@ def balance(inter: Interaction) -> None:
     else:
       deposit_on_hold = " There is a $1 deposit still pending completion on Venmo"
 
-  embed = Embedding("Kali 8s Bot", f"{player_record.player_name} has a balance of {player_bank_record.credits}.{deposit_on_hold} :smiley:", color=0x00FF00)
+  embed = Embedding("Kali 8s Bot", f"{player_record.player_name} has a balance of ${player_bank_record.credits}.{deposit_on_hold} :smiley:", color=0x00FF00)
   inter.send_response(embeds=[embed], ephemeral=False)
 
 def setup(registry: CommandRegistry):
