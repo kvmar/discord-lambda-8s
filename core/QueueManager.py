@@ -33,7 +33,6 @@ def create_queue_resources(guild_id: str, queue_name: str):
     component.add_button("Leave queue", f"leave_queue_custom_id#{queue_name}", False, 4)
     component.add_button("Start queue", f"start_queue_custom_id#{queue_name}", True, 3)
 
-
     response.clear_queue()
 
     queue_dao.put_queue(response)

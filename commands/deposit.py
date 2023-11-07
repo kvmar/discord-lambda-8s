@@ -14,7 +14,7 @@ def deposit(inter: Interaction) -> None:
     inter.send_response(embeds=[embed], ephemeral=False)
     return
 
-  if player_bank_record.registration_complete:
+  if not player_bank_record.registration_complete:
     embed = Embedding("Kali 8s Bot", f"Registration still pending for user {inter.username} with venmo: {player_bank_record.venmo_user} :smiley:", color=0x00FF00)
     inter.send_response(embeds=[embed], ephemeral=False)
     return
