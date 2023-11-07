@@ -56,6 +56,26 @@ class VenmoApiAccessor:
         except Exception as e:
             raise Exception(f"Unable to send message: {e}")
 
+    def is_payment_done(self, payment_id: str):
+        try:
+            headers = {
+                "Authorization": f"Bearer {os.environ.get('VENMO_TOKEN')}",
+                "User-Agent": "Venmo/7.44.0 (iPhone; iOS 13.0; Scale/2.0",
+                "Content-Type": "application/json"
+            }
+
+            response = requests.post(f'{base_api}/payments/{payment_id}', headers=headers)
+            print(f'Got SendResponse: {response.text}')
+            response.raise_for_status()
+            print(f'Convert to JSON SendResponse: {response.json}')
+            status = response.json()["data"]["status"]
+
+            if status == "settled":
+                return True
+            return False
+        except Exception as e:
+            raise Exception(f"Unable to send message: {e}")
+
 
 
 

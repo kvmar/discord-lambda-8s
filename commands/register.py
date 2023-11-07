@@ -8,6 +8,12 @@ def register(inter: Interaction, venmo_user: str) -> None:
   player_bank_record = player_bank_dao.get_player_bank(inter.user_id)
 
   if player_bank_record is not None:
+    if not player_bank_record.registration_complete:
+      if venmo.is_payment_done(player_bank_record.registration_id):
+        player_bank_record.registration_complete = True
+        player_bank_dao.put_player_bank(player_record=player_bank_record)
+        player_bank_record = player_bank_dao.get_player_bank(inter.user_id)
+
     if player_bank_record.registration_complete:
       embed = Embedding("Kali 8s Bot", f"Registration complete for user {inter.username} with venmo: {player_bank_record.venmo_user} :smiley:", color=0x00FF00)
       inter.send_response(embeds=[embed], ephemeral=False)
