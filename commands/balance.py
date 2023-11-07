@@ -23,7 +23,12 @@ def balance(inter: Interaction) -> None:
 
   deposit_on_hold = ""
   if player_bank_record.curr_transaction_id is not None:
-    deposit_on_hold = " There is a $1 deposit still pending completion on Venmo"
+    if venmo.is_payment_done(player_bank_record.curr_transaction_id):
+      player_bank_record.curr_transaction_id = None
+      player_bank_record.credits = player_bank_record.credits + 1
+      player_bank_dao.put_player_bank(player_record=player_bank_record)
+    else:
+      deposit_on_hold = " There is a $1 deposit still pending completion on Venmo"
 
   embed = Embedding("Kali 8s Bot", f"{player_record.player_name} has a balance of {player_bank_record.credits}.{deposit_on_hold} :smiley:", color=0x00FF00)
   inter.send_response(embeds=[embed], ephemeral=False)
