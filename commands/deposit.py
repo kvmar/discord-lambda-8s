@@ -24,7 +24,7 @@ def deposit(inter: Interaction) -> None:
     inter.send_response(embeds=[embed], ephemeral=False)
     return
 
-  player_record = player_dao.get_player(inter.user_id, inter.guild_id)
+  player_record = player_dao.get_player(player_id=inter.user_id, guild_id=inter.guild_id)
 
   if player_bank_record.curr_transaction_id is not None:
       if venmo.is_payment_done(player_bank_record.curr_transaction_id):

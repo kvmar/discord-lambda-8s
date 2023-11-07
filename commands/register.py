@@ -1,9 +1,11 @@
 from dao.PlayerBankDao import PlayerBankRecord, PlayerBankDao
+from dao.PlayerDao import PlayerDao
 from discord_lambda import Embedding, CommandRegistry, Interaction, CommandArg
 from venmoapi import VenmoApiAccessor
 
 venmo = VenmoApiAccessor()
 player_bank_dao = PlayerBankDao()
+player_dao = PlayerDao()
 def register(inter: Interaction, venmo_user: str) -> None:
   player_bank_record = player_bank_dao.get_player_bank(inter.user_id)
 
@@ -23,7 +25,10 @@ def register(inter: Interaction, venmo_user: str) -> None:
     return
 
   payment_id = venmo.register_user(inter.user_id, inter.guild_id, venmo_user)
-  embed = Embedding("Kali 8s Bot", f"Sent $1 Money 8s registration fee for user {inter.username} with venmo: {venmo_user} :smiley:.\n "
+
+
+  player_record = player_dao.get_player(player_id=inter.user_id, guild_id=inter.guild_id)
+  embed = Embedding("Kali 8s Bot", f"Sent $1 Money 8s registration fee for user {player_record.player_name} with venmo: {venmo_user} :smiley:.\n "
                                    f"Please accept Venmo request to complete registration then type /register again", color=0x00FF00)
   player_bank_record = PlayerBankRecord(player_id=inter.user_id, registration_id=payment_id, venmo_user=venmo_user)
   player_bank_dao.put_player_bank(player_bank_record)
