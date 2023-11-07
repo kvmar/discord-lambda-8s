@@ -25,6 +25,7 @@ class VenmoApiAccessor:
         player_record = player_dao.get_player(player_id=player_id, guild_id=guild_id)
         payment_id = self.request_payment(venmo_user, f"Registration for user {player_record.player_name} to Kali 8s")
         print(payment_id)
+        return payment_id
 
     def deposit(self, player_id: str):
         pass
