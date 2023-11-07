@@ -37,7 +37,7 @@ class VenmoApiAccessor:
         complete_teams = win_team + lose_team
         for user in complete_teams:
             player_bank_record = player_bank_dao.get_player_bank(player_id=user)
-            if player_bank_record.credits <= 1:
+            if player_bank_record.credits < 1:
                 raise Exception(f"User has balance less than 1 {player_bank_record}")
 
         for user in win_team:
