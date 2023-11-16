@@ -116,7 +116,8 @@ def findMinSRDiff(queue: QueueRecord):
     player_list = list()
     for user in queue.queue:
         player = player_dao.get_player(guild_id=queue.guild_id, player_id=user)
-        player_list.append(player)
+        if player.mw + player.ml > 2:
+            player_list.append(player)
 
     player_list_sorted = sorted(player_list, key= lambda x: x.elo)
     diff = 10**20
