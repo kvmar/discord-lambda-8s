@@ -30,7 +30,7 @@ def post_leaderboard(queue_record: QueueRecord, inter: Interaction):
         user_data.append(str(int(float(user.elo) * 100)))
         user_data.append(user.delta)
 
-        if int(user.mw) + int(user.ml) >= 5:
+        if int(user.mw) + int(user.ml) >= 10:
             table.append(user_data)
             rank = rank + 1
 
