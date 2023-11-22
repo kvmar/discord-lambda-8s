@@ -121,6 +121,10 @@ def findMinSRDiff(queue: QueueRecord):
 
     player_list_sorted = sorted(player_list, key= lambda x: x.elo)
     diff = 10**20
+
+    if len(player_list_sorted) == 0:
+        caps = random.sample(queue.queue, 2)
+        return caps
     
     caps = list()
     for i in range(len(player_list)-1):
@@ -129,7 +133,7 @@ def findMinSRDiff(queue: QueueRecord):
             caps = list()
             caps.append(player_list_sorted[i+1].player_id)
             caps.append(player_list_sorted[i].player_id)
-    
+
     return caps
         
 def start_match(inter: Interaction, queue_id: str):
@@ -322,7 +326,7 @@ def player_pick(inter: Interaction, queue_id: str):
 
     team1_pick = True
     player_pick = response.team_1[0]
-    if len(response.team_1) + len(response.team_2) in (3, 4, 7):
+    if len(response.team_1) + len(response.team_2) in (3, 5, 7):
         player_pick = response.team_2[0]
         team1_pick = False
 
@@ -373,10 +377,10 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         return [embed], [component]
     elif len(record.team_1) != 4 or len(record.team_2) != 4:
         whose_pick = ""
-        if len(record.team_1) + len(record.team_2) in (2, 5, 6):
+        if len(record.team_1) + len(record.team_2) in (2, 4, 6):
             player_data = player_dao.get_player(record.guild_id, record.team_1[0])
             whose_pick = player_data.player_name + " its your turn to pick!"
-        if len(record.team_1) + len(record.team_2) in (3, 4, 7):
+        if len(record.team_1) + len(record.team_2) in (3, 5, 7):
             player_data = player_dao.get_player(record.guild_id, record.team_2[0])
             whose_pick = player_data.player_name + " its your turn to pick!"
         team1_str = "Team 1: \n"
