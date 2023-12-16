@@ -119,7 +119,7 @@ def find_diff(tuple):
         sum_team_1 = sum_team_1 + i.elo
 
     sum_team_2 = 0
-    for i in tuple[0]:
+    for i in tuple[1]:
         sum_team_2 = sum_team_2 + i.elo
     return abs(sum_team_1 - sum_team_2)
 
