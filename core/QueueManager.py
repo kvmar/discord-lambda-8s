@@ -135,9 +135,52 @@ def findMinSRDiff(queue: QueueRecord):
             caps.append(player_list_sorted[i].player_id)
 
     return caps
-        
+
+def partition(lst, minsize=4):
+    yield [lst]
+    for n in range(minsize, len(lst)-minsize+1):
+        for p in partition(lst[n:], minsize):
+            yield [lst[:n]] + [l for l in p]
+def use_average_sr(response: QueueRecord):
+    player_list = list()
+    for player in response.queue:
+        player_data = player_dao.get_player(response.guild_id, player)
+        player_list.append(player_data)
+
+    parts = part(player_list, 4)
+    print(parts)
+
+
+def part(s, k):
+    """Yields each partition of s into subsets of size k, which must be a
+       divisor of len(s).
+    """
+    def step(i):
+        if i == len(s):
+            # Deep copy the current partition
+            yield list(list(p) for p in part)
+        else:
+            for p in part:
+                if len(p) < k:
+                    p.append(s[i])
+                    yield from step(i + 1)
+                    p.pop()
+            if len(part) * k < len(s):
+                part.append(list(s[i]))
+                yield from step(i + 1)
+                part.pop()
+
+    part = []
+    yield from step(0)
+
+
+
+
+
 def start_match(inter: Interaction, queue_id: str):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
+
+    use_average_sr(response)
 
     caps = findMinSRDiff(response)
     response.team_1 = list()
