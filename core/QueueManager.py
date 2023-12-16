@@ -148,7 +148,8 @@ def use_average_sr(response: QueueRecord):
         player_list.append(player_data)
 
     parts = part(player_list, 4)
-    print(parts)
+    list_part = list(parts)
+    print(list_part)
 
 
 def part(s, k):
