@@ -138,7 +138,7 @@ def use_average_sr(response: QueueRecord):
         if diff < min_diff:
             min_diff = diff
             teams = i
-    print("MinDiff found: " + min_diff)
+    print("MinDiff found: " + str(min_diff))
     return teams
 
 def start_match(inter: Interaction, queue_id: str):
