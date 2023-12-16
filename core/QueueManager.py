@@ -113,30 +113,16 @@ def remove_player(inter: Interaction, queue_id: str):
         return embed, component
     return None
 
+def find_diff(tuple):
+    sum_team_1 = 0
+    for i in tuple[0]:
+        sum_team_1 = sum_team_1 + i.elo
 
-def findMinSRDiff(queue: QueueRecord):
-    player_list = list()
-    for user in queue.queue:
-        player = player_dao.get_player(guild_id=queue.guild_id, player_id=user)
-        if player.mw + player.ml > 2:
-            player_list.append(player)
+    sum_team_2 = 0
+    for i in tuple[0]:
+        sum_team_2 = sum_team_2 + i.elo
+    return abs(sum_team_1 - sum_team_2)
 
-    player_list_sorted = sorted(player_list, key= lambda x: x.elo)
-    diff = 10**20
-
-    if len(player_list_sorted) == 0:
-        caps = random.sample(queue.queue, 2)
-        return caps
-    
-    caps = list()
-    for i in range(len(player_list)-1):
-        if player_list_sorted[i+1].elo - player_list_sorted[i].elo < diff:
-            diff = player_list_sorted[i+1].elo - player_list_sorted[i].elo
-            caps = list()
-            caps.append(player_list_sorted[i+1].player_id)
-            caps.append(player_list_sorted[i].player_id)
-
-    return caps
 
 def use_average_sr(response: QueueRecord):
     player_list = list()
@@ -144,20 +130,27 @@ def use_average_sr(response: QueueRecord):
         player_data = player_dao.get_player(response.guild_id, player)
         player_list.append(player_data)
 
+    min_diff = 100000
+    teams = None
     l = [[x, tuple(y for y in player_list if y not in x)] for x in combinations(player_list, 4)]
     for i in l:
-        print(i)
+        diff = find_diff(i)
+        if diff < min_diff:
+            min_diff = diff
+            teams = i
+    print("MinDiff found: " + min_diff)
+    return teams
 
 def start_match(inter: Interaction, queue_id: str):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
 
-    use_average_sr(response)
+    teams = use_average_sr(response)
 
-    caps = findMinSRDiff(response)
-    response.team_1 = list()
-    response.team_2 = list()
-    response.team_1.append(caps[0])
-    response.team_2.append(caps[1])
+    for i in teams[0]:
+        response.team_1.append(i.player_id)
+
+    for i in teams[1]:
+        response.team_2.append(i.player_id)
 
     response.maps = list()
     map_picks = get_maps(queue_record=response)
