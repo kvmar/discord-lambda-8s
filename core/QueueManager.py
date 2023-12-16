@@ -134,10 +134,11 @@ def use_average_sr(response: QueueRecord):
     teams = None
     l = [[x, tuple(y for y in player_list if y not in x)] for x in combinations(player_list, 4)]
     for i in l:
-        diff = find_diff(i)
-        if diff < min_diff:
-            min_diff = diff
-            teams = i
+        if len(i[0]) == 4 and len(i[1]) == 4:
+            diff = find_diff(i)
+            if diff < min_diff:
+                min_diff = diff
+                teams = i
     print("MinDiff found: " + str(min_diff))
     return teams
 
@@ -272,7 +273,7 @@ def generate_match_done_embed(team1, team2, guild_id, queue_record: QueueRecord)
             player_bank_record = player_bank_dao.get_player_bank(user)
             bank_details = f" ${player_bank_record.earnings}"
 
-        player_str = player_data.player_name + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + f"){bank_details}\n"
+        player_str = player_data.player_name + " " + str(int(float(player_data.sr) * 100)) + " (" + player_data.sr_delta + f"){bank_details}\n"
         team_str = team_str + player_str
 
     team_str = team_str + "\nTeam 2:\n"
@@ -283,7 +284,7 @@ def generate_match_done_embed(team1, team2, guild_id, queue_record: QueueRecord)
             player_bank_record = player_bank_dao.get_player_bank(user)
             bank_details = f" ${player_bank_record.earnings}"
 
-        player_str = player_data.player_name + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + f"){bank_details}\n"
+        player_str = player_data.player_name + " " + str(int(float(player_data.sr) * 100)) + " (" + player_data.sr_delta + f"){bank_details}\n"
         team_str = team_str + player_str
 
     return Embedding(
