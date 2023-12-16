@@ -13,22 +13,22 @@ def post_leaderboard(queue_record: QueueRecord, inter: Interaction):
     print("Posting leaderboard")
     player_list = player_dao.get_players_by_guild_id(queue_record.guild_id)
 
-    sorted_player_list = sorted(player_list, key=lambda x: x.elo, reverse=True)
+    sorted_player_list = sorted(player_list, key=lambda x: x.sr, reverse=True)
 
     table = list()
 
     rank = 1
     for user in sorted_player_list:
         user_data = list()
-        print(f"Got player: {user.player_name} with elo {user.elo}")
+        print(f"Got player: {user.player_name} with elo {user.sr}")
 
         user_data.append(rank)
         user_data.append(user.player_name)
         user_data.append(str((int(user.mw) + int(user.ml))))
         user_data.append(str(int(user.mw)))
         user_data.append(str(int(user.ml)))
-        user_data.append(str(int(float(user.elo) * 100)))
-        user_data.append(user.delta)
+        user_data.append(str(int(float(user.sr) * 100)))
+        user_data.append(user.sr_delta)
 
         if int(user.mw) + int(user.ml) >= 10:
             table.append(user_data)

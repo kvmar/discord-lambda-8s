@@ -34,6 +34,19 @@ class TrueSkillAccessor:
         self.update_ratings(new_ratings, win_team_ratings, 0)
         self.update_ratings(new_ratings, lose_team_ratings, 1)
 
+        win_team_ratings_tuple = list()
+        lose_team_ratings_tuple = list()
+        for user in win_team_ratings:
+            win_team_ratings_tuple.append(Rating(float(user.sr), float(user.sr_sigma)))
+
+        for user in lose_team_ratings:
+            lose_team_ratings_tuple.append(Rating(float(user.sr), float(user.sr_sigma)))
+
+        new_ratings = self.env.rate([tuple(win_team_ratings_tuple), tuple(lose_team_ratings_tuple)], ranks=[0, 1])
+
+        self.update_sr_ratings(new_ratings, win_team_ratings, 0)
+        self.update_sr_ratings(new_ratings, lose_team_ratings, 1)
+
     def get_player_data(self, team: list, guild_id: str) -> list[PlayerRecord]:
         player_data_list = list()
         for user in team:
@@ -62,6 +75,23 @@ class TrueSkillAccessor:
 
             user.elo = float(new_ratings[tuple_idx][idx].mu)
             user.sigma = float(new_ratings[tuple_idx][idx].sigma)
+            print(f"Writing player_data record to {user}")
+            player_dao.put_player(user)
+            idx = idx + 1
+    def update_sr_ratings(self, new_ratings, team_ratings: list[PlayerRecord], tuple_idx: int):
+        idx = 0
+
+        for user in team_ratings:
+            prev_sr = user.sr
+            user.sr = float(new_ratings[tuple_idx][idx].mu)
+            user.sr_sigma = float(new_ratings[tuple_idx][idx].sigma)
+            user.sr = user.sr + (user.elo - user.sr)/8.33
+
+
+            user.sr_delta = str(int(float((float(user.sr) - float(prev_sr)) * 100)))
+            if float(user.sr) - float(prev_sr) >= 0:
+                user.sr_delta = "+" + user.sr_delta
+
             print(f"Writing player_data record to {user}")
             player_dao.put_player(user)
             idx = idx + 1

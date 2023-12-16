@@ -15,7 +15,7 @@ if os.environ.get('BOT_ENV') == "PROD":
   table_name = "PlayerTableProd"
 
 class PlayerRecord:
-  def __init__(self, guild_id: str, player_id: str, player_name: str, mw: int = 0, ml: int = 0, elo: float = 25.0, sigma: float = 8.33, delta: str = "+0.0", version: int = 0):
+  def __init__(self, guild_id: str, player_id: str, player_name: str, mw: int = 0, ml: int = 0, elo: float = 25.0, sigma: float = 8.33, delta: str = "+0.0",  sr_delta: str = "+0.0", sr: float = 25.0, sr_sigma: float = 8.33, version: int = 0):
     self.guild_id = guild_id
     self.player_id = player_id
     self.player_name = player_name
@@ -24,6 +24,9 @@ class PlayerRecord:
     self.elo = elo
     self.sigma = sigma
     self.delta = delta
+    self.sr = sr
+    self.sr_sigma = sr_sigma
+    self.sr_delta = sr_delta
     self.version = version
 
 class PlayerDao:
@@ -86,4 +89,15 @@ class PlayerDao:
       return player_list
 
   def get_player_record_attributes(self, response):
-      return PlayerRecord(player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["ml"], elo=response["elo"], sigma=response["sigma"], delta=response["delta"], version=response["version"])
+      sr = 25.0
+      if response.get("sr") is not None:
+          sr = response['sr']
+
+      sr_sigma = 8.33
+      if response.get("sr_sigma") is not None:
+        sr_sigma = response['sr_sigma']
+
+      sr_delta = "+0.0"
+      if response.get("sr_delta") is not None:
+        sr_delta = response['sr_delta']
+      return PlayerRecord(sr_delta=sr_delta, sr=sr, sr_sigma=sr_sigma, player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["ml"], elo=response["elo"], sigma=response["sigma"], delta=response["delta"], version=response["version"])
