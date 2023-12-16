@@ -95,9 +95,9 @@ class PlayerDao:
 
       sr_sigma = 8.33
       if response.get("sr_sigma") is not None:
-        sr = response['sr_sigma']
+        sr_sigma = response['sr_sigma']
 
       sr_delta = "+0.0"
       if response.get("sr_delta") is not None:
-        sr = response['sr_delta']
+        sr_delta = response['sr_delta']
       return PlayerRecord(sr_delta=sr_delta, sr=sr, sr_sigma=sr_sigma, player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["ml"], elo=response["elo"], sigma=response["sigma"], delta=response["delta"], version=response["version"])
