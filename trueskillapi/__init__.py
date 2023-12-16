@@ -88,7 +88,7 @@ class TrueSkillAccessor:
             user.sr = user.sr + (user.elo - user.sr)/8.33
 
 
-            user.sr_delta = str(int(float((user.sr - prev_sr) * 100)))
+            user.sr_delta = str(int(float((float(user.sr) - float(prev_sr)) * 100)))
             if user.sr - prev_sr >= 0:
                 user.sr_delta = "+" + user.sr_delta
 
