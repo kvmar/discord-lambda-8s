@@ -1,3 +1,4 @@
+import itertools
 from datetime import datetime
 
 from core import LeaderboardManager
@@ -7,6 +8,7 @@ from dao.QueueDao import QueueDao, QueueRecord
 from discord_lambda import Embedding, Interaction
 from discord_lambda import Components
 import random
+from itertools import chain, combinations
 
 from trueskillapi import TrueSkillAccessor
 from venmoapi import VenmoApiAccessor
@@ -136,20 +138,15 @@ def findMinSRDiff(queue: QueueRecord):
 
     return caps
 
-def partition(lst, minsize=4):
-    yield [lst]
-    for n in range(minsize, len(lst)-minsize+1):
-        for p in partition(lst[n:], minsize):
-            yield [lst[:n]] + [l for l in p]
 def use_average_sr(response: QueueRecord):
     player_list = list()
     for player in response.queue:
         player_data = player_dao.get_player(response.guild_id, player)
         player_list.append(player_data)
 
-    parts = part(player_list, 4)
-    for i in parts:
-        print(i)
+    for subset in itertools.combinations(player_list, 2):
+        print(subset)
+
 
 
 def part(s, k):
