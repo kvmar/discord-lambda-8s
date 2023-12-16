@@ -144,36 +144,9 @@ def use_average_sr(response: QueueRecord):
         player_data = player_dao.get_player(response.guild_id, player)
         player_list.append(player_data)
 
-    for subset in itertools.combinations(player_list, 2):
-        print(subset)
-
-
-
-def part(s, k):
-    """Yields each partition of s into subsets of size k, which must be a
-       divisor of len(s).
-    """
-    def step(i):
-        if i == len(s):
-            # Deep copy the current partition
-            yield list(list(p) for p in part)
-        else:
-            for p in part:
-                if len(p) < k:
-                    p.append(s[i])
-                    yield from step(i + 1)
-                    p.pop()
-            if len(part) * k < len(s):
-                part.append(list(s[i]))
-                yield from step(i + 1)
-                part.pop()
-
-    part = []
-    yield from step(0)
-
-
-
-
+    l = [[x, tuple(y for y in player_list if y not in x)] for x in combinations(player_list, 4)]
+    for i in l:
+        print(i)
 
 def start_match(inter: Interaction, queue_id: str):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
