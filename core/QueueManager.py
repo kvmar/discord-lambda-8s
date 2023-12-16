@@ -134,10 +134,11 @@ def use_average_sr(response: QueueRecord):
     teams = None
     l = [[x, tuple(y for y in player_list if y not in x)] for x in combinations(player_list, 4)]
     for i in l:
-        diff = find_diff(i)
-        if diff < min_diff:
-            min_diff = diff
-            teams = i
+        if len(i[0]) == 4 and len(i[1]) == 4:
+            diff = find_diff(i)
+            if diff < min_diff:
+                min_diff = diff
+                teams = i
     print("MinDiff found: " + str(min_diff))
     return teams
 
