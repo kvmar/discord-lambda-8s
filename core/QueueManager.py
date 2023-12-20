@@ -12,6 +12,7 @@ from itertools import chain, combinations
 
 from trueskillapi import TrueSkillAccessor
 from venmoapi import VenmoApiAccessor
+from more_itertools import set_partitions
 
 join_queue_custom_id = "join_queue"
 leave_queue_custom_id = "leave_queue"
@@ -132,9 +133,8 @@ def use_average_sr(response: QueueRecord):
 
     min_diff = 100000
     teams = None
-    l = [[x, tuple(y for y in player_list if y not in x)] for x in combinations(player_list, 4)]
+    l = list(set_partitions(player_list, 2))
     for i in l:
-        print(l)
         if len(i[0]) == 4 and len(i[1]) == 4:
             diff = find_diff(i)
             if diff < min_diff:
