@@ -138,7 +138,9 @@ def use_average_sr(response: QueueRecord):
         print(l)
         print("Team" + str(i))
         if len(i[0]) == 4 and len(i[1]) == 4:
+            print("Valid team" + str(i))
             diff = find_diff(i)
+            print(str(diff))
             if diff < min_diff:
                 min_diff = diff
                 teams = i
