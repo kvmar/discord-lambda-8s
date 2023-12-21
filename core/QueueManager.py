@@ -116,12 +116,18 @@ def remove_player(inter: Interaction, queue_id: str):
 
 def find_diff(tuple):
     sum_team_1 = 0
+    idx = 0
     for i in tuple[0]:
-        sum_team_1 = sum_team_1 + i.elo
+        if idx < 4:
+            sum_team_1 = sum_team_1 + i.elo
+            idx = idx + 1
 
+    idx = 0
     sum_team_2 = 0
     for i in tuple[1]:
-        sum_team_2 = sum_team_2 + i.elo
+        if idx < 4:
+            sum_team_2 = sum_team_2 + i.elo
+            idx = idx + 1
     return abs(sum_team_1 - sum_team_2)
 
 
@@ -137,7 +143,7 @@ def use_average_sr(response: QueueRecord):
     for i in l:
         print(l)
         print("Team" + str(i))
-        if len(i[0]) == 4 and len(i[1]) == 4:
+        if len(i[0]) >= 4 and len(i[1]) >= 4:
             print("Valid team" + str(i))
             diff = find_diff(i)
             print(str(diff))
@@ -151,12 +157,17 @@ def start_match(inter: Interaction, queue_id: str):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
 
     teams = use_average_sr(response)
-
+    idx = 0
     for i in teams[0]:
-        response.team_1.append(i.player_id)
+        if idx < 4:
+            response.team_1.append(i.player_id)
+            idx = idx + 1
 
+    idx = 0
     for i in teams[1]:
-        response.team_2.append(i.player_id)
+        if idx < 4:
+            response.team_2.append(i.player_id)
+            idx = idx + 1
 
     response.maps = list()
     map_picks = get_maps(queue_record=response)
