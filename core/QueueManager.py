@@ -135,6 +135,8 @@ def use_average_sr(response: QueueRecord):
     teams = None
     l = list(set_partitions(player_list, 2))
     for i in l:
+        print(l)
+        print("Team" + i)
         if len(i[0]) == 4 and len(i[1]) == 4:
             diff = find_diff(i)
             if diff < min_diff:
