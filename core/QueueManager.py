@@ -151,21 +151,37 @@ def use_average_sr(response: QueueRecord):
     print("MinDiff found: " + str(min_diff))
     return teams
 
+
+
+def findMinSRDiff(queue: QueueRecord):
+    player_list = list()
+    for user in queue.queue:
+        player = player_dao.get_player(guild_id=queue.guild_id, player_id=user)
+        player_list.append(player)
+
+    player_list_sorted = sorted(player_list, key= lambda x: x.elo)
+    diff = 10**20
+
+    caps = list()
+    for i in range(len(player_list)-1):
+        if player_list_sorted[i+1].elo - player_list_sorted[i].elo < diff:
+            diff = player_list_sorted[i+1].elo - player_list_sorted[i].elo
+            caps = list()
+            caps.append(player_list_sorted[i+1].player_id)
+            caps.append(player_list_sorted[i].player_id)
+
+    return caps
+
+
 def start_match(inter: Interaction, queue_id: str):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
 
-    teams = use_average_sr(response)
-    idx = 0
-    for i in teams[0]:
-        if idx < 4:
-            response.team_1.append(i.player_id)
-            idx = idx + 1
 
-    idx = 0
-    for i in teams[1]:
-        if idx < 4:
-            response.team_2.append(i.player_id)
-            idx = idx + 1
+    caps = findMinSRDiff(response)
+    response.team_1 = list()
+    response.team_2 = list()
+    response.team_1.append(caps[0])
+    response.team_2.append(caps[1])
 
     response.maps = list()
     map_picks = get_maps(queue_record=response)
