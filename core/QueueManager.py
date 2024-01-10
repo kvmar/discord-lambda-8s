@@ -444,12 +444,12 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         team1_str = "Team 1: \n"
         for user in record.team_1:
             player_data = player_dao.get_player(record.guild_id, user)
-            team1_str = team1_str + player_data.player_name + ": " + str(int(float(player_data.sr) * 100)) + "\n"
+            team1_str = team1_str + player_data.player_name + ": " + str(int(float(player_data.elo) * 100)) + "\n"
 
         team2_str = "Team 2: \n"
         for user in record.team_2:
             player_data = player_dao.get_player(record.guild_id, user)
-            team2_str = team2_str + player_data.player_name + ": " + str(int(float(player_data.sr) * 100)) + "\n"
+            team2_str = team2_str + player_data.player_name + ": " + str(int(float(player_data.elo) * 100)) + "\n"
 
         map_str = "Maps: \n"
         for map in record.maps:
