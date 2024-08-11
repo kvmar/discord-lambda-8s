@@ -1,5 +1,6 @@
 import itertools
 from datetime import datetime
+import random
 
 from core import LeaderboardManager
 from dao.PlayerBankDao import PlayerBankRecord, PlayerBankDao
@@ -169,7 +170,7 @@ def findMinSRDiff(queue: QueueRecord):
             caps = list()
             caps.append(player_list_sorted[i+1].player_id)
             caps.append(player_list_sorted[i].player_id)
-
+    random.shuffle(caps)
     return caps
 
 
