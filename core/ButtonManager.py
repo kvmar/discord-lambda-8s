@@ -10,7 +10,9 @@ def button_flow_tree(interaction: Interaction):
   elif QueueManager.leave_queue_custom_id in interaction.custom_id:
     leave_queue_button(interaction.guild_id, interaction)
   elif QueueManager.start_queue_custom_id in interaction.custom_id:
-    start_queue_button(interaction.guild_id, interaction)
+    start_queue_button(interaction.guild_id, interaction, False)
+  elif QueueManager.auto_pick_custom_id in interaction.custom_id:
+    start_queue_button(interaction.guild_id, interaction, True)
   elif QueueManager.player_pick_custom_id in interaction.custom_id:
     player_pick_button(interaction.guild_id, interaction)
   elif QueueManager.team_1_won_custom_id in interaction.custom_id:
@@ -47,9 +49,9 @@ def leave_queue_button(guild_id: str, inter: Interaction):
   QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
 
 
-def start_queue_button(guild_id: str, inter: Interaction):
+def start_queue_button(guild_id: str, inter: Interaction, autopick: bool):
   print("Start queue button clicked")
-  resp = QueueManager.start_match(inter, inter.custom_id.split("#")[1])
+  resp = QueueManager.start_match(inter, inter.custom_id.split("#")[1], autopick)
 
   if resp is None:
     return

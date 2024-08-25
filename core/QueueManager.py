@@ -18,10 +18,12 @@ from more_itertools import set_partitions
 join_queue_custom_id = "join_queue"
 leave_queue_custom_id = "leave_queue"
 start_queue_custom_id = "start_queue"
+auto_pick_custom_id = "auto_pick"
 player_pick_custom_id = "player_pick"
 cancel_match_custom_id = "cancel_match"
 team_1_won_custom_id = "team_1_won"
 team_2_won_custom_id = "team_2_won"
+
 
 queue_dao = QueueDao()
 player_dao = PlayerDao()
@@ -40,6 +42,7 @@ def create_queue_resources(guild_id: str, queue_name: str):
     component.add_button("Join queue", f"join_queue_custom_id#{queue_name}", False, 1)
     component.add_button("Leave queue", f"leave_queue_custom_id#{queue_name}", False, 4)
     component.add_button("Start queue", f"start_queue_custom_id#{queue_name}", True, 3)
+    component.add_button("Auto pick", f"auto_pick_custom_id#{queue_name}", True, 3)
 
     response.clear_queue()
 
@@ -174,15 +177,28 @@ def findMinSRDiff(queue: QueueRecord):
     return caps
 
 
-def start_match(inter: Interaction, queue_id: str):
+def start_match(inter: Interaction, queue_id: str, autopick: bool):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
 
+    if autopick:
+        teams = use_average_sr(response)
+        idx = 0
+        for i in teams[0]:
+            if idx < 4:
+                response.team_1.append(i.player_id)
+                idx = idx + 1
 
-    caps = findMinSRDiff(response)
-    response.team_1 = list()
-    response.team_2 = list()
-    response.team_1.append(caps[0])
-    response.team_2.append(caps[1])
+        idx = 0
+        for i in teams[1]:
+            if idx < 4:
+                response.team_2.append(i.player_id)
+                idx = idx + 1
+    else:
+        caps = findMinSRDiff(response)
+        response.team_1 = list()
+        response.team_2 = list()
+        response.team_1.append(caps[0])
+        response.team_2.append(caps[1])
 
     response.maps = list()
     map_picks = get_maps(queue_record=response)
@@ -411,8 +427,11 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
 
         if len(record.queue) >= 8:
             component.add_button("Start queue", f"start_queue_custom_id#{record.queue_id}", False, 3)
+            component.add_button("Auto pick", f"auto_pick_custom_id#{record.queue_id}", False, 3)
+
         else:
             component.add_button("Start queue", f"start_queue_custom_id#{record.queue_id}", True, 3)
+            component.add_button("Auto pick", f"auto_pick_custom_id#{record.queue_id}", True, 3)
 
         return [embed], [component]
     elif len(record.team_1) != 4 or len(record.team_2) != 4:

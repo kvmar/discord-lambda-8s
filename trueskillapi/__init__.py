@@ -78,6 +78,7 @@ class TrueSkillAccessor:
             print(f"Writing player_data record to {user}")
             player_dao.put_player(user)
             idx = idx + 1
+
     def update_sr_ratings(self, new_ratings, team_ratings: list[PlayerRecord], tuple_idx: int):
         idx = 0
 
