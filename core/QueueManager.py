@@ -191,7 +191,7 @@ def start_match(inter: Interaction, queue_id: str, autopick: bool):
         idx = 0
         for i in teams[1]:
             if idx < 4:
-                response.team_1.append(i.player_id)
+                response.team_2.append(i.player_id)
                 idx = idx + 1
     else:
         caps = findMinSRDiff(response)
