@@ -38,7 +38,7 @@ class PlayerRecord:
     elif self.streak == 4:
       return ":heart_on_fire:"
     elif self.streak >= 5:
-      return ":zap:"
+      return "<:demon:1299095805390487656>"
     elif self.streak == -3:
       return ":face_with_raised_eyebrow:"
     elif self.streak == -4:
