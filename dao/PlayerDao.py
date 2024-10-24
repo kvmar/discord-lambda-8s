@@ -36,15 +36,15 @@ class PlayerRecord:
     if self.streak == 3:
       return ":fire:"
     elif self.streak == 4:
-      return "<a:black_flame:1299096634004733952>"
+      return "<a:blue_flame:1299111622807130132>"
     elif self.streak >= 5:
-      return "<:demon:1299095805390487656>"
+      return "<a:2788demonshit:1299111278572470423>"
     elif self.streak == -3:
       return ":monkey:"
     elif self.streak == -4:
       return "<:shitter:1299107333095297116>"
     elif self.streak <= -5:
-      return "<a:poop_anime:1299107282990403615>"
+      return "<a:spin_poop:1299111996964470805>"
 
     return ""
 
