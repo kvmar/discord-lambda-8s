@@ -320,7 +320,7 @@ def generate_match_done_embed(team1, team2, guild_id, queue_record: QueueRecord)
             player_bank_record = player_bank_dao.get_player_bank(user)
             bank_details = f" ${player_bank_record.earnings}"
 
-        player_str = player_data.player_name + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + f"){bank_details}\n"
+        player_str = player_data.player_name + str(player_data.get_emoji()) + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + f"){bank_details}\n"
         team_str = team_str + player_str
 
     team_str = team_str + "\nTeam 2:\n"
@@ -331,7 +331,7 @@ def generate_match_done_embed(team1, team2, guild_id, queue_record: QueueRecord)
             player_bank_record = player_bank_dao.get_player_bank(user)
             bank_details = f" ${player_bank_record.earnings}"
 
-        player_str = player_data.player_name + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + f"){bank_details}\n"
+        player_str = player_data.player_name + str(player_data.get_emoji()) + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + f"){bank_details}\n"
         team_str = team_str + player_str
 
     return Embedding(
@@ -414,7 +414,7 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         queue_str = ""
         for user in record.queue:
             player_data = player_dao.get_player(record.guild_id, user)
-            queue_str = queue_str + player_data.player_name + "\n"
+            queue_str = queue_str + player_data.player_name + player_data.get_emoji() + "\n"
 
         embed = Embedding(
             f"Underworld 8s {record.queue_id}",
@@ -464,12 +464,12 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         team1_str = "Team 1: \n"
         for user in record.team_1:
             player_data = player_dao.get_player(record.guild_id, user)
-            team1_str = team1_str + player_data.player_name + ": " + str(int(float(player_data.elo) * 100)) + "\n"
+            team1_str = team1_str + player_data.player_name + str(player_data.get_emoji()) + ": " + str(int(float(player_data.elo) * 100)) + "\n"
 
         team2_str = "Team 2: \n"
         for user in record.team_2:
             player_data = player_dao.get_player(record.guild_id, user)
-            team2_str = team2_str + player_data.player_name + ": " + str(int(float(player_data.elo) * 100)) + "\n"
+            team2_str = team2_str + player_data.player_name + str(player_data.get_emoji()) + ": " + str(int(float(player_data.elo) * 100)) + "\n"
 
         map_str = "Maps: \n"
         for map in record.maps:

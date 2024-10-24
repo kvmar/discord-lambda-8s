@@ -15,7 +15,7 @@ if os.environ.get('BOT_ENV') == "PROD":
   table_name = "PlayerTableProd"
 
 class PlayerRecord:
-  def __init__(self, guild_id: str, player_id: str, player_name: str, mw: int = 0, ml: int = 0, elo: float = 25.0, sigma: float = 8.33, delta: str = "+0.0",  sr_delta: str = "+0.0", sr: float = 25.0, sr_sigma: float = 8.33, version: int = 0):
+  def __init__(self, guild_id: str, player_id: str, player_name: str, mw: int = 0, ml: int = 0, elo: float = 25.0, sigma: float = 8.33, delta: str = "+0.0",  sr_delta: str = "+0.0", sr: float = 25.0, sr_sigma: float = 8.33, streak: int = 0, version: int = 0):
     self.guild_id = guild_id
     self.player_id = player_id
     self.player_name = player_name
@@ -27,7 +27,28 @@ class PlayerRecord:
     self.sr = sr
     self.sr_sigma = sr_sigma
     self.sr_delta = sr_delta
+    self.streak = int(streak)
     self.version = version
+
+
+  def get_emoji(self):
+    print("Streak for player_name: " + self.player_name + " , streak: " + str(self.streak))
+    if self.streak == 3:
+      return ":fire:"
+    elif self.streak == 4:
+      return ":heart_on_fire:"
+    elif self.streak >= 5:
+      return ":zap:"
+    elif self.streak == -3:
+      return ":face_with_raised_eyebrow:"
+    elif self.streak == -4:
+      return ":poop:"
+    elif self.streak <= -5:
+      return ":monkey:"
+
+    return ""
+
+
 
 class PlayerDao:
   def __init__(self):
@@ -100,4 +121,5 @@ class PlayerDao:
       sr_delta = "+0.0"
       if response.get("sr_delta") is not None:
         sr_delta = response['sr_delta']
-      return PlayerRecord(sr_delta=sr_delta, sr=sr, sr_sigma=sr_sigma, player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["ml"], elo=response["elo"], sigma=response["sigma"], delta=response["delta"], version=response["version"])
+
+      return PlayerRecord(sr_delta=sr_delta, sr=sr, sr_sigma=sr_sigma, player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["ml"], elo=response["elo"], sigma=response["sigma"], delta=response["delta"], streak=response["streak"], version=response["version"])

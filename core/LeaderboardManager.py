@@ -23,7 +23,7 @@ def post_leaderboard(queue_record: QueueRecord, inter: Interaction):
         print(f"Got player: {user.player_name} with elo {user.elo}")
 
         user_data.append(rank)
-        user_data.append(user.player_name)
+        user_data.append(str(user.player_name + str(user.get_emoji())))
         user_data.append(str((int(user.mw) + int(user.ml))))
         user_data.append(str(int(user.mw)))
         user_data.append(str(int(user.ml)))
