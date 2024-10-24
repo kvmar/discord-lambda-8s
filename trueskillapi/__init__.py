@@ -66,6 +66,19 @@ class TrueSkillAccessor:
             lost = lost + 1
 
         for user in team_ratings:
+            print("Updating streak for player_name: " + user.player_name + " , streak: " + str(user.streak))
+
+            if tuple_idx == 0:
+                if user.streak > 0:
+                    user.streak = int(user.streak) + 1
+                else:
+                    user.streak = 1
+            else:
+                if user.streak < 0:
+                    user.streak = int(user.streak) + (-1)
+                else:
+                    user.streak = -1
+
             user.mw = int(user.mw) + won
             user.ml = int(user.ml) + lost
 
