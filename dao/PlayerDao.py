@@ -33,17 +33,17 @@ class PlayerRecord:
 
   def get_emoji(self):
     print("Streak for player_name: " + self.player_name + " , streak: " + str(self.streak))
-    if self.streak == 3:
+    if self.streak == 1:
       return ":fire:"
-    elif self.streak == 4:
+    elif self.streak == 2:
       return "<a:blue_flame:1299111622807130132>"
-    elif self.streak >= 5:
+    elif self.streak >= 3:
       return "<a:2788demonshit:1299111278572470423>"
-    elif self.streak == -3:
+    elif self.streak == -1:
       return ":monkey:"
-    elif self.streak == -4:
+    elif self.streak == -2:
       return "<:shitter:1299107333095297116>"
-    elif self.streak <= -5:
+    elif self.streak <= -3:
       return "<a:spin_poop:1299111996964470805>"
 
     return ""
