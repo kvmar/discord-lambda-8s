@@ -34,7 +34,10 @@ venmo = VenmoApiAccessor()
 def create_queue_resources(guild_id: str, queue_name: str):
 
     response = queue_dao.get_queue(guild_id=guild_id, queue_id=queue_name)
-    embed = Embedding(f"Underworld 8s {queue_name}", f"Queue size: {len(response.queue)}", color=0x880808)
+    embed = Embedding(title=f"Underworld 8s {queue_name}",
+                      desc=f"Queue size: {len(response.queue)}",
+                      thumbnail="https://media4.giphy.com/media/gzMUaaoPMxxZ1zoUYZ/200w.gif",
+                      color=0x237FEB)
 
     print(f'Queue record: {response} for guild_id: {guild_id}')
 
@@ -337,7 +340,7 @@ def generate_match_done_embed(team1, team2, guild_id, queue_record: QueueRecord)
     return Embedding(
         f"Match Result - {queue_record.queue_id}",
         f'{team_str}',
-        color=0x880808,
+        color=0x237FEB,
     )
 
 def cancel_match(inter: Interaction, queue_id: str):
@@ -417,10 +420,11 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
             queue_str = queue_str + player_data.player_name + player_data.get_emoji() + "\n"
 
         embed = Embedding(
-            f"Underworld 8s {record.queue_id}",
-            f'Queue size: {len(record.queue)}\n\n{queue_str}',
-            color=0x880808,
+            title=f"Underworld 8s {record.queue_id}",
+            desc=f'Queue size: {len(record.queue)}\n\n{queue_str}',
+            color=0x237FEB,
         )
+
         component = Components()
         component.add_button("Join queue", f"join_queue_custom_id#{record.queue_id}", False, 1)
         component.add_button("Leave queue", f"leave_queue_custom_id#{record.queue_id}", False, 4)
@@ -455,7 +459,7 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         embed = Embedding(
             f"Underworld 8s {record.queue_id}",
             f"{whose_pick}\n\n{team1_str}\n{team2_str}",
-            color=0x880808,
+            color=0x237FEB,
         )
 
         components = get_player_pick_btns(record, record.queue_id)
@@ -478,7 +482,7 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         embed = Embedding(
             f"Underworld 8s {record.queue_id}",
             f"{team1_str}\n{team2_str}\n{map_str}",
-            color=0x880808,
+            color=0x237FEB,
         )
 
         component = Components()
