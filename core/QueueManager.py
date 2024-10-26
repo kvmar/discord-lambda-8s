@@ -302,7 +302,7 @@ def team_2_won(inter: Interaction, queue_id: str):
             if response.money_queue:
                 venmo.post_match(win_team=team2, lose_team=team1, interaction=inter)
             inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id, queue_record=response)])
-            LeaderboardManager.post_leaderboard(queue_record=response, inter=inter)
+            LeaderboardManager.post_leaderboard_pretty(queue_record=response, inter=inter)
             if resp is None:
                 return None
 
