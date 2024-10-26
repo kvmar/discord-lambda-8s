@@ -23,9 +23,9 @@ class Embedding:
             "color": self.color if self.color else None,
             "fields": self.fields if self.fields else None,
             "footer": self.footer if self.footer else None,
-            "thumbnail": self.thumbnail if {
+            "thumbnail": {
                 "url": self.thumbnail
-            } else None
+            } if self.thumbnail else None
         }
     
 
