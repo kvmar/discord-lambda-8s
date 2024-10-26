@@ -422,6 +422,7 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         embed = Embedding(
             title=f"Underworld 8s {record.queue_id}",
             desc=f'Queue size: {len(record.queue)}\n\n{queue_str}',
+            thumbnail="https://media4.giphy.com/media/gzMUaaoPMxxZ1zoUYZ/200w.gif",
             color=0x237FEB,
         )
 
