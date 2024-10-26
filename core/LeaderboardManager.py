@@ -65,6 +65,7 @@ def post_leaderboard_pretty(queue_record: QueueRecord, inter: Interaction):
     l = ""
     sr = ""
 
+    rank = 1
     for user in sorted_player_list:
         user_data = list()
         print(f"Got player: {user.player_name} with elo {user.elo}")
