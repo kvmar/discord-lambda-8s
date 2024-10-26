@@ -70,7 +70,7 @@ def post_leaderboard_pretty(queue_record: QueueRecord, inter: Interaction):
         user_data = list()
         print(f"Got player: {user.player_name} with elo {user.elo}")
         if int(user.mw) + int(user.ml) >= 10:
-            rank_str = rank_str + "\n" + rank
+            rank_str = rank_str + "\n" + str(rank)
             name = name + "\n" + str(user.player_name)
             p = p + "\n" + str((int(user.mw) + int(user.ml)))
             w = w + "\n" + str((int(user.mw)))
