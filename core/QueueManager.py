@@ -95,14 +95,14 @@ def find_diff(tuple):
     idx = 0
     for i in tuple[0]:
         if idx < 4:
-            sum_team_1 = sum_team_1 + i.elo
+            sum_team_1 = sum_team_1 + i.get_rating
             idx = idx + 1
 
     idx = 0
     sum_team_2 = 0
     for i in tuple[1]:
         if idx < 4:
-            sum_team_2 = sum_team_2 + i.elo
+            sum_team_2 = sum_team_2 + i.get_rating()
             idx = idx + 1
     return abs(sum_team_1 - sum_team_2)
 
@@ -135,13 +135,13 @@ def findMinSRDiff(queue: QueueRecord):
         player = player_dao.get_player(guild_id=queue.guild_id, player_id=user)
         player_list.append(player)
 
-    player_list_sorted = sorted(player_list, key= lambda x: x.elo)
+    player_list_sorted = sorted(player_list, key= lambda x: x.get_rating())
     diff = 10**20
 
     caps = list()
     for i in range(len(player_list)-1):
-        if player_list_sorted[i+1].elo - player_list_sorted[i].elo < diff:
-            diff = player_list_sorted[i+1].elo - player_list_sorted[i].elo
+        if player_list_sorted[i+1].get_rating() - player_list_sorted[i].get_rating() < diff:
+            diff = player_list_sorted[i+1].get_rating() - player_list_sorted[i].get_rating()
             caps = list()
             caps.append(player_list_sorted[i+1].player_id)
             caps.append(player_list_sorted[i].player_id)
@@ -284,14 +284,14 @@ def generate_match_done_embed(team1, team2, guild_id, queue_record: QueueRecord)
     for user in team1:
         player_data = player_dao.get_player(guild_id=guild_id, player_id=user)
 
-        player_str = player_data.player_name + str(player_data.get_streak()) + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + f")\n"
+        player_str = player_data.player_name + str(player_data.get_streak()) + " " + str(int(float(player_data.get_rating()) * 100)) + " (" + player_data.delta + f")\n"
         team_str = team_str + player_str
 
     team_str = team_str + "\nTeam 2:\n"
     for user in team2:
         player_data = player_dao.get_player(guild_id=guild_id, player_id=user)
 
-        player_str = player_data.player_name + str(player_data.get_streak()) + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + f")\n"
+        player_str = player_data.player_name + str(player_data.get_streak()) + " " + str(int(float(player_data.get_rating()) * 100)) + " (" + player_data.delta + f")\n"
         team_str = team_str + player_str
 
     return Embedding(
@@ -426,12 +426,12 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         team1_str = "Team 1: \n"
         for user in record.team_1:
             player_data = player_dao.get_player(record.guild_id, user)
-            team1_str = team1_str + player_data.player_name + str(player_data.get_streak()) + ": " + str(int(float(player_data.elo) * 100)) + "\n"
+            team1_str = team1_str + player_data.player_name + str(player_data.get_streak()) + ": " + str(int(float(player_data.get_rating()) * 100)) + "\n"
 
         team2_str = "Team 2: \n"
         for user in record.team_2:
             player_data = player_dao.get_player(record.guild_id, user)
-            team2_str = team2_str + player_data.player_name + str(player_data.get_streak()) + ": " + str(int(float(player_data.elo) * 100)) + "\n"
+            team2_str = team2_str + player_data.player_name + str(player_data.get_streak()) + ": " + str(int(float(player_data.get_rating()) * 100)) + "\n"
 
         map_str = "Maps: \n"
         for map in record.maps:

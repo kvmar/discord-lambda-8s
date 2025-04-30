@@ -15,7 +15,7 @@ player_dao = PlayerDao()
 
 class TrueSkillAccessor:
     def __init__(self) -> None:
-        self.env = TrueSkill(draw_probability=0)
+        self.env = TrueSkill(draw_probability=0, tau=0.5)
 
     def post_match(self, win_team: list, lose_team: list, guild_id: str):
         win_team_ratings = self.get_player_data(win_team, guild_id)
@@ -70,29 +70,15 @@ class TrueSkillAccessor:
             user.mw = int(user.mw) + won
             user.ml = int(user.ml) + lost
 
-            user.delta = str(int((float(new_ratings[tuple_idx][idx].mu) - float(user.elo)) * 100))
-            if float(new_ratings[tuple_idx][idx].mu) - float(user.elo) >= 0:
-                user.delta = "+" + user.delta
+            old_rating = user.get_rating()
 
             user.elo = float(new_ratings[tuple_idx][idx].mu)
             user.sigma = float(new_ratings[tuple_idx][idx].sigma)
-            print(f"Writing player_data record to {user}")
-            player_dao.put_player(user)
-            idx = idx + 1
+            new_rating = user.get_rating()
 
-    def update_sr_ratings(self, new_ratings, team_ratings: list[PlayerRecord], tuple_idx: int):
-        idx = 0
-
-        for user in team_ratings:
-            prev_sr = user.sr
-            user.sr = float(new_ratings[tuple_idx][idx].mu)
-            user.sr_sigma = float(new_ratings[tuple_idx][idx].sigma)
-            user.sr = user.sr + (user.elo - user.sr)/8.33
-
-
-            user.sr_delta = str(int(float((float(user.sr) - float(prev_sr)) * 100)))
-            if float(user.sr) - float(prev_sr) >= 0:
-                user.sr_delta = "+" + user.sr_delta
+            user.delta = str(int((float(new_rating) - float(old_rating)) * 100))
+            if int((float(new_rating) - float(old_rating)) * 100) >= 0:
+                user.delta = "+" + user.delta
 
             print(f"Writing player_data record to {user}")
             player_dao.put_player(user)

@@ -45,6 +45,9 @@ class PlayerRecord:
 
     return ""
 
+  def get_rating(self):
+      return float(self.elo - (2 * self.sigma))
+
 
 
 class PlayerDao:
