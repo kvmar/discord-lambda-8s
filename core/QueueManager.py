@@ -1,18 +1,13 @@
-import itertools
 from datetime import datetime
-import random
 
 from core import LeaderboardManager
-from dao.PlayerBankDao import PlayerBankRecord, PlayerBankDao
 from dao.PlayerDao import PlayerDao, PlayerRecord
 from dao.QueueDao import QueueDao, QueueRecord
 from discord_lambda import Embedding, Interaction
 from discord_lambda import Components
 import random
-from itertools import chain, combinations
 
 from trueskillapi import TrueSkillAccessor
-from venmoapi import VenmoApiAccessor
 from more_itertools import set_partitions
 
 join_queue_custom_id = "join_queue"
@@ -27,9 +22,7 @@ team_2_won_custom_id = "team_2_won"
 
 queue_dao = QueueDao()
 player_dao = PlayerDao()
-player_bank_dao = PlayerBankDao()
 ts = TrueSkillAccessor()
-venmo = VenmoApiAccessor()
 
 def create_queue_resources(guild_id: str, queue_name: str):
 
@@ -56,30 +49,6 @@ def create_queue_resources(guild_id: str, queue_name: str):
 
 def add_player(inter: Interaction, queue_id: str):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
-    player_data = player_dao.get_player(guild_id=inter.guild_id, player_id=inter.user_id)
-
-    if response.money_queue:
-        if player_data is None:
-            embed = Embedding("Kali 8s Bot", f"{inter.username} you must play 1 free 8s match before playing for money :smiley:", color=0x00FF00)
-            inter.send_message(channel_id=response.channel_id, embeds=[embed], ephemeral=False)
-            return
-
-        player_bank_record = player_bank_dao.get_player_bank(player_id=inter.user_id)
-        if player_bank_record is None:
-            embed = Embedding("Kali 8s Bot", f"{player_data.player_name} register to Money 8s first using /register :smiley:", color=0x00FF00)
-            inter.send_message(channel_id=response.channel_id, embeds=[embed], ephemeral=False)
-            return
-
-        if not player_bank_record.registration_complete:
-            embed = Embedding("Kali 8s Bot", f"Registration still pending for user {player_data.player_name} with venmo: {player_bank_record.venmo_user}. Please accept venmo request :smiley:", color=0x00FF00)
-            inter.send_message(channel_id=response.channel_id, embeds=[embed], ephemeral=False)
-            return
-
-        if player_bank_record.credits < 1:
-            embed = Embedding("Kali 8s Bot", f"{player_data.player_name} you need atleast a balance of $1 to join queue :smiley:", color=0x00FF00)
-            inter.send_message(channel_id=response.channel_id, embeds=[embed], ephemeral=False)
-            return
-
 
     curr_time = int(datetime.utcnow().timestamp())
     if curr_time > response.expiry and len(response.team_1) == 0 and len(response.team_2) == 0:
@@ -259,8 +228,6 @@ def team_1_won(inter: Interaction, queue_id: str):
             resp = queue_dao.put_queue(response)
             ts.post_match(win_team=team1, lose_team=team2, guild_id=inter.guild_id)
 
-            if response.money_queue:
-                venmo.post_match(win_team=team1, lose_team=team2)
             inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id, queue_record=response)])
             LeaderboardManager.post_leaderboard(queue_record=response, inter=inter)
             if resp is None:
@@ -299,8 +266,6 @@ def team_2_won(inter: Interaction, queue_id: str):
             resp = queue_dao.put_queue(response)
             ts.post_match(win_team=team2, lose_team=team1, guild_id=inter.guild_id)
 
-            if response.money_queue:
-                venmo.post_match(win_team=team2, lose_team=team1, interaction=inter)
             inter.send_message(channel_id=response.result_channel_id, embeds=[generate_match_done_embed(team1=team1, team2=team2, guild_id=inter.guild_id, queue_record=response)])
             LeaderboardManager.post_leaderboard(queue_record=response, inter=inter)
             if resp is None:
@@ -318,23 +283,15 @@ def generate_match_done_embed(team1, team2, guild_id, queue_record: QueueRecord)
     team_str = "Team 1:\n"
     for user in team1:
         player_data = player_dao.get_player(guild_id=guild_id, player_id=user)
-        bank_details = ""
-        if queue_record.money_queue:
-            player_bank_record = player_bank_dao.get_player_bank(user)
-            bank_details = f" ${player_bank_record.earnings}"
 
-        player_str = player_data.player_name + str(player_data.get_emoji()) + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + f"){bank_details}\n"
+        player_str = player_data.player_name + str(player_data.get_streak()) + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + f")\n"
         team_str = team_str + player_str
 
     team_str = team_str + "\nTeam 2:\n"
     for user in team2:
         player_data = player_dao.get_player(guild_id=guild_id, player_id=user)
-        bank_details = ""
-        if queue_record.money_queue:
-            player_bank_record = player_bank_dao.get_player_bank(user)
-            bank_details = f" ${player_bank_record.earnings}"
 
-        player_str = player_data.player_name + str(player_data.get_emoji()) + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + f"){bank_details}\n"
+        player_str = player_data.player_name + str(player_data.get_streak()) + " " + str(int(float(player_data.elo) * 100)) + " (" + player_data.delta + f")\n"
         team_str = team_str + player_str
 
     return Embedding(
@@ -417,7 +374,7 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         queue_str = ""
         for user in record.queue:
             player_data = player_dao.get_player(record.guild_id, user)
-            queue_str = queue_str + player_data.player_name + player_data.get_emoji() + "\n"
+            queue_str = queue_str + player_data.player_name + player_data.get_streak() + "\n"
 
         embed = Embedding(
             title=f"Underworld 8s {record.queue_id}",
@@ -469,12 +426,12 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         team1_str = "Team 1: \n"
         for user in record.team_1:
             player_data = player_dao.get_player(record.guild_id, user)
-            team1_str = team1_str + player_data.player_name + str(player_data.get_emoji()) + ": " + str(int(float(player_data.elo) * 100)) + "\n"
+            team1_str = team1_str + player_data.player_name + str(player_data.get_streak()) + ": " + str(int(float(player_data.elo) * 100)) + "\n"
 
         team2_str = "Team 2: \n"
         for user in record.team_2:
             player_data = player_dao.get_player(record.guild_id, user)
-            team2_str = team2_str + player_data.player_name + str(player_data.get_emoji()) + ": " + str(int(float(player_data.elo) * 100)) + "\n"
+            team2_str = team2_str + player_data.player_name + str(player_data.get_streak()) + ": " + str(int(float(player_data.elo) * 100)) + "\n"
 
         map_str = "Maps: \n"
         for map in record.maps:

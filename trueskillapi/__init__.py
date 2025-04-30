@@ -34,18 +34,6 @@ class TrueSkillAccessor:
         self.update_ratings(new_ratings, win_team_ratings, 0)
         self.update_ratings(new_ratings, lose_team_ratings, 1)
 
-        win_team_ratings_tuple = list()
-        lose_team_ratings_tuple = list()
-        for user in win_team_ratings:
-            win_team_ratings_tuple.append(Rating(float(user.sr), float(user.sr_sigma)))
-
-        for user in lose_team_ratings:
-            lose_team_ratings_tuple.append(Rating(float(user.sr), float(user.sr_sigma)))
-
-        new_ratings = self.env.rate([tuple(win_team_ratings_tuple), tuple(lose_team_ratings_tuple)], ranks=[0, 1])
-
-        #self.update_sr_ratings(new_ratings, win_team_ratings, 0)
-        #self.update_sr_ratings(new_ratings, lose_team_ratings, 1)
 
     def get_player_data(self, team: list, guild_id: str) -> list[PlayerRecord]:
         player_data_list = list()

@@ -1,13 +1,12 @@
 import json
 import os
-from datetime import datetime, timedelta
 from decimal import Decimal
 
 import boto3
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 
-from dao import set_default, DecimalEncoder
+from dao import DecimalEncoder
 
 table_name = "GuildToLeaderboardMappingTable"
 

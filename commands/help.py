@@ -1,5 +1,4 @@
-from core import QueueManager
-from discord_lambda import Embedding, CommandRegistry, Interaction, CommandArg
+from discord_lambda import Embedding, CommandRegistry, Interaction
 
 def help(inter: Interaction, command: str = "help") -> None:
   embed = None
@@ -10,7 +9,7 @@ def help(inter: Interaction, command: str = "help") -> None:
                     "`queue`\nCreate an 8s queue.\n",
                     False)
     embed.add_field("About",
-                    "This bot was developed by kumar.\n" \
+                    "This bot was developed by kumar.\n"
                     "Please visit the [GitHub](https://github.com/novayammygang/discord-lambda-8s) to submit ideas or bugs.\n",
                     False)
 
