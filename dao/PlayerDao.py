@@ -55,7 +55,7 @@ class PlayerRecord:
       elif rating <= 1000: 
         return ":Silver:" + " "
       elif rating <= 1200:
-        return ":Gold:" + " "
+        return ":monkey:" + " "
       elif rating <= 1400:
         return ":Diamond:" + " "
       elif rating <= 1600:
