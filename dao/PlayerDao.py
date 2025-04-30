@@ -61,7 +61,7 @@ class PlayerRecord:
       elif rating <= 1600:
         return ":GrandMaster:"
       elif rating <= 1800:
-        return ":Celestial":
+        return ":Celestial:"
       elif rating <= 2000:
         return ":Eternity:"
       else: 
