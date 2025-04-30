@@ -48,6 +48,24 @@ class PlayerRecord:
   def get_rating(self):
       return float(self.elo - (2 * self.sigma))
 
+  def get_rank(self): 
+      rating = float(self.elo - (2 * self.sigma)) * 1000
+      if rating <= 500: 
+        return ":Bronze:"
+      elif rating <= 1000: 
+        return ":Silver:"
+      elif rating <= 1200:
+        return ":Gold:"
+      elif rating <= 1400:
+        return ":Diamond:"
+      elif rating <= 1600:
+        return ":GrandMaster:"
+      elif rating <= 1800:
+        return ":Celestial":
+      elif rating <= 2000:
+        return ":Eternity:"
+      else: 
+        return ":OneAboveAll:"
 
 
 class PlayerDao:
