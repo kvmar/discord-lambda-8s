@@ -76,9 +76,9 @@ class TrueSkillAccessor:
             user.sigma = float(new_ratings[tuple_idx][idx].sigma)
             new_rating = user.get_rating()
 
-            user.delta = str(int((float(new_rating) - float(old_rating)) * 100))
-            if int((float(new_rating) - float(old_rating)) * 100) >= 0:
-                user.delta = "+" + user.delta
+
+
+            user.apply_rp_change(0)
 
             print(f"Writing player_data record to {user}")
             player_dao.put_player(user)

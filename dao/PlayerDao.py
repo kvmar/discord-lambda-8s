@@ -14,13 +14,39 @@ table_name = "PlayerTable"
 if os.environ.get('BOT_ENV') == "PROD":
   table_name = "PlayerTableProd"
 
+
+RANK_ELO_RANGES = {
+  0: (-9999, 500),
+  1: (501, 1000),
+  2: (1001, 1200),
+  3: (1201, 1400),
+  4: (1401, 1600),
+  5: (1601, 1800),
+  6: (1801, 2000),
+  7: (2000, 9000),
+}
+
+RANK_SR_RANGES = {
+  0: (-9000, 100),
+  1: (101, 200),
+  2: (201, 300),
+  3: (301, 400),
+  4: (401, 500),
+  5: (601, 700),
+  6: (701, 800),
+  7: (801, 9000),
+}
+
+
 class PlayerRecord:
-  def __init__(self, guild_id: str, player_id: str, player_name: str, mw: int = 0, ml: int = 0, elo: float = 25.0, sigma: float = 8.33, delta: str = "+0.0", streak: int = 0, version: int = 0):
+  def __init__(self, guild_id: str, player_id: str, player_name: str, mw: int = 0, ml: int = 0, sr: float = 0.0, rank: int = 0, elo: float = 25.0, sigma: float = 8.33, delta: str = "+0.0", streak: int = 0, version: int = 0):
     self.guild_id = guild_id
     self.player_id = player_id
     self.player_name = player_name
     self.mw = mw
     self.ml = ml
+    self.sr = sr
+    self.rank = rank
     self.elo = elo
     self.sigma = sigma
     self.delta = delta
@@ -48,25 +74,93 @@ class PlayerRecord:
   def get_rating(self):
       return float(self.elo - (2 * self.sigma))
 
-  def get_rank(self): 
-      rating = self.get_rating() * 100
-      if rating <= 500: 
+  def calculate_proj_rank(self):
+    for rank, (min_sr, max_sr) in RANK_ELO_RANGES.items():
+      if min_sr <= self.get_rating() <= max_sr:
+        return rank
+    return max(RANK_ELO_RANGES.keys())
+
+  def calculate_sr_rank(self, calc_sr):
+    for rank, (min_sr, max_sr) in RANK_SR_RANGES.items():
+      if min_sr <= calc_sr <= max_sr:
+        return rank
+    return max(RANK_SR_RANGES.keys())
+
+  def get_rank_emoji(self):
+      if self.rank == 0:
         return "<:Bronze:1367281599250563216>" 
-      elif rating <= 1000: 
+      elif self.rank == 1:
         return "<:Silver:1367281173340094505>"
-      elif rating <= 1200:
+      elif self.rank == 2:
         return "<:Gold:1367281171729354812>"
-      elif rating <= 1400:
+      elif self.rank == 3:
         return "<:Diamond:1367281170613801101>"
-      elif rating <= 1600:
+      elif self.rank == 4:
         return "<:GrandMaster:1367282959870328842>"
-      elif rating <= 1800:
+      elif self.rank == 5:
         return "<:Celestial:1367281169137275090>"
-      elif rating <= 2000:
+      elif self.rank == 6:
         return "<:Eternity:1367281167954477158>"
       else: 
         return "<:OneAboveAll:1367281598143266949>"
 
+  def get_relative_skill(self):
+      min_sr, max_sr = RANK_ELO_RANGES[self.rank]
+      rel_skill = (self.sr - min_sr) / (max_sr - min_sr)
+      return max(0.0, min(rel_skill, 1.5))
+
+  def get_tier_gap_modifier(self):
+      tier_gap = self.calculate_proj_rank() - self.rank
+      base =  1.0 - 0.1 * tier_gap
+
+      if tier_gap > 0:
+        base += 0.2 * tier_gap
+      elif tier_gap < 0:
+          base -= 0.15 * abs(tier_gap)
+
+      return max(0.25, 1.0 - 0.1 * tier_gap)
+
+  def calculate_rp_gain(self, base_gain=10):
+    rel_skill = self.get_relative_skill()
+    bonus = 10 * rel_skill
+    modifier = self.get_tier_gap_modifier()
+    gain = (base_gain + bonus) * modifier
+    return max(1, round(gain))
+
+  def calculate_rp_loss(self, base_loss=-10):
+    rel_skill = self.get_relative_skill()
+    penalty = 10 * (1 - rel_skill)
+    modifier = self.get_tier_gap_modifier()
+    loss = (base_loss - penalty) * modifier
+    return min(0, round(loss))
+
+  def apply_rp_change(self, loss):
+      curr_rank = self.rank
+      curr_sr = self.sr
+
+      if loss == 0:
+        sr_gain = self.calculate_rp_gain()
+        new_sr = curr_sr + sr_gain
+
+        new_rank = self.calculate_sr_rank(new_sr)
+        if curr_rank != new_rank:
+            self.rank = new_rank
+        self.sr = new_sr
+        self.delta = "+" + str(self.sr - curr_sr)
+      else:
+        sr_loss = self.calculate_rp_loss()
+        new_sr = curr_sr + sr_loss
+        new_rank = self.calculate_sr_rank(new_sr)
+
+        if curr_rank != new_rank:
+          if curr_sr != RANK_SR_RANGES[self.calculate_sr_rank(curr_sr)][0]:
+            self.sr = RANK_SR_RANGES[self.calculate_sr_rank(curr_sr)][0]
+          else:
+            self.rank = new_rank
+            self.sr = new_sr
+
+        self.sr = max(0.0, self.sr)
+        self.delta = str(self.sr - curr_sr)
 
 class PlayerDao:
   def __init__(self):
@@ -128,4 +222,4 @@ class PlayerDao:
       return player_list
 
   def get_player_record_attributes(self, response):
-      return PlayerRecord(player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["ml"], elo=response["elo"], sigma=response["sigma"], delta=response["delta"], streak=response["streak"], version=response["version"])
+      return PlayerRecord(player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["ml"], sr=response["sr"], rank=response["rank"], elo=response["elo"], sigma=response["sigma"], delta=response["delta"], streak=response["streak"], version=response["version"])
