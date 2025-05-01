@@ -124,14 +124,14 @@ class PlayerRecord:
     rel_skill = self.get_relative_skill()
     bonus = 10 * rel_skill
     modifier = self.get_tier_gap_modifier()
-    gain = (base_gain + bonus) * modifier
+    gain = float((base_gain + bonus)) * float(modifier)
     return max(1, round(gain))
 
   def calculate_rp_loss(self, base_loss=-10):
     rel_skill = self.get_relative_skill()
     penalty = 10 * (1 - rel_skill)
     modifier = self.get_tier_gap_modifier()
-    loss = (base_loss - penalty) * modifier
+    loss = float((base_loss + penalty)) * float(modifier)
     return min(0, round(loss))
 
   def apply_rp_change(self, loss):
