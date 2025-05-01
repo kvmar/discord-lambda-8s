@@ -95,7 +95,7 @@ def find_diff(tuple):
     idx = 0
     for i in tuple[0]:
         if idx < 4:
-            sum_team_1 = sum_team_1 + i.get_rating
+            sum_team_1 = sum_team_1 + i.get_rating()
             idx = idx + 1
 
     idx = 0
