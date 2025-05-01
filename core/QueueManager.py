@@ -284,14 +284,14 @@ def generate_match_done_embed(team1, team2, guild_id, queue_record: QueueRecord)
     for user in team1:
         player_data = player_dao.get_player(guild_id=guild_id, player_id=user)
 
-        player_str = str(player_data.get_rank_emoji()) + player_data.player_name + str(player_data.get_streak()) + " " + str(int(float(player_data.sr))) + " (" + player_data.delta + f")\n"
+        player_str = str(player_data.get_rank_emoji()) + player_data.player_name + str(player_data.get_streak()) + " " + str(int(player_data.sr)) + " (" + player_data.delta + f")\n"
         team_str = team_str + player_str
 
     team_str = team_str + "\nTeam 2:\n"
     for user in team2:
         player_data = player_dao.get_player(guild_id=guild_id, player_id=user)
 
-        player_str = str(player_data.get_rank_emoji()) + player_data.player_name + str(player_data.get_streak()) + " " + str(int(float(player_data.sr))) + " (" + player_data.delta + f")\n"
+        player_str = str(player_data.get_rank_emoji()) + player_data.player_name + str(player_data.get_streak()) + " " + str(int(player_data.sr)) + " (" + player_data.delta + f")\n"
         team_str = team_str + player_str
 
     return Embedding(
@@ -426,12 +426,12 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         team1_str = "Team 1: \n"
         for user in record.team_1:
             player_data = player_dao.get_player(record.guild_id, user)
-            team1_str = team1_str + str(player_data.get_rank_emoji()) + player_data.player_name + str(player_data.get_streak()) + ": " + str(int(float(player_data.sr) * 100)) + "\n"
+            team1_str = team1_str + str(player_data.get_rank_emoji()) + player_data.player_name + str(player_data.get_streak()) + ": " + str(int(player_data.sr)) + "\n"
 
         team2_str = "Team 2: \n"
         for user in record.team_2:
             player_data = player_dao.get_player(record.guild_id, user)
-            team2_str = team2_str + str(player_data.get_rank_emoji()) + player_data.player_name + str(player_data.get_streak()) + ": " + str(int(float(player_data.sr))) + "\n"
+            team2_str = team2_str + str(player_data.get_rank_emoji()) + player_data.player_name + str(player_data.get_streak()) + ": " + str(int(player_data.sr)) + "\n"
 
         map_str = "Maps: \n"
         for map in record.maps:
