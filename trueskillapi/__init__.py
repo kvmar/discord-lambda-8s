@@ -70,15 +70,10 @@ class TrueSkillAccessor:
             user.mw = int(user.mw) + won
             user.ml = int(user.ml) + lost
 
-            old_rating = user.get_rating()
-
             user.elo = float(new_ratings[tuple_idx][idx].mu)
             user.sigma = float(new_ratings[tuple_idx][idx].sigma)
-            new_rating = user.get_rating()
 
-
-
-            user.apply_rp_change(0)
+            user.apply_rp_change(tuple_idx)
 
             print(f"Writing player_data record to {user}")
             player_dao.put_player(user)
