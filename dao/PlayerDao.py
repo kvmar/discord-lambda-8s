@@ -111,10 +111,10 @@ class PlayerRecord:
 
   def get_tier_gap_modifier(self):
       tier_gap = self.calculate_proj_rank() - self.rank
-      base =  1.0 - 0.1 * tier_gap
+      base =  1.0 - 0.1 * float(tier_gap)
 
       if tier_gap > 0:
-        base += 0.2 * tier_gap
+        base += 0.2 * float(tier_gap)
       elif tier_gap < 0:
           base -= 0.15 * abs(tier_gap)
 
