@@ -160,7 +160,7 @@ class PlayerRecord:
             self.sr = new_sr
 
         self.sr = max(0.0, self.sr)
-        self.delta = str(self.sr - curr_sr)
+        self.delta = str(int(float(float(self.sr) - float(curr_sr))))
 
 class PlayerDao:
   def __init__(self):
