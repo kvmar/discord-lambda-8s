@@ -228,5 +228,5 @@ class PlayerDao:
 
       rank = 0
       if response.get("rank") is not None:
-        sr = response['rank']
+        rank = response['rank']
       return PlayerRecord(player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["ml"], sr=sr, rank=rank, elo=response["elo"], sigma=response["sigma"], delta=response["delta"], streak=response["streak"], version=response["version"])
