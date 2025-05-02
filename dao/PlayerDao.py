@@ -27,7 +27,7 @@ RANK_ELO_RANGES = {
 }
 
 RANK_SR_RANGES = {
-  0: (-9000, 99),
+  0: (0, 99),
   1: (100, 199),
   2: (200, 299),
   3: (300, 399),
@@ -157,11 +157,16 @@ class PlayerRecord:
     return max(1, round(gain))
 
   def calculate_rp_loss(self, base_loss=-10):
-    rel_skill = self.get_relative_skill()
-    penalty = 10 * (1 - rel_skill)
-    modifier = self.get_tier_gap_modifier()
-    loss = float((base_loss + penalty)) * float(modifier)
-    return min(0, round(loss))
+      print("\n--- RP Loss Calculation ---")
+      rel_skill = self.get_relative_skill()
+      print(f"Relative skill: {rel_skill}")
+      penalty = 10 * (1 - rel_skill)
+      print(f"Penalty: {penalty}")
+      modifier = self.get_tier_gap_modifier()
+      print(f"Tier gap modifier: {modifier}")
+      loss = float((base_loss + penalty)) * float(modifier)
+      print(f"Calculated loss: {loss}")
+      return min(0, round(loss))
 
   def apply_rp_change(self, loss):
       print("\n=== Apply RP Change Debug ===")
