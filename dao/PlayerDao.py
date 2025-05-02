@@ -75,6 +75,8 @@ class PlayerRecord:
       return float(self.elo - (2 * self.sigma))
 
   def calculate_proj_rank(self):
+    hidden_mmr = (self.get_rating()) * 1000
+    print("Hidden_mmr: " + str(hidden_mmr))
     for rank, (min_sr, max_sr) in RANK_ELO_RANGES.items():
       if min_sr <= self.get_rating() <= max_sr:
         return rank
