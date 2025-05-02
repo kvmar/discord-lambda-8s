@@ -72,7 +72,9 @@ class PlayerRecord:
     return ""
 
   def get_rating(self):
-      return float(self.elo - (2 * self.sigma))
+      rating = float(self.elo - (2 * self.sigma))
+      print(f"ELO: {self.elo}, Sigma: {self.sigma}, Rating: {rating}")
+      return rating
 
   def calculate_proj_rank(self):
     hidden_mmr = (self.get_rating()) * 100
