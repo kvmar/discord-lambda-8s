@@ -190,7 +190,7 @@ class PlayerRecord:
         self.delta = str(int(float(new_sr - curr_sr)))
 
       if self.mw + self.ml == 10:
-        placement_rank = self.calculate_proj_rank()
+        placement_rank = max(self.rank, self.calculate_proj_rank())
         self.rank = min(4, placement_rank)
         self.sr = RANK_SR_RANGES[placement_rank][0] + 50
         self.delta = str(int(float(self.sr - curr_sr)))
