@@ -91,6 +91,8 @@ class PlayerRecord:
     return max(RANK_SR_RANGES.keys())
 
   def get_rank_emoji(self):
+      if self.mw + self.ml <= 9:
+          return "<:recruit:1367977165618024491>"
       if self.rank == 0:
         return "<:Bronze:1367281599250563216>" 
       elif self.rank == 1:
