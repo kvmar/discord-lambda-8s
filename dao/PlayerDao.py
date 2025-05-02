@@ -224,9 +224,9 @@ class PlayerDao:
   def get_player_record_attributes(self, response):
       sr = 0
       if response.get("sr") is not None:
-        sr = response['sr']
+        sr = float(response['sr'])
 
       rank = 0
       if response.get("rank") is not None:
-        rank = response['rank']
+        rank = int(response['rank'])
       return PlayerRecord(player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["ml"], sr=sr, rank=rank, elo=response["elo"], sigma=response["sigma"], delta=response["delta"], streak=response["streak"], version=response["version"])
