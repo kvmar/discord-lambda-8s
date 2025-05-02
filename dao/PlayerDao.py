@@ -75,7 +75,7 @@ class PlayerRecord:
       return float(self.elo - (2 * self.sigma))
 
   def calculate_proj_rank(self):
-    hidden_mmr = (self.get_rating()) * 1000
+    hidden_mmr = (self.get_rating()) * 100
     print("Hidden_mmr: " + str(hidden_mmr))
     for rank, (min_sr, max_sr) in RANK_ELO_RANGES.items():
       if min_sr <= self.get_rating() <= max_sr:
@@ -119,23 +119,16 @@ class PlayerRecord:
   def get_tier_gap_modifier(self):
       print("\n--- Tier Gap Modifier Debug ---")
       tier_gap = self.calculate_proj_rank() - self.rank
-      print(f"Projected Rank: {self.calculate_proj_rank()}")
-      print(f"Current Rank: {self.rank}")
-      print(f"Tier Gap: {tier_gap}")
-
-      base = 1.0 - 0.1 * float(tier_gap)
-      print(f"Initial base (1.0 - 0.1 * {tier_gap}): {base}")
+      base = 1.0
 
       if tier_gap > 0:
-        bonus = 0.2 * float(tier_gap)
-        print(f"Adding underrank bonus (0.2 * {tier_gap}): {bonus}")
-        base += bonus
+          # If projected rank is higher, gain more and lose less
+          base += 0.2 * float(tier_gap)
       elif tier_gap < 0:
-        penalty = 0.15 * abs(tier_gap)
-        print(f"Subtracting overrank penalty (0.15 * {abs(tier_gap)}): {penalty}")
-        base -= penalty
+          # If projected rank is lower, gain less and lose more
+          base -= 0.2 * abs(tier_gap)
 
-      print(f"Final modifier: {max(0.25, base)}")
+      print(f"Tier gap: {tier_gap}, Modifier: {max(0.25, base)}")
       return max(0.25, base)
 
   def calculate_rp_gain(self, base_gain=10):
