@@ -116,9 +116,9 @@ class PlayerRecord:
       if tier_gap > 0:
         base += 0.2 * float(tier_gap)
       elif tier_gap < 0:
-          base -= 0.15 * abs(tier_gap)
+        base -= 0.15 * abs(tier_gap)
 
-      return max(0.25, 1.0 - 0.1 * float(tier_gap))
+      return max(0.25, base)
 
   def calculate_rp_gain(self, base_gain=10):
     rel_skill = self.get_relative_skill()
