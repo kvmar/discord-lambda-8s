@@ -27,7 +27,7 @@ RANK_ELO_RANGES = {
 }
 
 RANK_SR_RANGES = {
-  0: (-9000, 99),
+  0: (0, 99),
   1: (100, 199),
   2: (200, 299),
   3: (300, 399),
@@ -72,11 +72,15 @@ class PlayerRecord:
     return ""
 
   def get_rating(self):
-      return float(self.elo - (2 * self.sigma))
+      rating = float(self.elo - (2 * self.sigma))
+      print(f"ELO: {self.elo}, Sigma: {self.sigma}, Rating: {rating}")
+      return rating
 
   def calculate_proj_rank(self):
+    hidden_mmr = (self.get_rating()) * 100
+    print("Hidden_mmr: " + str(hidden_mmr))
     for rank, (min_sr, max_sr) in RANK_ELO_RANGES.items():
-      if min_sr <= self.get_rating() <= max_sr:
+      if min_sr <= hidden_mmr <= max_sr:
         return rank
     return max(RANK_ELO_RANGES.keys())
 
@@ -105,36 +109,67 @@ class PlayerRecord:
         return "<:OneAboveAll:1367281598143266949>"
 
   def get_relative_skill(self):
+      print("\n--- Get Relative Skill Debug ---")
       min_sr, max_sr = RANK_SR_RANGES[self.rank]
+      print(f"SR Range for rank {self.rank}: {min_sr} to {max_sr}")
+      print(f"Current SR: {self.sr}")
+
       rel_skill = (float(self.sr) - min_sr) / (max_sr - min_sr)
+      print(f"Relative skill calculation: ({self.sr} - {min_sr}) / ({max_sr} - {min_sr}) = {rel_skill}")
       return max(0.0, min(rel_skill, 1.5))
 
   def get_tier_gap_modifier(self):
+      print("\n--- Tier Gap Modifier Debug ---")
       tier_gap = self.calculate_proj_rank() - self.rank
-      base =  1.0 - 0.1 * float(tier_gap)
+      base = 1.0
 
       if tier_gap > 0:
-        base += 0.2 * float(tier_gap)
+          # If projected rank is higher, gain more and lose less
+          base += 0.2 * float(tier_gap)
       elif tier_gap < 0:
-        base -= 0.15 * abs(tier_gap)
+          # If projected rank is lower, gain less and lose more
+          base -= 0.2 * abs(tier_gap)
 
+      print(f"Tier gap: {tier_gap}, Modifier: {max(0.25, base)}")
       return max(0.25, base)
 
   def calculate_rp_gain(self, base_gain=10):
+    print("\n=== SR Gain Calculation Debug ===")
+    print(f"Starting SR: {self.sr}")
+    print(f"Current Rank: {self.rank}")
+
     rel_skill = self.get_relative_skill()
+    print(f"Relative Skill: {rel_skill}")
+
     bonus = 10 * rel_skill
+    print(f"Bonus (10 * rel_skill): {bonus}")
+
     modifier = self.get_tier_gap_modifier()
+    print(f"Tier Gap Modifier: {modifier}")
+
     gain = float((base_gain + bonus)) * float(modifier)
+    print(f"Final Calculation:")
+    print(f"({base_gain} + {bonus}) * {modifier} = {gain}")
+    print(f"Rounded gain: {round(gain)}")
     return max(1, round(gain))
 
   def calculate_rp_loss(self, base_loss=-10):
-    rel_skill = self.get_relative_skill()
-    penalty = 10 * (1 - rel_skill)
-    modifier = self.get_tier_gap_modifier()
-    loss = float((base_loss + penalty)) * float(modifier)
-    return min(0, round(loss))
+      print("\n--- RP Loss Calculation ---")
+      rel_skill = self.get_relative_skill()
+      print(f"Relative skill: {rel_skill}")
+      penalty = 10 * (1 - rel_skill)
+      print(f"Penalty: {penalty}")
+      modifier = self.get_tier_gap_modifier()
+      print(f"Tier gap modifier: {modifier}")
+      loss = float((base_loss + penalty)) * float(modifier)
+      print(f"Calculated loss: {loss}")
+      return min(0, round(loss))
 
   def apply_rp_change(self, loss):
+      print("\n=== Apply RP Change Debug ===")
+      print(f"Loss flag: {loss}")
+      print(f"Initial SR: {self.sr}")
+      print(f"Initial Rank: {self.rank}")
       curr_rank = self.rank
       curr_sr = self.sr
 
@@ -155,10 +190,10 @@ class PlayerRecord:
         self.delta = str(int(float(new_sr - curr_sr)))
 
       if self.mw + self.ml == 10:
-        placement_rank = self.calculate_proj_rank()
-        self.rank = min(4, placement_rank)
-        self.sr = max(self.sr, RANK_SR_RANGES[placement_rank][0])
-        self.delta = "+" + str(int(float(self.sr - curr_sr)))
+        placement_rank = max(self.rank, self.calculate_proj_rank())
+        self.rank = min(3, placement_rank)
+        self.sr = RANK_SR_RANGES[self.rank][0] + 50
+        self.delta = str(int(float(self.sr - curr_sr)))
 
 class PlayerDao:
   def __init__(self):
