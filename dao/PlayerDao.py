@@ -105,26 +105,55 @@ class PlayerRecord:
         return "<:OneAboveAll:1367281598143266949>"
 
   def get_relative_skill(self):
+      print("\n--- Get Relative Skill Debug ---")
       min_sr, max_sr = RANK_SR_RANGES[self.rank]
+      print(f"SR Range for rank {self.rank}: {min_sr} to {max_sr}")
+      print(f"Current SR: {self.sr}")
+
       rel_skill = (float(self.sr) - min_sr) / (max_sr - min_sr)
+      print(f"Relative skill calculation: ({self.sr} - {min_sr}) / ({max_sr} - {min_sr}) = {rel_skill}")
       return max(0.0, min(rel_skill, 1.5))
 
   def get_tier_gap_modifier(self):
+      print("\n--- Tier Gap Modifier Debug ---")
       tier_gap = self.calculate_proj_rank() - self.rank
-      base =  1.0 - 0.1 * float(tier_gap)
+      print(f"Projected Rank: {self.calculate_proj_rank()}")
+      print(f"Current Rank: {self.rank}")
+      print(f"Tier Gap: {tier_gap}")
+
+      base = 1.0 - 0.1 * float(tier_gap)
+      print(f"Initial base (1.0 - 0.1 * {tier_gap}): {base}")
 
       if tier_gap > 0:
-        base += 0.2 * float(tier_gap)
+        bonus = 0.2 * float(tier_gap)
+        print(f"Adding underrank bonus (0.2 * {tier_gap}): {bonus}")
+        base += bonus
       elif tier_gap < 0:
-        base -= 0.15 * abs(tier_gap)
+        penalty = 0.15 * abs(tier_gap)
+        print(f"Subtracting overrank penalty (0.15 * {abs(tier_gap)}): {penalty}")
+        base -= penalty
 
+      print(f"Final modifier: {max(0.25, base)}")
       return max(0.25, base)
 
   def calculate_rp_gain(self, base_gain=10):
+    print("\n=== SR Gain Calculation Debug ===")
+    print(f"Starting SR: {self.sr}")
+    print(f"Current Rank: {self.rank}")
+
     rel_skill = self.get_relative_skill()
+    print(f"Relative Skill: {rel_skill}")
+
     bonus = 10 * rel_skill
+    print(f"Bonus (10 * rel_skill): {bonus}")
+
     modifier = self.get_tier_gap_modifier()
+    print(f"Tier Gap Modifier: {modifier}")
+
     gain = float((base_gain + bonus)) * float(modifier)
+    print(f"Final Calculation:")
+    print(f"({base_gain} + {bonus}) * {modifier} = {gain}")
+    print(f"Rounded gain: {round(gain)}")
     return max(1, round(gain))
 
   def calculate_rp_loss(self, base_loss=-10):
@@ -135,6 +164,10 @@ class PlayerRecord:
     return min(0, round(loss))
 
   def apply_rp_change(self, loss):
+      print("\n=== Apply RP Change Debug ===")
+      print(f"Loss flag: {loss}")
+      print(f"Initial SR: {self.sr}")
+      print(f"Initial Rank: {self.rank}")
       curr_rank = self.rank
       curr_sr = self.sr
 
