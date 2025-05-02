@@ -16,25 +16,25 @@ if os.environ.get('BOT_ENV') == "PROD":
 
 
 RANK_ELO_RANGES = {
-  0: (-9999, 500),
-  1: (501, 1000),
-  2: (1001, 1200),
-  3: (1201, 1400),
-  4: (1401, 1600),
-  5: (1601, 1800),
-  6: (1801, 2000),
+  0: (-9999, 499),
+  1: (500, 999),
+  2: (1000, 1199),
+  3: (1200, 1399),
+  4: (1400, 1599),
+  5: (1600, 1799),
+  6: (1800, 1999),
   7: (2000, 9000),
 }
 
 RANK_SR_RANGES = {
-  0: (-9000, 100),
-  1: (101, 200),
-  2: (201, 300),
-  3: (301, 400),
-  4: (401, 500),
-  5: (601, 700),
-  6: (701, 800),
-  7: (801, 9000),
+  0: (-9000, 99),
+  1: (100, 199),
+  2: (200, 299),
+  3: (300, 399),
+  4: (400, 499),
+  5: (500, 599),
+  6: (600, 699),
+  7: (700, 9000),
 }
 
 
@@ -153,6 +153,12 @@ class PlayerRecord:
         self.sr = new_sr
         self.rank = self.calculate_sr_rank(new_sr)
         self.delta = str(int(float(new_sr - curr_sr)))
+
+      if self.mw + self.ml == 10:
+        placement_rank = self.calculate_proj_rank()
+        self.rank = min(4, placement_rank)
+        self.sr = RANK_SR_RANGES[placement_rank][0]
+        self.delta = "+" + str(int(float(self.sr - curr_sr)))
 
 class PlayerDao:
   def __init__(self):
