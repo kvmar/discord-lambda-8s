@@ -146,7 +146,7 @@ class PlayerRecord:
         if curr_rank != new_rank:
             self.rank = new_rank
         self.sr = new_sr
-        self.delta = "+" + str(self.sr - curr_sr)
+        self.delta = "+" + str(int(float(self.sr - curr_sr)))
       else:
         sr_loss = self.calculate_rp_loss()
         new_sr = curr_sr + sr_loss
