@@ -148,19 +148,11 @@ class PlayerRecord:
         self.sr = new_sr
         self.delta = "+" + str(int(float(self.sr - curr_sr)))
       else:
-        sr_loss = self.calculate_rp_loss()
-        new_sr = curr_sr + sr_loss
-        new_rank = self.calculate_sr_rank(new_sr)
-
-        if curr_rank != new_rank:
-          if curr_sr != RANK_SR_RANGES[self.calculate_sr_rank(curr_sr)][0]:
-            self.sr = RANK_SR_RANGES[self.calculate_sr_rank(curr_sr)][0]
-          else:
-            self.rank = new_rank
-            self.sr = new_sr
-
-        self.sr = max(0.0, self.sr)
-        self.delta = str(int(float(float(self.sr) - float(curr_sr))))
+        sr_loss = self.calculate_rp_loss()  # This should return a negative number
+        new_sr = max(0, curr_sr + sr_loss)  # Prevent SR from going below 0
+        self.sr = new_sr
+        self.rank = self.calculate_sr_rank(new_sr)
+        self.delta = str(int(float(new_sr - curr_sr)))
 
 class PlayerDao:
   def __init__(self):
