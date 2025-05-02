@@ -105,8 +105,8 @@ class PlayerRecord:
         return "<:OneAboveAll:1367281598143266949>"
 
   def get_relative_skill(self):
-      min_sr, max_sr = RANK_ELO_RANGES[self.rank]
-      rel_skill = (float(self.get_rating()) - min_sr) / (max_sr - min_sr)
+      min_sr, max_sr = RANK_SR_RANGES[self.rank]
+      rel_skill = (float(self.sr) - min_sr) / (max_sr - min_sr)
       return max(0.0, min(rel_skill, 1.5))
 
   def get_tier_gap_modifier(self):
