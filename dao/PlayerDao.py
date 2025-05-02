@@ -80,7 +80,7 @@ class PlayerRecord:
     hidden_mmr = (self.get_rating()) * 100
     print("Hidden_mmr: " + str(hidden_mmr))
     for rank, (min_sr, max_sr) in RANK_ELO_RANGES.items():
-      if min_sr <= self.get_rating() <= max_sr:
+      if min_sr <= hidden_mmr <= max_sr:
         return rank
     return max(RANK_ELO_RANGES.keys())
 
