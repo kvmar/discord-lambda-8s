@@ -164,6 +164,15 @@ class PlayerRecord:
       modifier = self.get_tier_gap_modifier()
       print(f"Tier gap modifier: {modifier}")
       loss = float((base_loss + penalty)) * float(modifier)
+      # Check if loss would drop below rank minimum
+      min_sr_for_rank = RANK_SR_RANGES[self.rank][0]
+      curr_sr = self.sr
+
+      if curr_sr + loss < min_sr_for_rank:
+          minimum_loss = -5
+          loss = max(minimum_loss, curr_sr - min_sr_for_rank)
+          print(f"Near rank boundary. Adjusted loss to: {loss}")
+
       print(f"Calculated loss: {loss}")
       return min(0, round(loss))
 
