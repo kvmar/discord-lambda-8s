@@ -3,8 +3,10 @@ from discord_lambda import CommandRegistry, Interaction, CommandArg
 
 def queue(inter: Interaction, queue_name: str = "1") -> None:
   print(f"Creating queue with: {queue_name} in guild_id: {inter.guild_id}")
-
-  (embed, component) = QueueManager.create_queue_resources(inter.guild_id, queue_name)
+  if inter.guild_id != "1123491132765110302":
+    (embed, component) = QueueManager.add_player(inter.guild_id, queue_name)
+  else:
+    (embed, component) = QueueManager.create_queue_resources(inter.guild_id, queue_name)
 
   resp = inter.send_response(components=[component], embeds=[embed], ephemeral=False)
   print(f'Queue message_id: {resp}')
