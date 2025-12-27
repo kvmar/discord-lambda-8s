@@ -377,7 +377,7 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         for user in record.queue:
             player_data = player_dao.get_player(record.guild_id, user)
             queue_str = queue_str + str(player_data.get_rank_emoji()) + player_data.player_name + player_data.get_streak() + "\n"
-        leaderboard_str = "[Leaderboard](https://discord.com/channels/1123491132765110302/1165334218230992926)\n[Results](https://discord.com/channels/1123491132765110302/1166071583719309322)"
+        leaderboard_str = "[Leaderboard](https://discord.com/channels/1123491132765110302/1165334218230992926)\n[Results](https://discord.com/channels/1123491132765110302/1166071583719309322)\n[Ranks](https://discord.com/channels/1123491132765110302/1371608741014667344)"
         embed = Embedding(
             title=f"Underworld 8s {record.queue_id}",
             desc=f'Queue size: {len(record.queue)}\n\n{queue_str}\n\n\n{leaderboard_str}',
