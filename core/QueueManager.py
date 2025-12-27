@@ -48,6 +48,8 @@ def create_queue_resources(guild_id: str, queue_name: str):
 
 
 def add_player(inter: Interaction, queue_id: str):
+    if inter.user_id == '501844587846041600':
+        return None
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
 
     curr_time = int(datetime.utcnow().timestamp())
