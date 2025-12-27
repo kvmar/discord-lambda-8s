@@ -377,10 +377,10 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         for user in record.queue:
             player_data = player_dao.get_player(record.guild_id, user)
             queue_str = queue_str + str(player_data.get_rank_emoji()) + player_data.player_name + player_data.get_streak() + "\n"
-
+        leaderboard_str = "[Leaderboard](https://discord.com/channels/1123491132765110302/1165334218230992926)\n[Results](https://discord.com/channels/1123491132765110302/1166071583719309322)"
         embed = Embedding(
             title=f"Underworld 8s {record.queue_id}",
-            desc=f'Queue size: {len(record.queue)}\n\n{queue_str}',
+            desc=f'Queue size: {len(record.queue)}\n\n{queue_str}\n\n\n{leaderboard_str}',
             thumbnail="https://media4.giphy.com/media/gzMUaaoPMxxZ1zoUYZ/200w.gif",
             color=0x237FEB,
         )
@@ -425,12 +425,12 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         components = get_player_pick_btns(record, record.queue_id)
         return [embed], components
     elif len(record.team_1) == 4 and len(record.team_2) == 4:
-        team1_str = "Team 1: \n"
+        team1_str = "[Team 1](https://discord.com/channels/1123491132765110302/1123491133213921394): \n"
         for user in record.team_1:
             player_data = player_dao.get_player(record.guild_id, user)
             team1_str = team1_str + str(player_data.get_rank_emoji()) + player_data.player_name + str(player_data.get_streak()) + ": " + str(int(player_data.sr)) + "\n"
 
-        team2_str = "Team 2: \n"
+        team2_str = "[Team 2](https://discord.com/channels/1123491132765110302/1123503312906506270): \n"
         for user in record.team_2:
             player_data = player_dao.get_player(record.guild_id, user)
             team2_str = team2_str + str(player_data.get_rank_emoji()) + player_data.player_name + str(player_data.get_streak()) + ": " + str(int(player_data.sr)) + "\n"
