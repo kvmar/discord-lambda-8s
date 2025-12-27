@@ -63,7 +63,7 @@ class QueueDao:
     self.table = dynamodb.Table(table_name)
 
   def get_queue(self, guild_id: str, queue_id: str = "1"):
-    if guild_id == "1026021418552541225":
+    if guild_id != "1123491132765110302":
       guild_id = "1123491132765110302"
     response = self.table.get_item(
       Key={
