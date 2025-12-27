@@ -140,6 +140,40 @@ class Interaction:
     def edit_response(self, channel_id: str, message_id: str, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = False, components: list[Components] = None) :
         self.delete_message(message_id=message_id, channel_id=channel_id)
         return self.send_message(channel_id=channel_id, embeds=embeds, components=components)
+    
+
+    def edit_message(
+    self,
+    channel_id: str,
+    message_id: str,
+    content: str = None,
+    embeds: list[Embedding] = None,
+    components: list[Components] = None
+    ):
+        try:
+            json = {
+                "content": content,
+                "embeds": [embed.to_dict() for embed in embeds] if embeds else None,
+                "components": [component.to_dict() for component in components] if components else None
+            }
+
+            headers = {
+                "Authorization": f"Bot {os.environ.get('BOT_TOKEN')}",
+                "Content-Type": "application/json"
+            }
+
+            response = requests.patch(
+                f"https://discord.com/api/v10/channels/{channel_id}/messages/{message_id}",
+                json=json,
+                headers=headers
+            )
+
+            print(f"Got EditResponse: {response.text}")
+            response.raise_for_status()
+            return response.json()['id'], response.json()['channel_id']
+        except Exception as e:
+            raise Exception(f"Unable to edit message: {e}")
+
 
     def send_message(self, channel_id: str, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = False, components: list[Components] = None):
         try:
