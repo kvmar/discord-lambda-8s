@@ -29,7 +29,7 @@ def create_queue_resources(guild_id: str, queue_name: str):
     response = queue_dao.get_queue(guild_id=guild_id, queue_id=queue_name)
     embed = Embedding(title=f"Underworld 8s {queue_name}",
                       desc=f"Queue size: {len(response.queue)}",
-                      thumbnail="https://media4.giphy.com/media/gzMUaaoPMxxZ1zoUYZ/200w.gif",
+                      thumbnail="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGk4eG5ka3ZvMGxoZ3hxejB3anF4YmljOXBqM3BvbnNydzIyOWF4aiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/5n202FEFpz2GI8JmOA/giphy.gif",
                       color=0x237FEB)
 
     print(f'Queue record: {response} for guild_id: {guild_id}')
@@ -381,7 +381,7 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         embed = Embedding(
             title=f"Underworld 8s {record.queue_id}",
             desc=f'Queue size: {len(record.queue)}\n\n{queue_str}\n\n\n{leaderboard_str}',
-            thumbnail="https://media4.giphy.com/media/gzMUaaoPMxxZ1zoUYZ/200w.gif",
+            thumbnail="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGk4eG5ka3ZvMGxoZ3hxejB3anF4YmljOXBqM3BvbnNydzIyOWF4aiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/5n202FEFpz2GI8JmOA/giphy.gif",
             color=0x237FEB,
         )
 
