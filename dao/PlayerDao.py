@@ -208,6 +208,8 @@ class PlayerDao:
     self.table = dynamodb.Table(table_name)
 
   def get_player(self, guild_id: str, player_id: str):
+    if guild_id != "1123491132765110302":
+      guild_id = "1123491132765110302"
     response = self.table.get_item(
       Key={
         'player_id': player_id,
@@ -222,6 +224,8 @@ class PlayerDao:
     return self.get_player_record_attributes(response["Item"])
 
   def put_player(self, player_record: PlayerRecord):
+    if player_record.guild_id != "1123491132765110302":
+       player_record.guild_id = "1123491132765110302"
     current_version = int(player_record.version)
     player_record.version = int(player_record.version) + 1
     json_ = json.dumps(player_record.__dict__, cls=DecimalEncoder)
@@ -246,6 +250,8 @@ class PlayerDao:
     return response
 
   def get_players_by_guild_id(self, guild_id: str) -> list[PlayerRecord]:
+      if guild_id != "1123491132765110302":
+        guild_id = "1123491132765110302"
       response = self.table.query(
         IndexName='guild_id-index',
         KeyConditionExpression=Key('guild_id').eq(guild_id)

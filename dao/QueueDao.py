@@ -16,7 +16,7 @@ if os.environ.get('BOT_ENV') == "PROD":
 
 class QueueRecord:
   def __init__(self, guild_id: str, money_queue, queue_id: str, team_1: list, team_2: list, queue: list, cancel_votes: list, team1_votes: list, team2_votes: list, maps: list, map_set: list, version: int, expiry: int, result_channel_id: str,
-      team_1_channel_id: str, team_2_channel_id: str, message_id: str = None, channel_id: str = None):
+      team_1_channel_id: str, team_2_channel_id: str, message_id: str = None, channel_id: str = None, channel_config: dict = None):
     self.guild_id = guild_id
     self.queue_id = queue_id
     self.team_1 = team_1
@@ -35,6 +35,7 @@ class QueueRecord:
     self.expiry = expiry
     self.money_queue = money_queue
     self.result_channel_id = result_channel_id
+    self.channel_config = channel_config
 
 
   def clear_queue(self, reset_expiry: bool = True):
@@ -62,6 +63,8 @@ class QueueDao:
     self.table = dynamodb.Table(table_name)
 
   def get_queue(self, guild_id: str, queue_id: str = "1"):
+    if guild_id != "1123491132765110302":
+      guild_id = "1123491132765110302"
     response = self.table.get_item(
       Key={
         'guild_id': guild_id,
@@ -134,4 +137,4 @@ class QueueDao:
                        result_channel_id=response["result_channel_id"],
                        team_1_channel_id=response["team_1_channel_id"], team_2_channel_id=response["team_2_channel_id"],
                        team1_votes=team1_votes, team2_votes=team2_votes, maps=maps,
-                       version=response["version"], message_id=response["message_id"], channel_id=response["channel_id"])
+                       version=response["version"], message_id=response["message_id"], channel_id=response["channel_id"], channel_config=response["channel_config"])
