@@ -492,7 +492,7 @@ def update_message_id(guild_id, msg_id, channel_id, queue_id):
 
     response.message_id = msg_id
     response.channel_id = channel_id
-    response.channel_config.channel_id = msg_id
+    response.channel_config[channel_id] = msg_id
     queue_dao.put_queue(response)
 
 def update_queue_view(record: QueueRecord, embeds: list[Embedding], components: list[Components], inter: Interaction):
