@@ -224,7 +224,7 @@ class PlayerDao:
     return self.get_player_record_attributes(response["Item"])
 
   def put_player(self, player_record: PlayerRecord):
-     if player_record.guild_id == "1026021418552541225":
+    if player_record.guild_id == "1026021418552541225":
        player_record.guild_id = "1123491132765110302"
     current_version = int(player_record.version)
     player_record.version = int(player_record.version) + 1
