@@ -504,10 +504,10 @@ def update_queue_view(record: QueueRecord, embeds: list[Embedding], components: 
 
         for key, value in record.channel_config.items():
             resp = inter.edit_response(channel_id=key, message_id=value, embeds=embeds, components=components)
-        print(f'Queue message_id: {resp}')
-        update_message_id(inter.guild_id, resp[0], resp[1], record.queue_id)
+            print(f'Queue message_id: {resp}')
+            update_message_id(inter.guild_id, resp[0], resp[1], record.queue_id)
     else:
         for key, value in record.channel_config.items():
             resp = inter.edit_response(channel_id=key, message_id=value, embeds=embeds, components=components)
-        print(f'Queue message_id: {resp}')
-        update_message_id(inter.guild_id, resp[0], resp[1], record.queue_id)
+            print(f'Queue message_id: {resp}')
+            update_message_id(inter.guild_id, resp[0], resp[1], record.queue_id)
