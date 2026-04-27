@@ -24,8 +24,7 @@ def button_flow_tree(interaction: Interaction):
   elif QueueManager.cancel_match_custom_id in interaction.custom_id:
     cancel_match_button(interaction.guild_id, interaction)
 
-def join_queue_button(guild_id: str, inter: Interaction):
-  def leaderboard_page_button(guild_id: str, inter: Interaction):
+def leaderboard_page_button(guild_id: str, inter: Interaction):
   print(f"Leaderboard page button clicked: {inter.custom_id}")
 
   page = int(inter.custom_id.split("#")[1])
@@ -39,6 +38,8 @@ def join_queue_button(guild_id: str, inter: Interaction):
     content=content,
     components=[component]
   )
+
+def join_queue_button(guild_id: str, inter: Interaction):
   print("Join queue button clicked")
   resp = QueueManager.add_player(inter, inter.custom_id.split("#")[1])
 
