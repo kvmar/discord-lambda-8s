@@ -1,11 +1,13 @@
-from core import QueueManager
+from core import QueueManager, LeaderboardManager
 from discord_lambda import Interaction
 from dao.QueueDao import QueueDao
 
 queue_dao = QueueDao()
 
 def button_flow_tree(interaction: Interaction):
-  if QueueManager.join_queue_custom_id in interaction.custom_id:
+  if LeaderboardManager.leaderboard_page_custom_id in interaction.custom_id:
+    leaderboard_page_button(interaction.guild_id, interaction)
+  elif QueueManager.join_queue_custom_id in interaction.custom_id:
     join_queue_button(interaction.guild_id, interaction)
   elif QueueManager.leave_queue_custom_id in interaction.custom_id:
     leave_queue_button(interaction.guild_id, interaction)
@@ -23,6 +25,20 @@ def button_flow_tree(interaction: Interaction):
     cancel_match_button(interaction.guild_id, interaction)
 
 def join_queue_button(guild_id: str, inter: Interaction):
+  def leaderboard_page_button(guild_id: str, inter: Interaction):
+  print(f"Leaderboard page button clicked: {inter.custom_id}")
+
+  page = int(inter.custom_id.split("#")[1])
+
+  content, component = LeaderboardManager.build_leaderboard_page(guild_id, page)
+
+  leaderboard_record = LeaderboardManager.leaderboard_dao.get_leaderboard(guild_id)
+  inter.edit_message(
+    channel_id=leaderboard_record.leaderboard_channel_id,
+    message_id=leaderboard_record.leaderboard_message_id,
+    content=content,
+    components=[component]
+  )
   print("Join queue button clicked")
   resp = QueueManager.add_player(inter, inter.custom_id.split("#")[1])
 
