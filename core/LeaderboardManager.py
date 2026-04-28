@@ -68,8 +68,8 @@ def build_leaderboard_page(guild_id: str, page: int):
     for entry in page_entries:
         streak = f" {entry['streak_emoji']}" if entry['streak_emoji'] else ""
         row = (
-            f"{entry['medal']} {entry['rank_emoji']} **{entry['name']}**{streak}"
-            f"  •  SR: **{entry['sr']}** ({entry['delta']})  •  {entry['wins']}W / {entry['losses']}L"
+            f"{entry['medal']} {entry['rank_emoji']} **{entry['name']}**{streak}\n"
+            f"└─ SR: **{entry['sr']}** ({entry['delta']}) | {entry['wins']}W / {entry['losses']}L"
         )
         rows.append(row)
 
