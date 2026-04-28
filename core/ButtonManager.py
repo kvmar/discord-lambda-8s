@@ -32,6 +32,9 @@ def leaderboard_page_button(guild_id: str, inter: Interaction):
   embed, component = LeaderboardManager.build_leaderboard_page(guild_id, page)
 
   leaderboard_record = LeaderboardManager.leaderboard_dao.get_leaderboard(guild_id)
+
+  inter.defer(ephemeral=False)
+
   try:
     inter.edit_message(
       channel_id=leaderboard_record.leaderboard_channel_id,
@@ -42,7 +45,6 @@ def leaderboard_page_button(guild_id: str, inter: Interaction):
     )
   except Exception as e:
     print(f"Failed to edit leaderboard message: {e}")
-    inter.send_response(embeds=[embed], ephemeral=True)
 
 def join_queue_button(guild_id: str, inter: Interaction):
   print("Join queue button clicked")
