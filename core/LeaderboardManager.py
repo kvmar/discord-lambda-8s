@@ -29,6 +29,8 @@ def build_leaderboard_entries(guild_id: str):
             continue
 
         medal = MEDAL_EMOJIS.get(rank, f"`#{rank}`")
+        rank_emoji = user.get_rank_emoji()
+        streak_emoji = user.get_streak()
         sr = int(float(user.sr))
         delta = user.delta if (user.delta.startswith("+") or user.delta.startswith("-")) else f"+{user.delta}"
         wins = int(user.mw)
@@ -37,6 +39,8 @@ def build_leaderboard_entries(guild_id: str):
 
         entry = {
             "medal": medal,
+            "rank_emoji": rank_emoji,
+            "streak_emoji": streak_emoji,
             "name": user.player_name,
             "sr": sr,
             "delta": delta,
@@ -60,32 +64,33 @@ def build_leaderboard_page(guild_id: str, page: int):
     end = start + PAGE_SIZE
     page_entries = entries[start:end]
 
-    description = ""
+    rows = []
     for entry in page_entries:
-        description += (
-            f"{entry['medal']} **{entry['name']}**\n"
-            f"SR: **{entry['sr']}** ({entry['delta']}) • {entry['wins']}W / {entry['losses']}L\n\n"
+        streak = f" {entry['streak_emoji']}" if entry['streak_emoji'] else ""
+        row = (
+            f"{entry['medal']} {entry['rank_emoji']} **{entry['name']}**{streak}"
+            f"  •  SR: **{entry['sr']}** ({entry['delta']})  •  {entry['wins']}W / {entry['losses']}L"
         )
+        rows.append(row)
 
-    if not description:
-        description = "No players with 10+ games yet. Keep playing!"
+    description = "\n".join(rows) if rows else "No players with 10+ games yet. Keep playing!"
 
     embed = Embedding(
-        title="🏆 Season Leaderboard",
+        title="🏆  Season Leaderboard",
         desc=description,
         color=LEADERBOARD_COLOR,
     )
-    embed.set_footer(text=f"Page {page + 1}/{total_pages}")
+    embed.set_footer(text=f"Page {page + 1}/{total_pages}  •  10 games required to place")
 
     component = Components()
     component.add_button(
-        "Previous",
+        "◀ Previous",
         f"{leaderboard_page_custom_id}#{page - 1}",
         page <= 0,
         2
     )
     component.add_button(
-        "Next",
+        "Next ▶",
         f"{leaderboard_page_custom_id}#{page + 1}",
         page >= total_pages - 1,
         1
@@ -95,6 +100,7 @@ def build_leaderboard_page(guild_id: str, page: int):
 
 
 def post_leaderboard(queue_record: QueueRecord, inter: Interaction):
+    """Called automatically after a game ends — refreshes the pinned leaderboard message."""
     print("Posting leaderboard")
 
     embed, component = build_leaderboard_page(queue_record.guild_id, 0)
@@ -109,10 +115,11 @@ def post_leaderboard(queue_record: QueueRecord, inter: Interaction):
     resp = inter.send_message(
         content=None,
         embeds=[embed],
-        channel_id=leaderboard_record.leaderboard_channel_id,
-        components=[component]
+        components=[component],
+        channel_id=leaderboard_record.leaderboard_channel_id
     )
 
+    # If conditional write thrown then delete message
     leaderboard_record.leaderboard_message_id = resp[0]
     leaderboard_resp = leaderboard_dao.put_leaderboard(leaderboard_record)
     if leaderboard_resp is None:
