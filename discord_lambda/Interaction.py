@@ -105,19 +105,25 @@ class Interaction:
 
     def defer(self, ephemeral: bool = True) -> None:
         try:
-            data = {"type": 5}
+            payload = {
+                "type": 5,
+                "data": {}
+            }
             if ephemeral:
-                data["data"] = {"flags": 1 << 6}
-            requests.post(self.callback_url, json=data).raise_for_status()
+                payload["data"]["flags"] = 1 << 6
+            requests.post(self.callback_url, json=payload).raise_for_status()
         except Exception as e:
             raise Exception(f"Unable to defer response: {e}")
 
     def pong(self, ephemeral: bool = True) -> None:
         try:
-            data = {"type": 6}
+            payload = {
+                "type": 6,
+                "data": {}
+            }
             if ephemeral:
-                data["data"] = {"flags": 1 << 6}
-            requests.post(self.callback_url, json=data).raise_for_status()
+                payload["data"]["flags"] = 1 << 6
+            requests.post(self.callback_url, json=payload).raise_for_status()
         except Exception as e:
             raise Exception(f"Unable to pong response: {e}")
 
