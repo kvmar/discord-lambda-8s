@@ -16,17 +16,22 @@ class Embedding:
 
 
     def to_dict(self):
-        return {
-            "title": self.title if self.title else None,
-            "description": self.desc if self.desc else None,
-            "url": self.url if self.url else None,
-            "color": self.color if self.color else None,
-            "fields": self.fields if self.fields else None,
-            "footer": self.footer if self.footer else None,
-            "thumbnail": {
-                "url": self.thumbnail
-            } if self.thumbnail else None
-        }
+        result = {}
+        if self.title:
+            result["title"] = self.title
+        if self.desc:
+            result["description"] = self.desc
+        if self.url:
+            result["url"] = self.url
+        if self.color:
+            result["color"] = self.color
+        if self.fields:
+            result["fields"] = self.fields
+        if self.footer:
+            result["footer"] = self.footer
+        if self.thumbnail:
+            result["thumbnail"] = {"url": self.thumbnail}
+        return result
     
 
     def set_title(self, title: str):
