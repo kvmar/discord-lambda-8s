@@ -5,13 +5,13 @@ import requests
 import time
 
 class Embedding:
-    def __init__(self, title: str = "", desc: str = "", url: str = "", color: int = "", thumbnail: str = "", fields: list[dict] = [], footer: dict = {}, components: list[dict] = []):
+    def __init__(self, title: str = "", desc: str = "", url: str = "", color: int = "", thumbnail: str = "", fields: list[dict] = None, footer: dict = None, components: list[dict] = None):
         self.title = title
         self.desc = desc
         self.url = url
         self.color = color
-        self.fields = fields
-        self.footer = footer
+        self.fields = fields if fields is not None else []
+        self.footer = footer if footer is not None else {}
         self.thumbnail = thumbnail
 
 
@@ -55,8 +55,8 @@ class Embedding:
 
 
 class Components:
-    def __init__(self, components: list[dict] = []):
-        self.components = components
+    def __init__(self, components: list[dict] = None):
+        self.components = components if components is not None else []
 
     def to_dict(self):
         return {
