@@ -123,6 +123,18 @@ class Interaction:
         except Exception as e:
             raise Exception(f"Unable to pong response: {e}")
 
+    def message_update(self, embeds: list[Embedding] = None, components: list[Components] = None) -> None:
+        try:
+            data = {}
+            if embeds:
+                data["embeds"] = [embed.to_dict() for embed in embeds]
+            if components:
+                data["components"] = [component.to_dict() for component in components]
+            payload = {"type": 6, "data": data}
+            requests.post(self.callback_url, json=payload).raise_for_status()
+        except Exception as e:
+            raise Exception(f"Unable to update message: {e}")
+
     def send_response(self, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True, components: list[Components] = None) -> \
     tuple[Any, Any]:
         try:
