@@ -2,7 +2,7 @@ from dao.LeaderboardDao import LeaderboardDao
 from dao.PlayerDao import PlayerDao
 from dao.QueueDao import QueueRecord, QueueDao
 from discord_lambda import Interaction, Components
-from table2ascii import table2ascii as t2a, PresetStyle
+from discord_lambda.Interaction import Embedding
 
 
 queue_dao = QueueDao()
@@ -11,51 +11,71 @@ leaderboard_dao = LeaderboardDao()
 leaderboard_page_custom_id = "leaderboard_page"
 PAGE_SIZE = 10
 
-def build_leaderboard_rows(guild_id: str):
+MEDAL_EMOJIS = {1: "🥇", 2: "🥈", 3: "🥉"}
+LEADERBOARD_COLOR = 0xFFD700  # Gold
+
+
+def build_leaderboard_entries(guild_id: str):
     player_list = player_dao.get_players_by_guild_id(guild_id)
     sorted_player_list = sorted(player_list, key=lambda x: x.sr, reverse=True)
 
-    table = list()
+    entries = []
     rank = 1
 
     for user in sorted_player_list:
-        print(f"Got player: {user.player_name} with elo {user.sr}")
+        print(f"Got player: {user.player_name} with SR {user.sr}")
 
         if int(user.mw) + int(user.ml) < 10:
             continue
 
-        user_data = list()
-        user_data.append(rank)
-        user_data.append(str(user.player_name))
-        user_data.append(str(int(user.mw) + int(user.ml)))
-        user_data.append(str(int(user.mw)))
-        user_data.append(str(int(user.ml)))
-        user_data.append(str(int(float(user.sr))))
-        user_data.append(user.delta)
+        medal = MEDAL_EMOJIS.get(rank, f"`#{rank}`")
+        sr = int(float(user.sr))
+        delta = user.delta if (user.delta.startswith("+") or user.delta.startswith("-")) else f"+{user.delta}"
+        wins = int(user.mw)
+        losses = int(user.ml)
+        total_games = wins + losses
 
-        table.append(user_data)
+        entry = {
+            "medal": medal,
+            "name": user.player_name,
+            "sr": sr,
+            "delta": delta,
+            "wins": wins,
+            "losses": losses,
+            "total": total_games
+        }
+        entries.append(entry)
         rank += 1
 
-    return table
+    return entries
 
 
 def build_leaderboard_page(guild_id: str, page: int):
-    table = build_leaderboard_rows(guild_id)
+    entries = build_leaderboard_entries(guild_id)
 
-    total_pages = max(1, (len(table) + PAGE_SIZE - 1) // PAGE_SIZE)
+    total_pages = max(1, (len(entries) + PAGE_SIZE - 1) // PAGE_SIZE)
     page = max(0, min(page, total_pages - 1))
 
     start = page * PAGE_SIZE
     end = start + PAGE_SIZE
-    page_rows = table[start:end]
+    page_entries = entries[start:end]
 
-    output = t2a(
-        header=["Rank", "User", "P", "W", "L", "SR", "Change"],
-        body=page_rows,
-        style=PresetStyle.thin_compact
+    description = ""
+    for entry in page_entries:
+        description += (
+            f"{entry['medal']} **{entry['name']}**\n"
+            f"SR: **{entry['sr']}** ({entry['delta']}) • {entry['wins']}W / {entry['losses']}L\n\n"
+        )
+
+    if not description:
+        description = "No players with 10+ games yet. Keep playing!"
+
+    embed = Embedding(
+        title="🏆 Season Leaderboard",
+        desc=description,
+        color=LEADERBOARD_COLOR,
     )
-
-    content = f"Leaderboard — Page {page + 1}/{total_pages}\n```\n{output}\n```"
+    embed.set_footer(text=f"Page {page + 1}/{total_pages}")
 
     component = Components()
     component.add_button(
@@ -71,13 +91,13 @@ def build_leaderboard_page(guild_id: str, page: int):
         1
     )
 
-    return content, component
+    return embed, component
 
 
 def post_leaderboard(queue_record: QueueRecord, inter: Interaction):
     print("Posting leaderboard")
 
-    content, component = build_leaderboard_page(queue_record.guild_id, 0)
+    embed, component = build_leaderboard_page(queue_record.guild_id, 0)
 
     leaderboard_record = leaderboard_dao.get_leaderboard(queue_record.guild_id)
     if len(leaderboard_record.leaderboard_message_id) > 0:
@@ -87,7 +107,8 @@ def post_leaderboard(queue_record: QueueRecord, inter: Interaction):
         )
 
     resp = inter.send_message(
-        content=content,
+        content=None,
+        embeds=[embed],
         channel_id=leaderboard_record.leaderboard_channel_id,
         components=[component]
     )
