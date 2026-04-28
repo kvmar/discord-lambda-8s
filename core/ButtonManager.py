@@ -31,7 +31,7 @@ def leaderboard_page_button(guild_id: str, inter: Interaction):
 
   embed, component = LeaderboardManager.build_leaderboard_page(guild_id, page)
 
-  inter.message_update(embeds=[embed], components=[component])
+  inter.send_response(embeds=[embed], components=[component], ephemeral=True)
 
 def join_queue_button(guild_id: str, inter: Interaction):
   print("Join queue button clicked")
