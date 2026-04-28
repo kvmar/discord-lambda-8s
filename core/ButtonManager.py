@@ -29,13 +29,14 @@ def leaderboard_page_button(guild_id: str, inter: Interaction):
 
   page = int(inter.custom_id.split("#")[1])
 
-  content, component = LeaderboardManager.build_leaderboard_page(guild_id, page)
+  embed, component = LeaderboardManager.build_leaderboard_page(guild_id, page)
 
   leaderboard_record = LeaderboardManager.leaderboard_dao.get_leaderboard(guild_id)
   inter.edit_message(
     channel_id=leaderboard_record.leaderboard_channel_id,
     message_id=leaderboard_record.leaderboard_message_id,
-    content=content,
+    content=None,
+    embeds=[embed],
     components=[component]
   )
 
