@@ -61,7 +61,7 @@ class Components:
     def to_dict(self):
         return {
             "type": 1,
-            "components": self.components if self.components else None
+            "components": self.components
         }
 
     def add_button(self, label: str, custom_id: str, disabled: bool, style: int = 1):
@@ -92,11 +92,13 @@ class Interaction:
 
     def __create_channel_message(self, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True, components: list[Components] = None) -> dict:
         print(f'Creating channel message with ephemeral flag set to: {ephemeral}')
-        response = {
-            "content": content,
-            "components": [component.to_dict() for component in components] if components else None,
-            "embeds": [embed.to_dict() for embed in embeds] if embeds else None,
-        }
+        response = {}
+        if content is not None:
+            response["content"] = content
+        if embeds:
+            response["embeds"] = [embed.to_dict() for embed in embeds]
+        if components:
+            response["components"] = [component.to_dict() for component in components]
         if ephemeral:
             response["flags"] = 1 << 6
         return response
@@ -158,11 +160,13 @@ class Interaction:
     components: list[Components] = None
     ):
         try:
-            json = {
-                "content": content,
-                "embeds": [embed.to_dict() for embed in embeds] if embeds else None,
-                "components": [component.to_dict() for component in components] if components else None
-            }
+            json = {}
+            if content is not None:
+                json["content"] = content
+            if embeds:
+                json["embeds"] = [embed.to_dict() for embed in embeds]
+            if components:
+                json["components"] = [component.to_dict() for component in components]
 
             headers = {
                 "Authorization": f"Bot {os.environ.get('BOT_TOKEN')}",
