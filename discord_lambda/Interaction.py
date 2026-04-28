@@ -96,8 +96,9 @@ class Interaction:
             "content": content,
             "components": [component.to_dict() for component in components] if components else None,
             "embeds": [embed.to_dict() for embed in embeds] if embeds else None,
-            "flags": 1 << 6 if ephemeral else None
         }
+        if ephemeral:
+            response["flags"] = 1 << 6
         return response
 
     def defer(self, ephemeral: bool = True) -> None:
