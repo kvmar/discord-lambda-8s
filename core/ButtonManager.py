@@ -42,8 +42,7 @@ def leaderboard_page_button(guild_id: str, inter: Interaction):
     )
   except Exception as e:
     print(f"Failed to edit leaderboard message: {e}")
-    inter.defer(ephemeral=True)
-    inter.send_followup(embeds=[embed], ephemeral=True)
+    inter.send_response(embeds=[embed], ephemeral=True)
 
 def join_queue_button(guild_id: str, inter: Interaction):
   print("Join queue button clicked")
