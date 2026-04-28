@@ -33,18 +33,15 @@ def leaderboard_page_button(guild_id: str, inter: Interaction):
 
   leaderboard_record = LeaderboardManager.leaderboard_dao.get_leaderboard(guild_id)
 
-  inter.defer(ephemeral=False)
+  inter.pong()
 
-  try:
-    inter.edit_message(
-      channel_id=leaderboard_record.leaderboard_channel_id,
-      message_id=leaderboard_record.leaderboard_message_id,
-      content=None,
-      embeds=[embed],
-      components=[component]
-    )
-  except Exception as e:
-    print(f"Failed to edit leaderboard message: {e}")
+  inter.edit_message(
+    channel_id=leaderboard_record.leaderboard_channel_id,
+    message_id=leaderboard_record.leaderboard_message_id,
+    content=None,
+    embeds=[embed],
+    components=[component]
+  )
 
 def join_queue_button(guild_id: str, inter: Interaction):
   print("Join queue button clicked")
