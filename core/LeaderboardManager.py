@@ -55,7 +55,7 @@ def build_leaderboard_page(guild_id: str, page: int):
         style=PresetStyle.thin_compact
     )
 
-    content = f"Leaderboard — Page {page + 1}/{total_pages}\n```\\n{output}\\n```"
+    content = f"Leaderboard — Page {page + 1}/{total_pages}\n```\n{output}\n```"
 
     component = Components()
     component.add_button(
