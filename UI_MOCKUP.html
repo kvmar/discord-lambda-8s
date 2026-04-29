@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Bot UI Mockup - Sleek Modern</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0f0f23;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #7c3aed;
+            font-size: 2em;
+        }
+
+        .embed {
+            background: linear-gradient(135deg, #1a1a3e 0%, #16213e 100%);
+            border-left: 4px solid #7c3aed;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(124, 58, 237, 0.1);
+        }
+
+        .embed-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .embed-content {
+            margin-bottom: 16px;
+        }
+
+        .queue-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid #06b6d4;
+        }
+
+        .queue-item.team1 {
+            border-left-color: #ef4444;
+        }
+
+        .queue-item.team2 {
+            border-left-color: #3b82f6;
+        }
+
+        .player-name {
+            font-weight: 500;
+        }
+
+        .player-sr {
+            color: #a0aec0;
+            font-size: 0.9em;
+        }
+
+        .match-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .match-status {
+            padding: 4px 12px;
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: #10b981;
+        }
+
+        .match-status.result {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        .team-score {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin: 0 12px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #a0aec0;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(124, 58, 237, 0.2);
+            color: #7c3aed;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(124, 58, 237, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .footer {
+            font-size: 0.85em;
+            color: #6b7280;
+            text-align: right;
+            margin-top: 8px;
+        }
+
+        .section-label {
+            color: #7c3aed;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 20px 0 10px 0;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ Discord Bot UI - Sleek Modern</h1>
+
+        <!-- QUEUE DISPLAY -->
+        <div class="embed">
+            <div class="embed-title">
+                🎮 Queue Status
+            </div>
+            <div class="embed-content">
+                <div class="section-label">Players in queue (8/8)</div>
+
+                <div class="queue-item team1">
+                    <span class="player-name">PlayerOne</span>
+                    <span class="player-sr">SR 3000</span>
+                </div>
+                <div class="queue-item team1">
+                    <span class="player-name">PlayerTwo</span>
+                    <span class="player-sr">SR 2950</span>
+                </div>
+                <div class="queue-item team2">
+                    <span class="player-name">PlayerThree</span>
+                    <span class="player-sr">SR 2900</span>
+                </div>
+                <div class="queue-item team2">
+                    <span class="player-name">PlayerFour</span>
+                    <span class="player-sr">SR 2850</span>
+                </div>
+                <div class="queue-item">
+                    <span class="player-name">PlayerFive</span>
+                    <span class="player-sr">SR 2800</span>
+                </div>
+                <div class="queue-item">
+                    <span class="player-name">PlayerSix</span>
+                    <span class="player-sr">SR 2750</span>
+                </div>
+                <div class="queue-item">
+                    <span class="player-name">PlayerSeven</span>
+                    <span class="player-sr">SR 2700</span>
+                </div>
+                <div class="queue-item">
+                    <span class="player-name">PlayerEight</span>
+                    <span class="player-sr">SR 2650</span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary">▶ Start Match</button>
+                <button class="btn btn-secondary">Auto Pick</button>
+            </div>
+            <div class="footer">Ready to play!</div>
+        </div>
+
+        <!-- MATCH IN PROGRESS -->
+        <div class="embed">
+            <div class="embed-title">
+                🎯 Live Match
+            </div>
+            <div class="embed-content">
+                <div class="section-label">Match ID: MTH-2024-001</div>
+
+                <div class="match-card">
+                    <div class="match-header">
+                        <span style="color: #ef4444; font-weight: 600;">● Team Red</span>
+                        <span class="match-status result">In Progress</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="player-name">PlayerOne</span>
+                        <span class="player-sr">SR 3000</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="player-name">PlayerTwo</span>
+                        <span class="player-sr">SR 2950</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="player-name">PlayerThree</span>
+                        <span class="player-sr">SR 2900</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="player-name">PlayerFour</span>
+                        <span class="player-sr">SR 2850</span>
+                    </div>
+                    <div style="text-align: center; margin: 12px 0; font-size: 1.2em;">
+                        <span style="color: #ef4444;">●</span> vs <span style="color: #3b82f6;">●</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="player-name">PlayerFive</span>
+                        <span class="player-sr">SR 2800</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="player-name">PlayerSix</span>
+                        <span class="player-sr">SR 2750</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="player-name">PlayerSeven</span>
+                        <span class="player-sr">SR 2700</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="player-name">PlayerEight</span>
+                        <span class="player-sr">SR 2650</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary">🔴 Team Red Won</button>
+                <button class="btn btn-primary">🔵 Team Blue Won</button>
+            </div>
+            <div class="button-group">
+                <button class="btn btn-secondary" style="flex: none; width: 100%;">❌ Cancel Match</button>
+            </div>
+            <div class="footer">Waiting for match result...</div>
+        </div>
+
+        <!-- MATCH RESULT -->
+        <div class="embed">
+            <div class="embed-title">
+                ✅ Match Complete
+            </div>
+            <div class="embed-content">
+                <div class="section-label">Final Results</div>
+
+                <div style="text-align: center; margin: 20px 0;">
+                    <div style="color: #ef4444; font-weight: 600; margin-bottom: 8px;">Team Red</div>
+                    <div style="font-size: 2.5em; font-weight: 700; margin-bottom: 16px;">4 - 2</div>
+                    <div style="color: #3b82f6; font-weight: 600;">Team Blue</div>
+                </div>
+
+                <div class="stat-row">
+                    <span class="stat-label">Duration</span>
+                    <span class="stat-value">24m 15s</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Winner SR Change</span>
+                    <span class="stat-value">+45</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Loser SR Change</span>
+                    <span class="stat-value">-45</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Timestamp</span>
+                    <span class="stat-value">Just now</span>
+                </div>
+            </div>
+
+            <div class="footer">Leaderboard updated • Stats recorded</div>
+        </div>
+
+        <!-- PLAYER STATS -->
+        <div class="embed">
+            <div class="embed-title">
+                📊 Player Statistics
+            </div>
+            <div class="embed-content">
+                <div class="section-label">PlayerOne</div>
+
+                <div class="stat-row">
+                    <span class="stat-label">Current SR</span>
+                    <span class="stat-value">3000</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Season High</span>
+                    <span class="stat-value">3200</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Win Rate</span>
+                    <span class="stat-value">62.5%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Total Wins</span>
+                    <span class="stat-value">45</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Total Losses</span>
+                    <span class="stat-value">27</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Current Streak</span>
+                    <span class="stat-value">🔥 4 Wins</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Matches This Season</span>
+                    <span class="stat-value">72</span>
+                </div>
+            </div>
+
+            <div class="footer">Last updated: 2 minutes ago</div>
+        </div>
+    </div>
+</body>
+</html>

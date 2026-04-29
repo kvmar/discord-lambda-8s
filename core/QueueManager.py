@@ -279,14 +279,14 @@ def team_2_won(inter: Interaction, queue_id: str):
 
 
 def generate_match_done_embed(team1, team2, guild_id, queue_record: QueueRecord):
-    team_str = "Team 1:\n"
+    team_str = "🔵 Team 1\n"
     for user in team1:
         player_data = player_dao.get_player(guild_id=guild_id, player_id=user)
 
         player_str = str(player_data.get_rank_emoji()) + player_data.player_name + str(player_data.get_streak()) + " " + str(int(player_data.sr)) + " (" + player_data.delta + f")\n"
         team_str = team_str + player_str
 
-    team_str = team_str + "\nTeam 2:\n"
+    team_str = team_str + "\n🔴 Team 2\n"
     for user in team2:
         player_data = player_dao.get_player(guild_id=guild_id, player_id=user)
 
@@ -294,9 +294,9 @@ def generate_match_done_embed(team1, team2, guild_id, queue_record: QueueRecord)
         team_str = team_str + player_str
 
     return Embedding(
-        f"Match Result - {queue_record.queue_id}",
+        f"✅ Match Completed - {queue_record.queue_id}",
         f'{team_str}',
-        color=0x237FEB,
+        color=0x7c3aed,
     )
 
 def cancel_match(inter: Interaction, queue_id: str):
@@ -374,12 +374,11 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         for user in record.queue:
             player_data = player_dao.get_player(record.guild_id, user)
             queue_str = queue_str + str(player_data.get_rank_emoji()) + player_data.player_name + player_data.get_streak() + "\n"
-        leaderboard_str = "[Leaderboard](https://discord.com/channels/1123491132765110302/1165334218230992926)\n[Results](https://discord.com/channels/1123491132765110302/1166071583719309322)\n[Ranks](https://discord.com/channels/1123491132765110302/1371608741014667344)"
+        leaderboard_str = "📊 [Leaderboard](https://discord.com/channels/1123491132765110302/1165334218230992926) • 📈 [Results](https://discord.com/channels/1123491132765110302/1166071583719309322) • 🏅 [Ranks](https://discord.com/channels/1123491132765110302/1371608741014667344)"
         embed = Embedding(
-            title=f"Underworld 8s {record.queue_id}",
-            desc=f'Queue size: {len(record.queue)}\n\n{queue_str}\n\n\n{leaderboard_str}',
-            thumbnail="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNGk4eG5ka3ZvMGxoZ3hxejB3anF4YmljOXBqM3BvbnNydzIyOWF4aiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/5n202FEFpz2GI8JmOA/giphy.gif",
-            color=0x237FEB,
+            title=f"🎮 Queue {record.queue_id}",
+            desc=f'Players: {len(record.queue)}/8\n\n{queue_str}\n\n{leaderboard_str}',
+            color=0x7c3aed,
         )
 
         component = Components()
@@ -399,47 +398,47 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         whose_pick = ""
         if len(record.team_1) + len(record.team_2) in (2, 5, 6):
             player_data = player_dao.get_player(record.guild_id, record.team_1[0])
-            whose_pick = player_data.player_name + " its your turn to pick!"
+            whose_pick = f"⏳ {player_data.player_name}, pick your player!"
         if len(record.team_1) + len(record.team_2) in (3, 4, 7):
             player_data = player_dao.get_player(record.guild_id, record.team_2[0])
-            whose_pick = player_data.player_name + " its your turn to pick!"
-        team1_str = "Team 1: \n"
+            whose_pick = f"⏳ {player_data.player_name}, pick your player!"
+        team1_str = "🔵 Team 1\n"
         for user in record.team_1:
             player_data = player_dao.get_player(record.guild_id, user)
-            team1_str = team1_str + player_data.player_name + "\n"
+            team1_str = team1_str + f"• {player_data.player_name}\n"
 
-        team2_str = "Team 2: \n"
+        team2_str = "🔴 Team 2\n"
         for user in record.team_2:
             player_data = player_dao.get_player(record.guild_id, user)
-            team2_str = team2_str + player_data.player_name + "\n"
+            team2_str = team2_str + f"• {player_data.player_name}\n"
 
         embed = Embedding(
-            f"Underworld 8s {record.queue_id}",
+            f"🎮 Picking - {record.queue_id}",
             f"{whose_pick}\n\n{team1_str}\n{team2_str}",
-            color=0x237FEB,
+            color=0x7c3aed,
         )
 
         components = get_player_pick_btns(record, record.queue_id)
         return [embed], components
     elif len(record.team_1) == 4 and len(record.team_2) == 4:
-        team1_str = "[Team 1](https://discord.com/channels/1123491132765110302/1123491133213921394): \n"
+        team1_str = "🔵 [Team 1](https://discord.com/channels/1123491132765110302/1123491133213921394)\n"
         for user in record.team_1:
             player_data = player_dao.get_player(record.guild_id, user)
-            team1_str = team1_str + str(player_data.get_rank_emoji()) + player_data.player_name + str(player_data.get_streak()) + ": " + str(int(player_data.sr)) + "\n"
+            team1_str = team1_str + str(player_data.get_rank_emoji()) + player_data.player_name + str(player_data.get_streak()) + " • " + str(int(player_data.sr)) + "\n"
 
-        team2_str = "[Team 2](https://discord.com/channels/1123491132765110302/1123503312906506270): \n"
+        team2_str = "🔴 [Team 2](https://discord.com/channels/1123491132765110302/1123503312906506270)\n"
         for user in record.team_2:
             player_data = player_dao.get_player(record.guild_id, user)
-            team2_str = team2_str + str(player_data.get_rank_emoji()) + player_data.player_name + str(player_data.get_streak()) + ": " + str(int(player_data.sr)) + "\n"
+            team2_str = team2_str + str(player_data.get_rank_emoji()) + player_data.player_name + str(player_data.get_streak()) + " • " + str(int(player_data.sr)) + "\n"
 
-        map_str = "Maps: \n"
+        map_str = "🗺️ Maps\n"
         for map in record.maps:
-            map_str = map_str + map + "\n"
+            map_str = map_str + f"• {map}\n"
 
         embed = Embedding(
-            f"Underworld 8s {record.queue_id}",
+            f"⚔️ Match Ready - {record.queue_id}",
             f"{team1_str}\n{team2_str}\n{map_str}",
-            color=0x237FEB,
+            color=0x7c3aed,
         )
 
         component = Components()

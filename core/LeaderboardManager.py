@@ -12,7 +12,7 @@ leaderboard_page_custom_id = "leaderboard_page"
 PAGE_SIZE = 10
 
 MEDAL_EMOJIS = {1: "🥇", 2: "🥈", 3: "🥉"}
-LEADERBOARD_COLOR = 0xFFD700  # Gold
+LEADERBOARD_COLOR = 0x7c3aed  # Purple
 
 
 def build_leaderboard_entries(guild_id: str):
@@ -76,7 +76,7 @@ def build_leaderboard_page(guild_id: str, page: int):
     description = "\n".join(rows) if rows else "No players with 10+ games yet. Keep playing!"
 
     embed = Embedding(
-        title="🏆  Season Leaderboard",
+        title="🏆 Season Leaderboard",
         desc=description,
         color=LEADERBOARD_COLOR,
     )

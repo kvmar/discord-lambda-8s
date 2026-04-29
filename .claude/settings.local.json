@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep *)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'refactor: apply modern UI to all queue and leaderboard views *)"
+    ]
+  }
+}
