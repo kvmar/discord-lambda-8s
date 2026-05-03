@@ -15,7 +15,7 @@ player_dao = PlayerDao()
 
 class TrueSkillAccessor:
     def __init__(self) -> None:
-        self.env = TrueSkill(draw_probability=0, tau=0.5)
+        self.env = TrueSkill(draw_probability=0, tau=0.1)
 
     def post_match(self, win_team: list, lose_team: list, guild_id: str):
         win_team_ratings = self.get_player_data(win_team, guild_id)
@@ -42,6 +42,23 @@ class TrueSkillAccessor:
             player_data_list.append(player_data)
             print(f'Got user_id: {player_data.player_id}, player_name: {player_data.player_name}, elo: {player_data.elo}, sigma: {player_data.sigma}')
         return player_data_list
+
+    def get_k_factor(self, games_played: int, elo: float) -> float:
+        """K-factor scales rating volatility based on experience and skill.
+
+        More experienced and higher-rated players have smaller K-factors (less volatile).
+        This prevents rating inflation and ensures high ranks are earned through consistency.
+        """
+        if games_played < 10:
+            return 1.5  # New players: volatile, quick convergence
+        elif games_played < 30:
+            return 1.2
+        elif games_played < 100:
+            return 1.0  # Standard
+        elif elo > 1800:
+            return 0.7  # Established top players: stable
+        else:
+            return 0.8
 
     def update_ratings(self, new_ratings, team_ratings: list[PlayerRecord], tuple_idx: int):
         idx = 0
@@ -70,8 +87,16 @@ class TrueSkillAccessor:
             user.mw = int(user.mw) + won
             user.ml = int(user.ml) + lost
 
-            user.elo = float(new_ratings[tuple_idx][idx].mu)
-            user.sigma = float(new_ratings[tuple_idx][idx].sigma)
+            old_elo = float(user.elo)
+            new_elo = float(new_ratings[tuple_idx][idx].mu)
+            new_sigma = float(new_ratings[tuple_idx][idx].sigma)
+
+            # Apply K-factor scaling to limit rating volatility
+            k = self.get_k_factor(int(user.mw + user.ml), old_elo)
+            elo_change = (new_elo - old_elo) * k
+
+            user.elo = old_elo + elo_change
+            user.sigma = max(0.5, new_sigma)  # Minimum sigma of 0.5 prevents underflow
 
             user.apply_rp_change(tuple_idx)
 
