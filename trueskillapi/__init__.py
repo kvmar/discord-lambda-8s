@@ -51,12 +51,14 @@ class TrueSkillAccessor:
         """
         if games_played < 10:
             return 1.5  # New players: volatile, quick convergence
+        elif elo > 2100:
+            return 0.5  # Top tier: hardest to climb/stay
+        elif elo > 1800:
+            return 0.7  # Established top players: stable
         elif games_played < 30:
             return 1.2
         elif games_played < 100:
             return 1.0  # Standard
-        elif elo > 1800:
-            return 0.7  # Established top players: stable
         else:
             return 0.8
 
