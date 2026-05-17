@@ -221,6 +221,20 @@ class Interaction:
         except Exception as e:
             raise Exception(f"Unable to send message: {e}")
 
+    def send_dm(self, user_id: str, content: str = None, embeds: list[Embedding] = None) -> None:
+        try:
+            headers = {'Authorization': f'Bot {os.environ.get("BOT_TOKEN")}'}
+            dm_response = requests.post(
+                'https://discord.com/api/v10/users/@me/channels',
+                json={"recipient_id": user_id},
+                headers=headers
+            )
+            dm_response.raise_for_status()
+            dm_channel_id = dm_response.json()['id']
+            self.send_message(channel_id=dm_channel_id, content=content, embeds=embeds)
+        except Exception as e:
+            print(f"Unable to send DM to user {user_id}: {e}")
+
     def send_file(self, channel_id: str, file_name: str):
         try:
             headers = {

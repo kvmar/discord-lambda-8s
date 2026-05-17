@@ -253,6 +253,17 @@ def start_match(inter: Interaction, queue_id: str, autopick: bool):
         return embed, component
     return None
 
+def send_match_found_dms(inter: Interaction, record: QueueRecord) -> None:
+    maps_str = "\n".join(record.maps) if record.maps else "TBD"
+    embed = Embedding(
+        title="⚔️ Match Found!",
+        desc=f"A match has started in **{record.queue_id}**. Captains are picking teams!",
+        color=0x00C853
+    )
+    embed.add_field("Maps", maps_str, inline=False)
+    for player_id in record.queue:
+        inter.send_dm(user_id=player_id, embeds=[embed])
+
 def get_maps(queue_record: QueueRecord):
     if "Variant" in queue_record.queue_id:
         variant_maps = ["Skidrow SND", "Invasion SND", "Terminal SND", "Highrise SND", "Karachi SND"]
