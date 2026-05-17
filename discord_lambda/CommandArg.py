@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 class CommandArg:
     class Choice:
         def __init__(self, name: str, value: str = None) -> None:
