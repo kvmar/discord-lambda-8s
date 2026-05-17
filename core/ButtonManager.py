@@ -7,6 +7,10 @@ queue_dao = QueueDao()
 def button_flow_tree(interaction: Interaction):
   if LeaderboardManager.leaderboard_page_custom_id in interaction.custom_id:
     leaderboard_page_button(interaction.guild_id, interaction)
+  elif QueueManager.join_pre_queue_custom_id in interaction.custom_id:
+    join_pre_queue_button(interaction.guild_id, interaction)
+  elif QueueManager.leave_pre_queue_custom_id in interaction.custom_id:
+    leave_pre_queue_button(interaction.guild_id, interaction)
   elif QueueManager.join_queue_custom_id in interaction.custom_id:
     join_queue_button(interaction.guild_id, interaction)
   elif QueueManager.leave_queue_custom_id in interaction.custom_id:
@@ -50,6 +54,32 @@ def join_queue_button(guild_id: str, inter: Interaction):
 def leave_queue_button(guild_id: str, inter: Interaction):
   print("Leave queue button clicked")
   resp = QueueManager.remove_player(inter, inter.custom_id.split("#")[1])
+
+  if resp is None:
+    return
+
+  (embed, component) = resp
+
+  record = queue_dao.get_queue(guild_id=guild_id, queue_id=inter.custom_id.split("#")[1])
+  QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
+
+
+def join_pre_queue_button(guild_id: str, inter: Interaction):
+  print("Join pre-queue button clicked")
+  resp = QueueManager.add_pre_queue_player(inter, inter.custom_id.split("#")[1])
+
+  if resp is None:
+    return
+
+  (embed, component) = resp
+
+  record = queue_dao.get_queue(guild_id=guild_id, queue_id=inter.custom_id.split("#")[1])
+  QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
+
+
+def leave_pre_queue_button(guild_id: str, inter: Interaction):
+  print("Leave pre-queue button clicked")
+  resp = QueueManager.remove_pre_queue_player(inter, inter.custom_id.split("#")[1])
 
   if resp is None:
     return

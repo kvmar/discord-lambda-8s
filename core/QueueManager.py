@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 
 from core import LeaderboardManager
@@ -12,12 +14,16 @@ from more_itertools import set_partitions
 
 join_queue_custom_id = "join_queue"
 leave_queue_custom_id = "leave_queue"
+join_pre_queue_custom_id = "join_pre_queue"
+leave_pre_queue_custom_id = "leave_pre_queue"
 start_queue_custom_id = "start_queue"
 auto_pick_custom_id = "auto_pick"
 player_pick_custom_id = "player_pick"
 cancel_match_custom_id = "cancel_match"
 team_1_won_custom_id = "team_1_won"
 team_2_won_custom_id = "team_2_won"
+
+MAX_QUEUE_SIZE = 8
 
 
 queue_dao = QueueDao()
@@ -89,6 +95,53 @@ def remove_player(inter: Interaction, queue_id: str):
         return embed, component
     return None
 
+def add_pre_queue_player(inter: Interaction, queue_id: str):
+    response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
+
+    # Only allow joining pre-queue if game is in Match Ready state (both teams formed)
+    if not (len(response.team_1) > 0 and len(response.team_2) > 0 and len(response.queue) == 0):
+        print("Cannot join pre-queue: game not in Match Ready state")
+        return None
+
+    # Enforce pre-queue capacity and deduplication
+    if len(response.pre_queue) >= MAX_QUEUE_SIZE:
+        print(f"Pre-queue full ({MAX_QUEUE_SIZE} players)")
+        return None
+
+    if inter.user_id in response.pre_queue:
+        print(f"Player {inter.user_id} already in pre-queue")
+        return None
+
+    # Register player if not already registered
+    player_data = player_dao.get_player(guild_id=inter.guild_id, player_id=inter.user_id)
+    if player_data is None:
+        player_dao.put_player(PlayerRecord(guild_id=inter.guild_id, player_id=inter.user_id, player_name=inter.username))
+
+    response.pre_queue.append(inter.user_id)
+    resp = queue_dao.put_queue(response)
+
+    if resp is not None:
+        (embed, component) = update_queue_embed(response)
+        print(f'Pre-queue record: {response} for guild_id: {inter.guild_id}')
+        return embed, component
+
+    return None
+
+def remove_pre_queue_player(inter: Interaction, queue_id: str):
+    response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
+
+    if inter.user_id in response.pre_queue:
+        response.pre_queue.remove(inter.user_id)
+
+    resp = queue_dao.put_queue(response)
+
+    if resp is not None:
+        (embed, component) = update_queue_embed(response)
+        print(f'Pre-queue record: {response} for guild_id: {inter.guild_id}')
+        return embed, component
+
+    return None
+
 def find_diff(tuple):
     sum_team_1 = 0
     idx = 0
@@ -146,6 +199,19 @@ def findMinSRDiff(queue: QueueRecord):
             caps.append(player_list_sorted[i].player_id)
     random.shuffle(caps)
     return caps
+
+
+def promote_pre_queue(record: QueueRecord):
+    """Promote pre-queue members to active queue when game ends.
+
+    Must be called after clear_queue() and before put_queue() to ensure
+    pre_queue members are available as the next active queue.
+    """
+    # Move pre-queue members to active queue (capped at MAX_QUEUE_SIZE)
+    record.queue = list(record.pre_queue)[:MAX_QUEUE_SIZE]
+    # Clear pre-queue after promotion
+    record.pre_queue = list()
+    print(f"Promoted pre-queue to active queue: {len(record.queue)} players")
 
 
 def start_match(inter: Interaction, queue_id: str, autopick: bool):
@@ -224,6 +290,7 @@ def team_1_won(inter: Interaction, queue_id: str):
             team1 = response.team_1
             team2 = response.team_2
             response.clear_queue(reset_expiry=False)
+            promote_pre_queue(response)
             resp = queue_dao.put_queue(response)
             ts.post_match(win_team=team1, lose_team=team2, guild_id=inter.guild_id)
 
@@ -262,6 +329,7 @@ def team_2_won(inter: Interaction, queue_id: str):
             team1 = response.team_1
             team2 = response.team_2
             response.clear_queue(reset_expiry=False)
+            promote_pre_queue(response)
             resp = queue_dao.put_queue(response)
             ts.post_match(win_team=team2, lose_team=team1, guild_id=inter.guild_id)
 
@@ -321,6 +389,7 @@ def cancel_match(inter: Interaction, queue_id: str):
         if len(response.cancel_votes) > 4:
             response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
             response.clear_queue(reset_expiry=False)
+            promote_pre_queue(response)
             resp = queue_dao.put_queue(response)
             if resp is None:
                 return None
@@ -435,17 +504,32 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         for map in record.maps:
             map_str = map_str + f"• {map}\n"
 
+        # Build pre-queue section if players are waiting
+        pre_queue_str = ""
+        if len(record.pre_queue) > 0:
+            pre_queue_str = f"\n🕓 Pre-Queue {len(record.pre_queue)}/8\n"
+            for user in record.pre_queue:
+                player_data = player_dao.get_player(record.guild_id, user)
+                pre_queue_str = pre_queue_str + str(player_data.get_rank_emoji()) + player_data.player_name + player_data.get_streak() + "\n"
+
         embed = Embedding(
             f"⚔️ Match Ready - {record.queue_id}",
-            f"{team1_str}\n{team2_str}\n{map_str}",
+            f"{team1_str}\n{team2_str}\n{map_str}{pre_queue_str}",
             color=0x7c3aed,
         )
 
+        # First component row: match result buttons
         component = Components()
         component.add_button(f"Team 1 Won - {len(record.team1_votes)}", f"team_1_won_custom_id#{record.queue_id}", False, 1)
         component.add_button(f"Team 2 Won - {len(record.team2_votes)}", f"team_2_won_custom_id#{record.queue_id}", False, 2)
         component.add_button(f"Cancel Match - {len(record.cancel_votes)}", f"cancel_match_custom_id#{record.queue_id}", False, 4)
-        return [embed], [component]
+
+        # Second component row: pre-queue buttons (always show during Match Ready)
+        pre_queue_component = Components()
+        pre_queue_component.add_button("Join Pre-Queue", f"join_pre_queue_custom_id#{record.queue_id}", False, 1)
+        pre_queue_component.add_button("Leave Pre-Queue", f"leave_pre_queue_custom_id#{record.queue_id}", False, 4)
+
+        return [embed], [component, pre_queue_component]
 
 
 

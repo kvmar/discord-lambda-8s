@@ -5,6 +5,8 @@ Description:
 
 Version: 6.1.0
 """
+from __future__ import annotations
+
 from trueskill import TrueSkill
 from trueskill import Rating
 
