@@ -104,6 +104,7 @@ def start_queue_button(guild_id: str, inter: Interaction, autopick: bool):
   record.team2_votes = list()
   record.cancel_votes = list()
   QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
+  QueueManager.send_match_found_dms(inter, record)
   if len(record.team_1) == 4 and len(record.team_2) == 4:
     print("Moving members to team queue")
   for user in record.team_1:
