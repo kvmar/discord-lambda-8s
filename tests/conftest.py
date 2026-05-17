@@ -5,6 +5,16 @@ from unittest.mock import MagicMock, patch
 import sys
 from types import ModuleType
 
+# Mock trueskill and more_itertools before any project imports
+trueskill_mock = ModuleType('trueskill')
+trueskill_mock.TrueSkill = MagicMock()
+trueskill_mock.Rating = MagicMock()
+sys.modules['trueskill'] = trueskill_mock
+
+more_itertools_mock = ModuleType('more_itertools')
+more_itertools_mock.set_partitions = MagicMock(return_value=[])
+sys.modules['more_itertools'] = more_itertools_mock
+
 # Create mock boto3 module structure
 boto3_mock = ModuleType('boto3')
 botocore_mock = ModuleType('botocore')
