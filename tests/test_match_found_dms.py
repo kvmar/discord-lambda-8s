@@ -16,7 +16,7 @@ def _make_record(queue, maps=None, team_1=None, team_2=None):
         cancel_votes=[],
         team1_votes=[],
         team2_votes=[],
-        maps=maps or ["Map1", "Map2", "Map3"],
+        maps=maps if maps is not None else ["Map1", "Map2", "Map3"],
         map_set=["Map1", "Map2", "Map3"],
         version=1,
         expiry=9999999999,
@@ -85,7 +85,9 @@ class TestSendMatchFoundDms:
         send_match_found_dms(inter, record)
 
         embed = inter.send_dm.call_args.kwargs["embeds"][0]
-        assert embed.fields[0]["value"] == "TBD"
+        # Embedding objects store fields as a list of dicts
+        maps_field = [f for f in embed.fields if f["name"] == "Maps"][0]
+        assert maps_field["value"] == "TBD"
 
 
 class TestSendDm:
@@ -93,7 +95,6 @@ class TestSendDm:
     def test_send_dm_creates_channel_then_sends_message(self):
         """send_dm first opens a DM channel, then sends to that channel."""
         import os
-        import requests
         from discord_lambda.Interaction import Interaction
 
         interaction_data = {
@@ -106,8 +107,7 @@ class TestSendDm:
         }
 
         with patch.dict(os.environ, {"BOT_TOKEN": "testtoken"}), \
-             patch("discord_lambda.Interaction.requests.post") as mock_post, \
-             patch("discord_lambda.Interaction.requests.patch"):
+             patch("requests.post") as mock_post:
 
             dm_channel_response = MagicMock()
             dm_channel_response.json.return_value = {"id": "dm_ch_999"}
@@ -146,8 +146,7 @@ class TestSendDm:
         }
 
         with patch.dict(os.environ, {"BOT_TOKEN": "testtoken"}), \
-             patch("discord_lambda.Interaction.requests.post") as mock_post, \
-             patch("discord_lambda.Interaction.requests.patch"):
+             patch("requests.post") as mock_post:
 
             mock_post.side_effect = Exception("network failure")
 
