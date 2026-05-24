@@ -15,6 +15,11 @@ more_itertools_mock = ModuleType('more_itertools')
 more_itertools_mock.set_partitions = MagicMock(return_value=[])
 sys.modules['more_itertools'] = more_itertools_mock
 
+table2ascii_mock = ModuleType('table2ascii')
+table2ascii_mock.table2ascii = MagicMock()
+table2ascii_mock.PresetStyle = MagicMock()
+sys.modules['table2ascii'] = table2ascii_mock
+
 # Create mock boto3 module structure
 boto3_mock = ModuleType('boto3')
 botocore_mock = ModuleType('botocore')

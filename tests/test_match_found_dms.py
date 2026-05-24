@@ -24,7 +24,6 @@ def _make_record(queue, maps=None, team_1=None, team_2=None):
         team_1_channel_id="team1_ch",
         team_2_channel_id="team2_ch",
         money_queue=False,
-        pre_queue=[],
     )
 
 
