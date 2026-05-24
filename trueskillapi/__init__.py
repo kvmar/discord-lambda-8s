@@ -33,8 +33,11 @@ class TrueSkillAccessor:
 
         new_ratings = self.env.rate([tuple(win_team_ratings_tuple), tuple(lose_team_ratings_tuple)], ranks=[0, 1])
 
-        self.update_ratings(new_ratings, win_team_ratings, 0)
-        self.update_ratings(new_ratings, lose_team_ratings, 1)
+        win_avg_rating = sum(u.get_rating() for u in win_team_ratings) / len(win_team_ratings)
+        lose_avg_rating = sum(u.get_rating() for u in lose_team_ratings) / len(lose_team_ratings)
+
+        self.update_ratings(new_ratings, win_team_ratings, 0, enemy_avg_rating=lose_avg_rating)
+        self.update_ratings(new_ratings, lose_team_ratings, 1, enemy_avg_rating=win_avg_rating)
 
 
     def get_player_data(self, team: list, guild_id: str) -> list[PlayerRecord]:
@@ -46,25 +49,20 @@ class TrueSkillAccessor:
         return player_data_list
 
     def get_k_factor(self, games_played: int, elo: float) -> float:
-        """K-factor scales rating volatility based on experience and skill.
-
-        More experienced and higher-rated players have smaller K-factors (less volatile).
-        This prevents rating inflation and ensures high ranks are earned through consistency.
-        """
         if games_played < 10:
-            return 1.5  # New players: volatile, quick convergence
+            return 1.5
         elif elo > 2100:
-            return 0.5  # Top tier: hardest to climb/stay
+            return 0.5
         elif elo > 1800:
-            return 0.7  # Established top players: stable
+            return 0.7
         elif games_played < 30:
             return 1.2
         elif games_played < 100:
-            return 1.0  # Standard
+            return 1.0
         else:
             return 0.8
 
-    def update_ratings(self, new_ratings, team_ratings: list[PlayerRecord], tuple_idx: int):
+    def update_ratings(self, new_ratings, team_ratings: list[PlayerRecord], tuple_idx: int, enemy_avg_rating: float = 0):
         idx = 0
         lost = 0
         won = 0
@@ -73,6 +71,10 @@ class TrueSkillAccessor:
             won = won + 1
         else:
             lost = lost + 1
+
+        your_avg_rating = sum(u.get_rating() for u in team_ratings) / len(team_ratings) if team_ratings else 0
+        expected = 1 / (1 + 10 ** ((enemy_avg_rating - your_avg_rating) / 400))
+        print(f"[SR] your_avg={your_avg_rating:.1f} enemy_avg={enemy_avg_rating:.1f} expected={expected:.2f}")
 
         for user in team_ratings:
             print("Updating streak for player_name: " + user.player_name + " , streak: " + str(user.streak))
@@ -102,7 +104,7 @@ class TrueSkillAccessor:
             user.elo = old_elo + elo_change
             user.sigma = max(0.5, new_sigma)  # Minimum sigma of 0.5 prevents underflow
 
-            user.apply_rp_change(tuple_idx)
+            user.apply_rp_change(tuple_idx, expected=expected)
 
             print(f"Writing player_data record to {user}")
             player_dao.put_player(user)

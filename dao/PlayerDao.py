@@ -137,59 +137,33 @@ class PlayerRecord:
       print(f"Tier gap: {tier_gap}, Modifier: {max(0.25, base)}")
       return max(0.25, base)
 
-  def calculate_rp_gain(self, base_gain=10):
-    print("\n=== SR Gain Calculation Debug ===")
-    print(f"Starting SR: {self.sr}")
-    print(f"Current Rank: {self.rank}")
+  def calculate_rp_gain(self, base=20, expected=0.5):
+      # expected = probability your team wins (ELO formula)
+      # underdog win (expected=0.2) → +16; even (0.5) → +10; favourite (0.8) → +4
+      gain = max(1, round(base * (1 - expected)))
+      print(f"[RP gain] base={base} expected={expected:.2f} gain=+{gain}")
+      return gain
 
-    rel_skill = self.get_relative_skill()
-    print(f"Relative Skill: {rel_skill}")
+  def calculate_rp_loss(self, base=20, expected=0.5):
+      # favourite loss (expected=0.8) → -16; even (0.5) → -10; underdog (0.2) → -4
+      loss = min(-1, -round(base * expected))
+      print(f"[RP loss] base={base} expected={expected:.2f} loss={loss}")
+      return loss
 
-    bonus = 10 * rel_skill
-    print(f"Bonus (10 * rel_skill): {bonus}")
-
-    modifier = self.get_tier_gap_modifier()
-    print(f"Tier Gap Modifier: {modifier}")
-
-    gain = float((base_gain + bonus)) * float(modifier)
-    print(f"Final Calculation:")
-    print(f"({base_gain} + {bonus}) * {modifier} = {gain}")
-    print(f"Rounded gain: {round(gain)}")
-    return max(1, round(gain))
-
-  def calculate_rp_loss(self, base_loss=-10):
-      print("\n--- RP Loss Calculation ---")
-      rel_skill = self.get_relative_skill()
-      print(f"Relative skill: {rel_skill}")
-      penalty = 10 * (1 - rel_skill)
-      print(f"Penalty: {penalty}")
-      modifier = self.get_tier_gap_modifier()
-      print(f"Tier gap modifier: {modifier}")
-      loss = float((base_loss + penalty)) * float(modifier)
-
-      print(f"Calculated loss: {loss}")
-      return min(-5, min(0, round(loss)))  # Ensures at least -5 loss
-
-  def apply_rp_change(self, loss):
-      print("\n=== Apply RP Change Debug ===")
-      print(f"Loss flag: {loss}")
-      print(f"Initial SR: {self.sr}")
-      print(f"Initial Rank: {self.rank}")
+  def apply_rp_change(self, loss, expected=0.5):
+      print(f"\n=== Apply RP Change: {'WIN' if loss == 0 else 'LOSS'} expected={expected:.2f} ===")
       curr_rank = self.rank
       curr_sr = self.sr
 
       if loss == 0:
-        sr_gain = self.calculate_rp_gain()
+        sr_gain = self.calculate_rp_gain(expected=expected)
         new_sr = curr_sr + sr_gain
-
-        new_rank = self.calculate_sr_rank(new_sr)
-        if curr_rank != new_rank:
-            self.rank = new_rank
+        self.rank = self.calculate_sr_rank(new_sr)
         self.sr = new_sr
         self.delta = "+" + str(int(float(self.sr - curr_sr)))
       else:
-        sr_loss = self.calculate_rp_loss()  # This should return a negative number
-        new_sr = max(0, curr_sr + sr_loss)  # Prevent SR from going below 0
+        sr_loss = self.calculate_rp_loss(expected=expected)
+        new_sr = max(0, curr_sr + sr_loss)
         self.sr = new_sr
         self.rank = self.calculate_sr_rank(new_sr)
         self.delta = str(int(float(new_sr - curr_sr)))
