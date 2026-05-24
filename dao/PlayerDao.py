@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from decimal import Decimal
 
 import boto3
@@ -41,7 +42,7 @@ RANK_SR_RANGES = {
 
 
 class PlayerRecord:
-  def __init__(self, guild_id: str, player_id: str, player_name: str, mw: int = 0, ml: int = 0, sr: float = 0.0, rank: int = 0, elo: float = 25.0, sigma: float = 8.33, delta: str = "+0.0", streak: int = 0, version: int = 0):
+  def __init__(self, guild_id: str, player_id: str, player_name: str, mw: int = 0, ml: int = 0, sr: float = 0.0, rank: int = 0, elo: float = 25.0, sigma: float = 8.33, delta: str = "+0.0", streak: int = 0, version: int = 0, last_played: int = 0):
     self.guild_id = guild_id
     self.player_id = player_id
     self.player_name = player_name
@@ -54,6 +55,7 @@ class PlayerRecord:
     self.delta = delta
     self.streak = int(streak)
     self.version = version
+    self.last_played = int(last_played)
 
 
   def get_streak(self):
@@ -77,6 +79,13 @@ class PlayerRecord:
       rating = float(self.elo - (2 * self.sigma))
       print(f"ELO: {self.elo}, Sigma: {self.sigma}, Rating: {rating}")
       return rating
+
+  def get_effective_sr(self, grace_days: int = 7, decay_rate: int = 10) -> float:
+      if self.last_played == 0:
+          return float(self.sr)
+      days_inactive = (int(time.time()) - self.last_played) / 86400
+      decay = max(0.0, (days_inactive - grace_days) * decay_rate)
+      return max(0.0, float(self.sr) - decay)
 
   def calculate_proj_rank(self):
     hidden_mmr = (self.get_rating()) * 100
@@ -112,31 +121,6 @@ class PlayerRecord:
       else: 
         return "<:OneAboveAll:1367281598143266949>"
 
-  def get_relative_skill(self):
-      print("\n--- Get Relative Skill Debug ---")
-      min_sr, max_sr = RANK_SR_RANGES[self.rank]
-      print(f"SR Range for rank {self.rank}: {min_sr} to {max_sr}")
-      print(f"Current SR: {self.sr}")
-
-      rel_skill = (float(self.sr) - min_sr) / (max_sr - min_sr)
-      print(f"Relative skill calculation: ({self.sr} - {min_sr}) / ({max_sr} - {min_sr}) = {rel_skill}")
-      return max(0.0, min(rel_skill, 1.5))
-
-  def get_tier_gap_modifier(self):
-      print("\n--- Tier Gap Modifier Debug ---")
-      tier_gap = self.calculate_proj_rank() - self.rank
-      base = 1.0
-
-      if tier_gap > 0:
-          # If projected rank is higher, gain more and lose less
-          base += 0.2 * float(tier_gap)
-      elif tier_gap < 0:
-          # If projected rank is lower, gain less and lose more
-          base -= 0.2 * abs(tier_gap)
-
-      print(f"Tier gap: {tier_gap}, Modifier: {max(0.25, base)}")
-      return max(0.25, base)
-
   def calculate_rp_gain(self, base=20, expected=0.5):
       # expected = probability your team wins (ELO formula)
       # underdog win (expected=0.2) → +16; even (0.5) → +10; favourite (0.8) → +4
@@ -152,7 +136,11 @@ class PlayerRecord:
 
   def apply_rp_change(self, loss, expected=0.5):
       print(f"\n=== Apply RP Change: {'WIN' if loss == 0 else 'LOSS'} expected={expected:.2f} ===")
-      curr_rank = self.rank
+
+      # Commit accumulated decay before applying win/loss
+      effective_sr = self.get_effective_sr()
+      self.sr = effective_sr
+
       curr_sr = self.sr
 
       if loss == 0:
@@ -173,6 +161,8 @@ class PlayerRecord:
         self.rank = min(3, placement_rank)
         self.sr = RANK_SR_RANGES[self.rank][0] + 50
         self.delta = str(int(float(self.sr - curr_sr)))
+
+      self.last_played = int(time.time())
 
 class PlayerDao:
   def __init__(self):
@@ -247,4 +237,7 @@ class PlayerDao:
       rank = 0
       if response.get("rank") is not None:
         rank = int(response['rank'])
-      return PlayerRecord(player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["ml"], sr=sr, rank=rank, elo=response["elo"], sigma=response["sigma"], delta=response["delta"], streak=response["streak"], version=response["version"])
+      last_played = 0
+      if response.get("last_played") is not None:
+        last_played = int(response["last_played"])
+      return PlayerRecord(player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["ml"], sr=sr, rank=rank, elo=response["elo"], sigma=response["sigma"], delta=response["delta"], streak=response["streak"], version=response["version"], last_played=last_played)
