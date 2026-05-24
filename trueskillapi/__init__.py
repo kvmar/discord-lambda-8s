@@ -73,7 +73,7 @@ class TrueSkillAccessor:
             lost = lost + 1
 
         your_avg_rating = sum(u.get_rating() for u in team_ratings) / len(team_ratings) if team_ratings else 0
-        expected = 1 / (1 + 10 ** ((enemy_avg_rating - your_avg_rating) / 400))
+        expected = 1 / (1 + 10 ** ((enemy_avg_rating - your_avg_rating) / 4))
         print(f"[SR] your_avg={your_avg_rating:.1f} enemy_avg={enemy_avg_rating:.1f} expected={expected:.2f}")
 
         for user in team_ratings:
