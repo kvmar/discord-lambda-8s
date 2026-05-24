@@ -80,7 +80,7 @@ class PlayerRecord:
       print(f"ELO: {self.elo}, Sigma: {self.sigma}, Rating: {rating}")
       return rating
 
-  def get_effective_sr(self, grace_days: int = 7, decay_rate: int = 2) -> float:
+  def get_effective_sr(self, grace_days: int = 7, decay_rate: int = 10) -> float:
       if self.last_played == 0:
           return float(self.sr)
       days_inactive = (int(time.time()) - self.last_played) / 86400

@@ -119,12 +119,12 @@ class TestGetEffectiveSr:
         assert p.get_effective_sr() == 300.0
 
     def test_decay_after_grace_period(self):
-        # 14 days ago → 7 days of decay at rate 2 = -14
+        # 14 days ago → 7 days of decay at rate 10 = -70
         last = int(time.time()) - (14 * 86400)
         p = _player(sr=300, last_played=last)
         effective = p.get_effective_sr()
         assert effective < 300.0
-        assert abs(effective - 286.0) < 1.0  # allow 1 SR rounding tolerance
+        assert abs(effective - 230.0) < 1.0  # allow 1 SR rounding tolerance
 
     def test_effective_sr_floor_is_zero(self):
         last = int(time.time()) - (365 * 86400)  # 1 year inactive
@@ -136,9 +136,9 @@ class TestGetEffectiveSr:
         assert p.get_effective_sr() == 200.0
 
     def test_decay_commits_to_sr_on_match(self):
-        # 14 days inactive → 14 SR of decay. SR before match: 300 → effective 286.
-        # Win at even odds → +10. Final SR should be ~296.
+        # 14 days inactive → 7 days of decay at rate 10 = -70. SR before match: 300 → effective 230.
+        # Win at even odds → +10. Final SR should be ~240.
         last = int(time.time()) - (14 * 86400)
         p = _player(sr=300, rank=2, last_played=last)
         p.apply_rp_change(loss=0, expected=0.5)
-        assert abs(p.sr - 296.0) < 2.0
+        assert abs(p.sr - 240.0) < 2.0
