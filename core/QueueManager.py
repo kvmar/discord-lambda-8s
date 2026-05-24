@@ -314,8 +314,14 @@ def generate_match_done_embed(team1, team2, guild_id, queue_record: QueueRecord)
 def cancel_match(inter: Interaction, queue_id: str):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
 
-    if len(response.team_1) == 4 and len(response.team_2) == 4:
+    is_match_ready = len(response.team_1) == 4 and len(response.team_2) == 4
+
+    if is_match_ready:
         if inter.user_id not in response.team_1 and inter.user_id not in response.team_2:
+            return None
+    else:
+        # Pick phase: only players in the queue can cancel
+        if inter.user_id not in response.queue:
             return None
 
     if inter.user_id not in response.cancel_votes:
@@ -330,7 +336,12 @@ def cancel_match(inter: Interaction, queue_id: str):
     resp = queue_dao.put_queue(response)
 
     if resp is not None:
-        if len(response.cancel_votes) > 4:
+        # Match ready: 5 votes (half + 1); pick phase: half the queue size
+        if is_match_ready:
+            cancel_threshold = 5
+        else:
+            cancel_threshold = len(response.queue) // 2
+        if len(response.cancel_votes) >= cancel_threshold:
             response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
             response.clear_queue(reset_expiry=False)
             resp = queue_dao.put_queue(response)
