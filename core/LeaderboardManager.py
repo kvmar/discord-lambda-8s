@@ -17,7 +17,7 @@ LEADERBOARD_COLOR = 0x7c3aed  # Purple
 
 def build_leaderboard_entries(guild_id: str):
     player_list = player_dao.get_players_by_guild_id(guild_id)
-    sorted_player_list = sorted(player_list, key=lambda x: x.sr, reverse=True)
+    sorted_player_list = sorted(player_list, key=lambda x: x.get_effective_sr(), reverse=True)
 
     entries = []
     rank = 1
@@ -31,7 +31,7 @@ def build_leaderboard_entries(guild_id: str):
         medal = MEDAL_EMOJIS.get(rank, f"`#{rank}`")
         rank_emoji = user.get_rank_emoji()
         streak_emoji = user.get_streak()
-        sr = int(float(user.sr))
+        sr = int(user.get_effective_sr())
         delta = user.delta if (user.delta.startswith("+") or user.delta.startswith("-")) else f"+{user.delta}"
         wins = int(user.mw)
         losses = int(user.ml)
