@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 import json
 import os
 import time
@@ -42,7 +43,7 @@ RANK_SR_RANGES = {
 
 
 class PlayerRecord:
-  def __init__(self, guild_id: str, player_id: str, player_name: str, mw: int = 0, ml: int = 0, sr: float = 0.0, rank: int = 0, elo: float = 25.0, sigma: float = 8.33, delta: str = "+0.0", streak: int = 0, version: int = 0, last_played: int = 0):
+  def __init__(self, guild_id: str, player_id: str, player_name: str, mw: int = 0, ml: int = 0, sr: float = 0.0, rank: int = 0, elo: float = 25.0, sigma: float = 8.33, delta: str = "+0.0", streak: int = 0, version: int = 0, last_played: int = 0, last_loss_forgiven: int = 0):
     self.guild_id = guild_id
     self.player_id = player_id
     self.player_name = player_name
@@ -56,6 +57,7 @@ class PlayerRecord:
     self.streak = int(streak)
     self.version = version
     self.last_played = int(last_played)
+    self.last_loss_forgiven = int(last_loss_forgiven)
 
 
   def get_streak(self):
@@ -79,6 +81,13 @@ class PlayerRecord:
       rating = float(self.elo - (2 * self.sigma))
       print(f"ELO: {self.elo}, Sigma: {self.sigma}, Rating: {rating}")
       return rating
+
+  def _used_forgiveness_today(self) -> bool:
+      if self.last_loss_forgiven == 0:
+          return False
+      today = datetime.datetime.utcnow().date()
+      forgiven_date = datetime.datetime.utcfromtimestamp(self.last_loss_forgiven).date()
+      return today == forgiven_date
 
   def get_effective_sr(self, grace_days: int = 7, decay_rate: int = 10) -> float:
       if self.last_played == 0:
@@ -143,12 +152,18 @@ class PlayerRecord:
 
       curr_sr = self.sr
 
+      is_ranked = (self.mw + self.ml) > 10
+
       if loss == 0:
         sr_gain = self.calculate_rp_gain(expected=expected)
         new_sr = curr_sr + sr_gain
         self.rank = self.calculate_sr_rank(new_sr)
         self.sr = new_sr
         self.delta = "+" + str(int(float(self.sr - curr_sr)))
+      elif is_ranked and not self._used_forgiveness_today():
+        print(f"[Daily forgiveness] absorbing first loss of the day for {self.player_name}")
+        self.last_loss_forgiven = int(time.time())
+        self.delta = "+0"
       else:
         sr_loss = self.calculate_rp_loss(expected=expected)
         new_sr = max(0, curr_sr + sr_loss)
@@ -240,4 +255,7 @@ class PlayerDao:
       last_played = int(time.time())
       if response.get("last_played") is not None:
         last_played = int(response["last_played"])
-      return PlayerRecord(player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["ml"], sr=sr, rank=rank, elo=response["elo"], sigma=response["sigma"], delta=response["delta"], streak=response["streak"], version=response["version"], last_played=last_played)
+      last_loss_forgiven = 0
+      if response.get("last_loss_forgiven") is not None:
+        last_loss_forgiven = int(response["last_loss_forgiven"])
+      return PlayerRecord(player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["ml"], sr=sr, rank=rank, elo=response["elo"], sigma=response["sigma"], delta=response["delta"], streak=response["streak"], version=response["version"], last_played=last_played, last_loss_forgiven=last_loss_forgiven)

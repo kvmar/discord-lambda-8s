@@ -5,7 +5,7 @@ import pytest
 from dao.PlayerDao import PlayerRecord, RANK_SR_RANGES
 
 
-def _player(sr=200, rank=2, mw=10, ml=5, elo=25.0, sigma=8.33, last_played=0):
+def _player(sr=200, rank=2, mw=10, ml=5, elo=25.0, sigma=8.33, last_played=0, last_loss_forgiven=0):
     return PlayerRecord(
         guild_id="guild_123",
         player_id="p1",
@@ -17,6 +17,7 @@ def _player(sr=200, rank=2, mw=10, ml=5, elo=25.0, sigma=8.33, last_played=0):
         elo=elo,
         sigma=sigma,
         last_played=last_played,
+        last_loss_forgiven=last_loss_forgiven,
     )
 
 
@@ -63,7 +64,7 @@ class TestApplyRpChange:
         assert p.sr > 200
 
     def test_loss_decreases_sr(self):
-        p = _player(sr=200, rank=2)
+        p = _player(sr=200, rank=2, last_loss_forgiven=int(time.time()))
         p.apply_rp_change(loss=1, expected=0.5)
         assert p.sr < 200
 
@@ -80,7 +81,7 @@ class TestApplyRpChange:
 
     def test_loss_triggers_rank_down(self):
         # SR=100, rank=1 (Silver floor). A loss pushes back to Bronze (rank 0).
-        p = _player(sr=100, rank=1)
+        p = _player(sr=100, rank=1, last_loss_forgiven=int(time.time()))
         p.apply_rp_change(loss=1, expected=0.5)
         assert p.rank == 0
 
@@ -90,7 +91,7 @@ class TestApplyRpChange:
         assert p.delta.startswith("+")
 
     def test_delta_negative_on_loss(self):
-        p = _player(sr=200, rank=2)
+        p = _player(sr=200, rank=2, last_loss_forgiven=int(time.time()))
         p.apply_rp_change(loss=1, expected=0.5)
         assert p.delta.startswith("-")
 
@@ -142,3 +143,46 @@ class TestGetEffectiveSr:
         p = _player(sr=300, rank=2, last_played=last)
         p.apply_rp_change(loss=0, expected=0.5)
         assert abs(p.sr - 240.0) < 2.0
+
+
+class TestDailyForgiveness:
+
+    def test_first_loss_of_day_forgiven_for_ranked_player(self):
+        """Ranked player's first loss of the day doesn't deduct SR."""
+        p = _player(sr=200, rank=2, mw=11, ml=5)
+        p.apply_rp_change(loss=1, expected=0.5)
+        assert p.sr == 200.0
+        assert p.delta == "+0"
+
+    def test_forgiveness_stamps_last_loss_forgiven(self):
+        """After forgiveness, last_loss_forgiven is set to today."""
+        before = int(time.time()) - 1
+        p = _player(sr=200, rank=2, mw=11, ml=5)
+        p.apply_rp_change(loss=1, expected=0.5)
+        assert p.last_loss_forgiven >= before
+
+    def test_second_loss_of_day_not_forgiven(self):
+        """Second loss on the same day deducts SR normally."""
+        p = _player(sr=200, rank=2, mw=11, ml=5, last_loss_forgiven=int(time.time()))
+        p.apply_rp_change(loss=1, expected=0.5)
+        assert p.sr < 200.0
+
+    def test_unranked_player_not_forgiven(self):
+        """Players in placement (<=10 games) don't get forgiveness."""
+        p = _player(sr=50, rank=0, mw=5, ml=4)  # 9 games total, in placement
+        p.apply_rp_change(loss=1, expected=0.5)
+        assert p.sr < 50.0
+
+    def test_forgiveness_resets_next_day(self):
+        """A forgiven loss from yesterday doesn't block today's forgiveness."""
+        yesterday = int(time.time()) - 86400
+        p = _player(sr=200, rank=2, mw=11, ml=5, last_loss_forgiven=yesterday)
+        p.apply_rp_change(loss=1, expected=0.5)
+        assert p.sr == 200.0
+        assert p.delta == "+0"
+
+    def test_win_always_grants_sr(self):
+        """Forgiveness has no effect on wins."""
+        p = _player(sr=200, rank=2, mw=11, ml=5)
+        p.apply_rp_change(loss=0, expected=0.5)
+        assert p.sr > 200.0
