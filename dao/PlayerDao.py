@@ -237,7 +237,7 @@ class PlayerDao:
       rank = 0
       if response.get("rank") is not None:
         rank = int(response['rank'])
-      last_played = 0
+      last_played = int(time.time())
       if response.get("last_played") is not None:
         last_played = int(response["last_played"])
       return PlayerRecord(player_id=response["player_id"], player_name=response['player_name'], guild_id=response["guild_id"], mw=response["mw"], ml=response["ml"], sr=sr, rank=rank, elo=response["elo"], sigma=response["sigma"], delta=response["delta"], streak=response["streak"], version=response["version"], last_played=last_played)
