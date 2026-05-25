@@ -504,12 +504,12 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         team1_str = "🔵 Team 1\n"
         for user in record.team_1:
             player_data = player_dao.get_player(record.guild_id, user)
-            team1_str = team1_str + f"• {player_data.player_name}\n"
+            team1_str = team1_str + f"• {player_data.get_rank_emoji()} {player_data.player_name} ({int(player_data.sr)} SR)\n"
 
         team2_str = "🔴 Team 2\n"
         for user in record.team_2:
             player_data = player_dao.get_player(record.guild_id, user)
-            team2_str = team2_str + f"• {player_data.player_name}\n"
+            team2_str = team2_str + f"• {player_data.get_rank_emoji()} {player_data.player_name} ({int(player_data.sr)} SR)\n"
 
         embed = Embedding(
             f"🎮 Picking - {record.queue_id}",
