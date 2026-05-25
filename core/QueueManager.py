@@ -439,7 +439,15 @@ def player_pick(inter: Interaction, queue_id: str):
     if player_pick != str(player_id_inter):
         return None
 
-    player = inter.custom_id.split("#")[1]
+    # Extract player_id from select menu values (new approach)
+    # For select menus: inter.values[0] contains the selected player_id
+    # For buttons: inter.custom_id.split("#")[1] was the player_id
+    if hasattr(inter, 'values') and inter.values:
+        player = inter.values[0]
+    else:
+        # Fallback for button clicks (legacy support)
+        player = inter.custom_id.split("#")[1]
+
     print(f'Picked player {player}')
 
     if team1_pick:
@@ -496,12 +504,12 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         team1_str = "🔵 Team 1\n"
         for user in record.team_1:
             player_data = player_dao.get_player(record.guild_id, user)
-            team1_str = team1_str + f"• {player_data.player_name}\n"
+            team1_str = team1_str + str(player_data.get_rank_emoji()) + player_data.player_name + str(player_data.get_streak()) + " • " + str(int(player_data.sr)) + "\n"
 
         team2_str = "🔴 Team 2\n"
         for user in record.team_2:
             player_data = player_dao.get_player(record.guild_id, user)
-            team2_str = team2_str + f"• {player_data.player_name}\n"
+            team2_str = team2_str + str(player_data.get_rank_emoji()) + player_data.player_name + str(player_data.get_streak()) + " • " + str(int(player_data.sr)) + "\n"
 
         embed = Embedding(
             f"🎮 Picking - {record.queue_id}",
@@ -556,39 +564,49 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
 
 
 def get_player_pick_btns(record, queue_id: str):
-    cmpt_idx = 0
+    """
+    Generate pick interface using select menu with rank + SR display.
+    Always uses select menu regardless of queue size.
+    """
 
-    component_list = list()
-    component = Components()
-
+    # Get available players (not yet picked, excluding both captains)
     picks = record.team_1 + record.team_2
+    available = [user for user in record.queue if user not in picks]
 
-    for user in record.queue:
-        player_data = player_dao.get_player(record.guild_id, user)
-        if cmpt_idx == 4:
-            component_list.append(component)
-            component = Components()
-            cmpt_idx = 0
-        if user == record.team_1[0] or user == record.team_2[0]:
-            print("Skipping creating a cap button")
+    # Build select menu options
+    options = []
+    for user_id in available:
+        # Skip both captains
+        if user_id == record.team_1[0] or user_id == record.team_2[0]:
             continue
-        elif user in picks:
-            component.add_button(player_data.player_name, f'{player_pick_custom_id}#{player_data.player_id}#{queue_id}', True, 2)
-        else:
-            component.add_button(player_data.player_name, f'{player_pick_custom_id}#{player_data.player_id}#{queue_id}', False, 2)
-        cmpt_idx = cmpt_idx + 1
 
-    if (cmpt_idx == 4):
-        component_list.append(component)
-        component = Components()
-        cmpt_idx = 0
+        player = player_dao.get_player(record.guild_id, user_id)
+        rank_emoji = player.get_rank_emoji()
 
-    component.add_button(f"Cancel Match - {len(record.cancel_votes)}", f"cancel_match_custom_id#{record.queue_id}", False, 4)
+        options.append({
+            "label": player.player_name,
+            "value": user_id,
+            "description": f"{rank_emoji} SR {int(player.sr)}",
+            "emoji": "👤"
+        })
 
-    if cmpt_idx < 4:
-        component_list.append(component)
+    # Create component with select menu
+    component = Components()
+    component.add_select(
+        options=options,
+        custom_id=f"{player_pick_custom_id}#{queue_id}",
+        placeholder=f"Pick from {len(options)} players..."
+    )
 
-    return component_list
+    # Add Cancel Match button below select menu
+    component.add_button(
+        f"Cancel Match - {len(record.cancel_votes)}",
+        f"cancel_match_custom_id#{record.queue_id}",
+        False,
+        4
+    )
+
+    return [component]
 
 def update_message_id(guild_id, msg_id, channel_id, queue_id):
     response = queue_dao.get_queue(guild_id=guild_id, queue_id=queue_id)

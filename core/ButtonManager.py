@@ -116,16 +116,21 @@ def start_queue_button(guild_id: str, inter: Interaction, autopick: bool):
 
 
 def player_pick_button(guild_id, inter):
-  print(f"Player pick button clicked: {inter.custom_id}")
+  print(f"Player pick interaction: {inter.custom_id}")
 
-  resp = QueueManager.player_pick(inter, inter.custom_id.split("#")[2])
+  # Extract queue_id from custom_id format: player_pick#{queue_id}
+  # (select menu) or player_pick#{player_id}#{queue_id} (legacy buttons)
+  custom_id_parts = inter.custom_id.split("#")
+  queue_id = custom_id_parts[-1]  # Get last part (works for both formats)
+
+  resp = QueueManager.player_pick(inter, queue_id)
 
   if resp is None:
     return
 
   (embed, component) = resp
 
-  record = queue_dao.get_queue(guild_id=guild_id, queue_id=inter.custom_id.split("#")[2])
+  record = queue_dao.get_queue(guild_id=guild_id, queue_id=queue_id)
   QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
 
   if len(record.team_1) == 4 and len(record.team_2) == 4:

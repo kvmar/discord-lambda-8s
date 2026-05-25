@@ -74,6 +74,28 @@ class Components:
     def add_button(self, label: str, custom_id: str, disabled: bool, style: int = 1):
         self.components = self.components + [{"style": style, "label": label, "custom_id": custom_id, "disabled": disabled, "type": 2}]
 
+    def add_select(self, options: list[dict], custom_id: str, placeholder: str = None):
+        """
+        Add a select menu component.
+
+        options: list of dicts with keys:
+            - label: main display text (required)
+            - value: what gets sent when selected (required)
+            - description: text under label (optional)
+            - emoji: emoji to show (optional)
+        custom_id: unique identifier for this select menu
+        placeholder: text shown when nothing is selected
+        """
+        select_component = {
+            "type": 3,  # Select menu type
+            "custom_id": custom_id,
+            "options": options
+        }
+        if placeholder:
+            select_component["placeholder"] = placeholder
+
+        self.components = self.components + [select_component]
+
 
 class Interaction:
     PING_RESPONSE = { "type": 1 }
@@ -90,6 +112,7 @@ class Interaction:
 
         self.data = interaction.get("data")
         self.custom_id = interaction.get("data").get("custom_id")
+        self.values = interaction.get("data").get("values")  # For select menu interactions
         self.guild_id = interaction.get("guild").get("id")
         self.app_id = app_id
         self.callback_url = f"https://discord.com/api/v10/interactions/{self.id}/{self.token}/callback"
