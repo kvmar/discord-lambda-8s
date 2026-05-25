@@ -147,12 +147,13 @@ class PlayerRecord:
       print(f"\n=== Apply RP Change: {'WIN' if loss == 0 else 'LOSS'} expected={expected:.2f} ===")
 
       # Commit accumulated decay before applying win/loss
+      original_sr = float(self.sr)
       effective_sr = self.get_effective_sr()
       self.sr = effective_sr
 
       curr_sr = self.sr
 
-      is_ranked = (self.mw + self.ml) > 10
+      is_ranked = (self.mw + self.ml) >= 10
 
       if loss == 0:
         sr_gain = self.calculate_rp_gain(expected=expected)
@@ -163,7 +164,8 @@ class PlayerRecord:
       elif is_ranked and not self._used_forgiveness_today():
         print(f"[Daily forgiveness] absorbing first loss of the day for {self.player_name}")
         self.last_loss_forgiven = int(time.time())
-        self.delta = "+0"
+        decay_change = int(effective_sr - original_sr)
+        self.delta = str(decay_change) if decay_change < 0 else "+0"
       else:
         sr_loss = self.calculate_rp_loss(expected=expected)
         new_sr = max(0, curr_sr + sr_loss)
