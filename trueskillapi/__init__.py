@@ -73,8 +73,7 @@ class TrueSkillAccessor:
             lost = lost + 1
 
         your_avg_rating = sum(u.get_rating() for u in team_ratings) / len(team_ratings) if team_ratings else 0
-        expected = 1 / (1 + 10 ** ((enemy_avg_rating - your_avg_rating) / 4))
-        print(f"[SR] your_avg={your_avg_rating:.1f} enemy_avg={enemy_avg_rating:.1f} expected={expected:.2f}")
+        print(f"[SR] your_avg={your_avg_rating:.1f} enemy_avg={enemy_avg_rating:.1f}")
 
         for user in team_ratings:
             print("Updating streak for player_name: " + user.player_name + " , streak: " + str(user.streak))
@@ -104,7 +103,10 @@ class TrueSkillAccessor:
             user.elo = old_elo + elo_change
             user.sigma = max(0.5, new_sigma)  # Minimum sigma of 0.5 prevents underflow
 
-            user.apply_rp_change(tuple_idx, expected=expected)
+            # Per-player expected: individual rating vs enemy team average
+            user_expected = 1 / (1 + 10 ** ((enemy_avg_rating - user.get_rating()) / 20))
+            print(f"[SR] {user.player_name} rating={user.get_rating():.1f} enemy_avg={enemy_avg_rating:.1f} expected={user_expected:.2f}")
+            user.apply_rp_change(tuple_idx, expected=user_expected)
 
             print(f"Writing player_data record to {user}")
             player_dao.put_player(user)
