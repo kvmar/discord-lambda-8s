@@ -35,9 +35,11 @@ class TrueSkillAccessor:
 
         win_avg_rating = sum(u.get_rating() for u in win_team_ratings) / len(win_team_ratings)
         lose_avg_rating = sum(u.get_rating() for u in lose_team_ratings) / len(lose_team_ratings)
+        game_avg_rating = (sum(u.get_rating() for u in win_team_ratings) + sum(u.get_rating() for u in lose_team_ratings)) / (len(win_team_ratings) + len(lose_team_ratings))
+        print(f"[SR] win_avg={win_avg_rating:.1f} lose_avg={lose_avg_rating:.1f} game_avg={game_avg_rating:.1f}")
 
-        self.update_ratings(new_ratings, win_team_ratings, 0, enemy_avg_rating=lose_avg_rating)
-        self.update_ratings(new_ratings, lose_team_ratings, 1, enemy_avg_rating=win_avg_rating)
+        self.update_ratings(new_ratings, win_team_ratings, 0, game_avg_rating=game_avg_rating)
+        self.update_ratings(new_ratings, lose_team_ratings, 1, game_avg_rating=game_avg_rating)
 
 
     def get_player_data(self, team: list, guild_id: str) -> list[PlayerRecord]:
@@ -62,7 +64,7 @@ class TrueSkillAccessor:
         else:
             return 0.8
 
-    def update_ratings(self, new_ratings, team_ratings: list[PlayerRecord], tuple_idx: int, enemy_avg_rating: float = 0):
+    def update_ratings(self, new_ratings, team_ratings: list[PlayerRecord], tuple_idx: int, game_avg_rating: float = 0):
         idx = 0
         lost = 0
         won = 0
@@ -71,9 +73,6 @@ class TrueSkillAccessor:
             won = won + 1
         else:
             lost = lost + 1
-
-        your_avg_rating = sum(u.get_rating() for u in team_ratings) / len(team_ratings) if team_ratings else 0
-        print(f"[SR] your_avg={your_avg_rating:.1f} enemy_avg={enemy_avg_rating:.1f}")
 
         for user in team_ratings:
             print("Updating streak for player_name: " + user.player_name + " , streak: " + str(user.streak))
@@ -92,6 +91,8 @@ class TrueSkillAccessor:
             user.mw = int(user.mw) + won
             user.ml = int(user.ml) + lost
 
+            pre_match_rating = user.get_rating()  # capture before TrueSkill updates elo/sigma
+
             old_elo = float(user.elo)
             new_elo = float(new_ratings[tuple_idx][idx].mu)
             new_sigma = float(new_ratings[tuple_idx][idx].sigma)
@@ -103,9 +104,9 @@ class TrueSkillAccessor:
             user.elo = old_elo + elo_change
             user.sigma = max(0.5, new_sigma)  # Minimum sigma of 0.5 prevents underflow
 
-            # Per-player expected: individual rating vs enemy team average
-            user_expected = 1 / (1 + 10 ** ((enemy_avg_rating - user.get_rating()) / 20))
-            print(f"[SR] {user.player_name} rating={user.get_rating():.1f} enemy_avg={enemy_avg_rating:.1f} expected={user_expected:.2f}")
+            # Per-player expected: pre-match individual rating vs game average (all 8 players)
+            user_expected = 1 / (1 + 10 ** ((game_avg_rating - pre_match_rating) / 20))
+            print(f"[SR] {user.player_name} rating={pre_match_rating:.1f} game_avg={game_avg_rating:.1f} expected={user_expected:.2f}")
             user.apply_rp_change(tuple_idx, expected=user_expected)
 
             print(f"Writing player_data record to {user}")

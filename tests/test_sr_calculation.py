@@ -168,7 +168,7 @@ class TestDailyForgiveness:
         assert p.sr < 200.0
 
     def test_unranked_player_not_forgiven(self):
-        """Players in placement (<=10 games) don't get forgiveness."""
+        """Players in placement (<10 games) don't get forgiveness."""
         p = _player(sr=50, rank=0, mw=5, ml=4)  # 9 games total, in placement
         p.apply_rp_change(loss=1, expected=0.5)
         assert p.sr < 50.0
@@ -186,3 +186,25 @@ class TestDailyForgiveness:
         p = _player(sr=200, rank=2, mw=11, ml=5)
         p.apply_rp_change(loss=0, expected=0.5)
         assert p.sr > 200.0
+
+    def test_forgiven_loss_delta_reflects_decay(self):
+        """When forgiveness fires and decay was applied, delta shows the decay amount."""
+        last = int(time.time()) - (14 * 86400)  # 14 days inactive → 70 SR decay
+        p = _player(sr=300, rank=2, mw=11, ml=5, last_played=last)
+        p.apply_rp_change(loss=1, expected=0.5)
+        assert p.delta == "-70"
+
+    def test_forgiven_loss_delta_plus_zero_when_no_decay(self):
+        """When forgiveness fires with no decay, delta shows +0."""
+        p = _player(sr=200, rank=2, mw=11, ml=5, last_played=0)
+        p.apply_rp_change(loss=1, expected=0.5)
+        assert p.delta == "+0"
+
+    def test_game_10_loss_eligible_for_forgiveness(self):
+        """A player on their 10th game can use daily forgiveness on a loss."""
+        p = _player(sr=200, rank=2, mw=9, ml=0)  # after mw increment → mw+ml=10
+        p.mw = 10
+        p.ml = 0
+        p.apply_rp_change(loss=1, expected=0.5)
+        # Forgiveness fires → SR not reduced by loss (placement then overrides SR anyway)
+        assert p.last_loss_forgiven > 0
