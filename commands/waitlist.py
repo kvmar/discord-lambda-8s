@@ -9,6 +9,7 @@ player_dao = PlayerDao()
 
 def waitlist_command(interaction: Interaction, queue: str = "main") -> None:
     """Show waitlist status and allow joining/leaving"""
+    interaction.defer(ephemeral=True)
 
     response = queue_dao.get_queue(guild_id=interaction.guild_id, queue_id=queue)
 
@@ -21,7 +22,7 @@ def waitlist_command(interaction: Interaction, queue: str = "main") -> None:
             desc="No match in progress. Waitlist opens when a match starts.",
             color=0xFFA500
         )
-        interaction.send_response(embeds=[embed], ephemeral=True)
+        interaction.send_followup(embeds=[embed], ephemeral=True)
         return
 
     # Build waitlist list
@@ -57,10 +58,10 @@ def waitlist_command(interaction: Interaction, queue: str = "main") -> None:
 
     # Join/Leave buttons
     component = Components()
-    component.add_button("Join Pre-Queue", f"join_waitlist_custom_id#{queue}", False, 1)
-    component.add_button("Leave Pre-Queue", f"leave_waitlist_custom_id#{queue}", False, 4)
+    component.add_button("Join Waitlist", f"join_waitlist_custom_id#{queue}", False, 1)
+    component.add_button("Leave Waitlist", f"leave_waitlist_custom_id#{queue}", False, 4)
 
-    interaction.send_response(embeds=[embed], components=[component], ephemeral=True)
+    interaction.send_followup(embeds=[embed], components=[component], ephemeral=True)
 
 
 def setup(registry: CommandRegistry):
