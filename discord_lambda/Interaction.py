@@ -145,10 +145,9 @@ class Interaction:
     def send_response(self, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True, components: list[Components] = None) -> \
     tuple[Any, Any]:
         try:
-            data = self.__create_channel_message(content, embeds, ephemeral, components)
-            payload = {"type": 4, "data": data}
-            print(f'Send Response payload: {payload}')
-            response = requests.post(self.callback_url, json=payload)
+            json = self.__create_channel_message(content, embeds, ephemeral, components)
+            print(f'Send Response json: {json}')
+            response = requests.patch(self.webhook_url, json=json)
             print(f'Got SendResponse: {response.text}')
             response.raise_for_status()
             print(f'Convert to JSON SendResponse: {response.json}')
