@@ -14,8 +14,8 @@ from more_itertools import set_partitions
 
 join_queue_custom_id = "join_queue"
 leave_queue_custom_id = "leave_queue"
-join_pre_queue_custom_id = "join_pre_queue"
-leave_pre_queue_custom_id = "leave_pre_queue"
+join_waitlist_custom_id = "join_waitlist"
+leave_waitlist_custom_id = "leave_waitlist"
 start_queue_custom_id = "start_queue"
 auto_pick_custom_id = "auto_pick"
 player_pick_custom_id = "player_pick"
@@ -95,21 +95,21 @@ def remove_player(inter: Interaction, queue_id: str):
         return embed, component
     return None
 
-def add_pre_queue_player(inter: Interaction, queue_id: str):
+def add_waitlist_player(inter: Interaction, queue_id: str):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
 
-    # Only allow joining pre-queue if game is in Match Ready state (both teams have 4 players)
+    # Only allow joining waitlist if game is in Match Ready state (both teams have 4 players)
     if not (len(response.team_1) == 4 and len(response.team_2) == 4):
-        print("Cannot join pre-queue: game not in Match Ready state")
+        print("Cannot join waitlist: game not in Match Ready state")
         return None
 
-    # Enforce pre-queue capacity and deduplication
-    if len(response.pre_queue) >= MAX_QUEUE_SIZE:
-        print(f"Pre-queue full ({MAX_QUEUE_SIZE} players)")
+    # Enforce waitlist capacity and deduplication
+    if len(response.waitlist) >= MAX_QUEUE_SIZE:
+        print(f"Waitlist full ({MAX_QUEUE_SIZE} players)")
         return None
 
-    if inter.user_id in response.pre_queue:
-        print(f"Player {inter.user_id} already in pre-queue")
+    if inter.user_id in response.waitlist:
+        print(f"Player {inter.user_id} already in waitlist")
         return None
 
     # Register player if not already registered
@@ -117,7 +117,7 @@ def add_pre_queue_player(inter: Interaction, queue_id: str):
     if player_data is None:
         player_dao.put_player(PlayerRecord(guild_id=inter.guild_id, player_id=inter.user_id, player_name=inter.username))
 
-    response.pre_queue.append(inter.user_id)
+    response.waitlist.append(inter.user_id)
     resp = queue_dao.put_queue(response)
 
     if resp is not None:
@@ -127,11 +127,11 @@ def add_pre_queue_player(inter: Interaction, queue_id: str):
 
     return None
 
-def remove_pre_queue_player(inter: Interaction, queue_id: str):
+def remove_waitlist_player(inter: Interaction, queue_id: str):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
 
-    if inter.user_id in response.pre_queue:
-        response.pre_queue.remove(inter.user_id)
+    if inter.user_id in response.waitlist:
+        response.waitlist.remove(inter.user_id)
 
     resp = queue_dao.put_queue(response)
 
@@ -201,17 +201,17 @@ def findMinSRDiff(queue: QueueRecord):
     return caps
 
 
-def promote_pre_queue(record: QueueRecord):
-    """Promote pre-queue members to active queue when game ends.
+def promote_waitlist(record: QueueRecord):
+    """Promote waitlist members to active queue when game ends.
 
     Must be called after clear_queue() and before put_queue() to ensure
-    pre_queue members are available as the next active queue.
+    waitlist members are available as the next active queue.
     """
-    # Move pre-queue members to active queue (capped at MAX_QUEUE_SIZE)
-    record.queue = list(record.pre_queue)[:MAX_QUEUE_SIZE]
-    # Clear pre-queue after promotion
-    record.pre_queue = list()
-    print(f"Promoted pre-queue to active queue: {len(record.queue)} players")
+    # Move waitlist members to active queue (capped at MAX_QUEUE_SIZE)
+    record.queue = list(record.waitlist)[:MAX_QUEUE_SIZE]
+    # Clear waitlist after promotion
+    record.waitlist = list()
+    print(f"Promoted waitlist to active queue: {len(record.queue)} players")
 
 
 def start_match(inter: Interaction, queue_id: str, autopick: bool):
@@ -303,7 +303,7 @@ def team_1_won(inter: Interaction, queue_id: str):
             team1 = response.team_1
             team2 = response.team_2
             response.clear_queue(reset_expiry=False)
-            promote_pre_queue(response)
+            promote_waitlist(response)
             resp = queue_dao.put_queue(response)
             ts.post_match(win_team=team1, lose_team=team2, guild_id=inter.guild_id)
 
@@ -342,7 +342,7 @@ def team_2_won(inter: Interaction, queue_id: str):
             team1 = response.team_1
             team2 = response.team_2
             response.clear_queue(reset_expiry=False)
-            promote_pre_queue(response)
+            promote_waitlist(response)
             resp = queue_dao.put_queue(response)
             ts.post_match(win_team=team2, lose_team=team1, guild_id=inter.guild_id)
 
@@ -413,7 +413,7 @@ def cancel_match(inter: Interaction, queue_id: str):
         if len(response.cancel_votes) >= cancel_threshold:
             response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
             response.clear_queue(reset_expiry=False)
-            promote_pre_queue(response)
+            promote_waitlist(response)
             resp = queue_dao.put_queue(response)
             if resp is None:
                 return None
@@ -528,17 +528,17 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         for map in record.maps:
             map_str = map_str + f"• {map}\n"
 
-        # Build pre-queue section if players are waiting
-        pre_queue_str = ""
-        if len(record.pre_queue) > 0:
-            pre_queue_str = f"\n🕓 Pre-Queue {len(record.pre_queue)}/8\n"
-            for user in record.pre_queue:
+        # Build waitlist section if players are waiting
+        waitlist_str = ""
+        if len(record.waitlist) > 0:
+            waitlist_str = f"\n🕓 Waitlist {len(record.waitlist)}/8\n"
+            for user in record.waitlist:
                 player_data = player_dao.get_player(record.guild_id, user)
-                pre_queue_str = pre_queue_str + str(player_data.get_rank_emoji()) + player_data.player_name + player_data.get_streak() + "\n"
+                waitlist_str = waitlist_str + str(player_data.get_rank_emoji()) + player_data.player_name + player_data.get_streak() + "\n"
 
         embed = Embedding(
             f"⚔️ Match Ready - {record.queue_id}",
-            f"{team1_str}\n{team2_str}\n{map_str}{pre_queue_str}",
+            f"{team1_str}\n{team2_str}\n{map_str}{waitlist_str}",
             color=0x7c3aed,
         )
 
@@ -548,12 +548,12 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         component.add_button(f"Team 2 Won - {len(record.team2_votes)}", f"team_2_won_custom_id#{record.queue_id}", False, 2)
         component.add_button(f"Cancel Match - {len(record.cancel_votes)}", f"cancel_match_custom_id#{record.queue_id}", False, 4)
 
-        # Second component row: pre-queue buttons (always show during Match Ready)
-        pre_queue_component = Components()
-        pre_queue_component.add_button("Join Pre-Queue", f"join_pre_queue_custom_id#{record.queue_id}", False, 1)
-        pre_queue_component.add_button("Leave Pre-Queue", f"leave_pre_queue_custom_id#{record.queue_id}", False, 4)
+        # Second component row: waitlist buttons (always show during Match Ready)
+        waitlist_component = Components()
+        waitlist_component.add_button("Join Waitlist", f"join_waitlist_custom_id#{record.queue_id}", False, 1)
+        waitlist_component.add_button("Leave Waitlist", f"leave_waitlist_custom_id#{record.queue_id}", False, 4)
 
-        return [embed], [component, pre_queue_component]
+        return [embed], [component, waitlist_component]
 
 
 

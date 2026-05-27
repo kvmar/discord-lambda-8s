@@ -50,7 +50,7 @@ def mock_interaction():
     inter.guild_id = "guild_123"
     inter.user_id = "user_456"
     inter.username = "TestPlayer"
-    inter.custom_id = "join_pre_queue#main"
+    inter.custom_id = "join_waitlist#main"
     inter.send_response = MagicMock()
     inter.send_message = MagicMock()
     inter.edit_response = MagicMock(return_value=["msg_id", "ch_id"])
@@ -78,7 +78,7 @@ def queue_record_waiting():
         team_1_channel_id="team1_ch",
         team_2_channel_id="team2_ch",
         money_queue=False,
-        pre_queue=[],
+        waitlist=[],
     )
 
 
@@ -102,7 +102,7 @@ def queue_record_picking():
         team_1_channel_id="team1_ch",
         team_2_channel_id="team2_ch",
         money_queue=False,
-        pre_queue=[],
+        waitlist=[],
     )
 
 
@@ -126,7 +126,7 @@ def queue_record_match_ready():
         team_1_channel_id="team1_ch",
         team_2_channel_id="team2_ch",
         money_queue=False,
-        pre_queue=[],
+        waitlist=[],
     )
 
 

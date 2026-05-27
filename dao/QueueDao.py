@@ -16,7 +16,7 @@ if os.environ.get('BOT_ENV') == "PROD":
 
 class QueueRecord:
   def __init__(self, guild_id: str, money_queue, queue_id: str, team_1: list, team_2: list, queue: list, cancel_votes: list, team1_votes: list, team2_votes: list, maps: list, map_set: list, version: int, expiry: int, result_channel_id: str,
-      team_1_channel_id: str, team_2_channel_id: str, message_id: str = None, channel_id: str = None, channel_config: dict = None, pre_queue: list = None):
+      team_1_channel_id: str, team_2_channel_id: str, message_id: str = None, channel_id: str = None, channel_config: dict = None, waitlist: list = None):
     self.guild_id = guild_id
     self.queue_id = queue_id
     self.team_1 = team_1
@@ -36,7 +36,7 @@ class QueueRecord:
     self.money_queue = money_queue
     self.result_channel_id = result_channel_id
     self.channel_config = channel_config
-    self.pre_queue = pre_queue if pre_queue is not None else list()
+    self.waitlist = waitlist if waitlist is not None else list()
 
 
   def clear_queue(self, reset_expiry: bool = True):
@@ -47,7 +47,7 @@ class QueueRecord:
     self.team1_votes = list()
     self.team2_votes = list()
     self.maps = list()
-    # IMPORTANT: pre_queue is intentionally NOT cleared here. It persists
+    # IMPORTANT: waitlist is intentionally NOT cleared here. It persists
     # so it can be promoted to the active queue when the game finishes.
     if reset_expiry:
       self.update_expiry_date()
@@ -129,10 +129,10 @@ class QueueDao:
     for map in response['maps']:
       maps.append(map)
 
-    pre_queue = list()
-    if response.get('pre_queue') is not None:
-      for user in response['pre_queue']:
-        pre_queue.append(user)
+    waitlist = list()
+    if response.get('waitlist') is not None:
+      for user in response['waitlist']:
+        waitlist.append(user)
 
     money_queue = False
     if response.get("money_queue") is not None:
@@ -146,4 +146,4 @@ class QueueDao:
                        team_1_channel_id=response["team_1_channel_id"], team_2_channel_id=response["team_2_channel_id"],
                        team1_votes=team1_votes, team2_votes=team2_votes, maps=maps,
                        version=response["version"], message_id=response["message_id"], channel_id=response["channel_id"], channel_config=response["channel_config"],
-                       pre_queue=pre_queue)
+                       waitlist=waitlist)

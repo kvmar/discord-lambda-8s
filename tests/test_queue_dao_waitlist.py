@@ -3,9 +3,9 @@ from dao.QueueDao import QueueRecord
 
 
 class TestQueueRecordPreQueue:
-    """Test pre_queue field in QueueRecord"""
+    """Test waitlist field in QueueRecord"""
 
-    def test_queue_record_initializes_with_empty_pre_queue(self):
+    def test_queue_record_initializes_with_empty_waitlist(self):
         """Pre-queue defaults to empty list when not provided"""
         record = QueueRecord(
             guild_id="123",
@@ -25,11 +25,11 @@ class TestQueueRecordPreQueue:
             team_2_channel_id="ch3",
             money_queue=False,
         )
-        assert record.pre_queue == []
+        assert record.waitlist == []
 
-    def test_queue_record_initializes_with_provided_pre_queue(self):
+    def test_queue_record_initializes_with_provided_waitlist(self):
         """Pre-queue is set when provided"""
-        pre_queue_members = ["user1", "user2"]
+        waitlist_members = ["user1", "user2"]
         record = QueueRecord(
             guild_id="123",
             queue_id="main",
@@ -47,13 +47,13 @@ class TestQueueRecordPreQueue:
             team_1_channel_id="ch2",
             team_2_channel_id="ch3",
             money_queue=False,
-            pre_queue=pre_queue_members,
+            waitlist=waitlist_members,
         )
-        assert record.pre_queue == pre_queue_members
+        assert record.waitlist == waitlist_members
 
-    def test_clear_queue_does_not_wipe_pre_queue(self):
-        """clear_queue() must NOT clear pre_queue"""
-        pre_queue_members = ["user1", "user2"]
+    def test_clear_queue_does_not_wipe_waitlist(self):
+        """clear_queue() must NOT clear waitlist"""
+        waitlist_members = ["user1", "user2"]
         record = QueueRecord(
             guild_id="123",
             queue_id="main",
@@ -71,7 +71,7 @@ class TestQueueRecordPreQueue:
             team_1_channel_id="ch2",
             team_2_channel_id="ch3",
             money_queue=False,
-            pre_queue=pre_queue_members,
+            waitlist=waitlist_members,
         )
 
         record.clear_queue(reset_expiry=False)
@@ -82,11 +82,11 @@ class TestQueueRecordPreQueue:
         assert record.queue == []
 
         # Pre-queue MUST survive
-        assert record.pre_queue == pre_queue_members
+        assert record.waitlist == waitlist_members
 
-    def test_queue_record_dict_includes_pre_queue(self):
-        """QueueRecord.__dict__ includes pre_queue for serialization"""
-        pre_queue_members = ["user1"]
+    def test_queue_record_dict_includes_waitlist(self):
+        """QueueRecord.__dict__ includes waitlist for serialization"""
+        waitlist_members = ["user1"]
         record = QueueRecord(
             guild_id="123",
             queue_id="main",
@@ -104,9 +104,9 @@ class TestQueueRecordPreQueue:
             team_1_channel_id="ch2",
             team_2_channel_id="ch3",
             money_queue=False,
-            pre_queue=pre_queue_members,
+            waitlist=waitlist_members,
         )
 
         record_dict = record.__dict__
-        assert "pre_queue" in record_dict
-        assert record_dict["pre_queue"] == pre_queue_members
+        assert "waitlist" in record_dict
+        assert record_dict["waitlist"] == waitlist_members

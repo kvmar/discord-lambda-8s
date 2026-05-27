@@ -7,10 +7,10 @@ queue_dao = QueueDao()
 def button_flow_tree(interaction: Interaction):
   if LeaderboardManager.leaderboard_page_custom_id in interaction.custom_id:
     leaderboard_page_button(interaction.guild_id, interaction)
-  elif QueueManager.join_pre_queue_custom_id in interaction.custom_id:
-    join_pre_queue_button(interaction.guild_id, interaction)
-  elif QueueManager.leave_pre_queue_custom_id in interaction.custom_id:
-    leave_pre_queue_button(interaction.guild_id, interaction)
+  elif QueueManager.join_waitlist_custom_id in interaction.custom_id:
+    join_waitlist_button(interaction.guild_id, interaction)
+  elif QueueManager.leave_waitlist_custom_id in interaction.custom_id:
+    leave_waitlist_button(interaction.guild_id, interaction)
   elif QueueManager.join_queue_custom_id in interaction.custom_id:
     join_queue_button(interaction.guild_id, interaction)
   elif QueueManager.leave_queue_custom_id in interaction.custom_id:
@@ -64,13 +64,13 @@ def leave_queue_button(guild_id: str, inter: Interaction):
   QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
 
 
-def join_pre_queue_button(guild_id: str, inter: Interaction):
-  print("Join pre-queue button clicked")
-  resp = QueueManager.add_pre_queue_player(inter, inter.custom_id.split("#")[1])
+def join_waitlist_button(guild_id: str, inter: Interaction):
+  print("Join waitlist button clicked")
+  resp = QueueManager.add_waitlist_player(inter, inter.custom_id.split("#")[1])
 
   if resp is None:
     from discord_lambda import Embedding
-    error_embed = Embedding(":x: Cannot Join Pre-Queue", "You can only join pre-queue when a match is ready and in progress.", color=0xFF0000)
+    error_embed = Embedding(":x: Cannot Join Waitlist", "You can only join the waitlist when a match is ready and in progress.", color=0xFF0000)
     inter.send_followup(embeds=[error_embed], ephemeral=True)
     return
 
@@ -80,13 +80,13 @@ def join_pre_queue_button(guild_id: str, inter: Interaction):
   QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
 
 
-def leave_pre_queue_button(guild_id: str, inter: Interaction):
-  print("Leave pre-queue button clicked")
-  resp = QueueManager.remove_pre_queue_player(inter, inter.custom_id.split("#")[1])
+def leave_waitlist_button(guild_id: str, inter: Interaction):
+  print("Leave waitlist button clicked")
+  resp = QueueManager.remove_waitlist_player(inter, inter.custom_id.split("#")[1])
 
   if resp is None:
     from discord_lambda import Embedding
-    error_embed = Embedding(":x: Not in Pre-Queue", "You are not currently in the pre-queue.", color=0xFF0000)
+    error_embed = Embedding(":x: Not in Waitlist", "You are not currently in the waitlist.", color=0xFF0000)
     inter.send_followup(embeds=[error_embed], ephemeral=True)
     return
 
