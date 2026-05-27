@@ -75,8 +75,7 @@ def setup(registry: CommandRegistry) -> None:
                 name="queue",
                 desc="Queue name (default: main)",
                 type=CommandArg.Types.STRING,
-                required=False,
-                choices=["main", "variant"]
+                required=False
             )
         ]
     )
