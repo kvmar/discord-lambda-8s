@@ -9,7 +9,6 @@ player_dao = PlayerDao()
 
 def prequeue_command(interaction: Interaction, queue: str = "main") -> None:
     """Show pre-queue status and allow joining/leaving"""
-    interaction.defer(ephemeral=False)
 
     response = queue_dao.get_queue(guild_id=interaction.guild_id, queue_id=queue)
 
