@@ -64,4 +64,4 @@ def waitlist_command(interaction: Interaction, queue: str = "main") -> None:
 
 
 def setup(registry: CommandRegistry):
-    registry.register_cmd(func=prequeue_command, name="prequeue", desc="Show pre-queue status and join/leave", options=[CommandArg("queue", "Queue name", CommandArg.Types.STRING)])
+    registry.register_cmd(func=waitlist_command, name="waitlist", desc="Show waitlist status and join/leave", options=[CommandArg("queue", "Queue name", CommandArg.Types.STRING)])
