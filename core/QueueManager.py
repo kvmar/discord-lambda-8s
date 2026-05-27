@@ -98,8 +98,8 @@ def remove_player(inter: Interaction, queue_id: str):
 def add_pre_queue_player(inter: Interaction, queue_id: str):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
 
-    # Only allow joining pre-queue if game is in Match Ready state (both teams formed)
-    if not (len(response.team_1) > 0 and len(response.team_2) > 0 and len(response.queue) == 0):
+    # Only allow joining pre-queue if game is in Match Ready state (both teams have 4 players)
+    if not (len(response.team_1) == 4 and len(response.team_2) == 4):
         print("Cannot join pre-queue: game not in Match Ready state")
         return None
 
