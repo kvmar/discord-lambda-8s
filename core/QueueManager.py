@@ -550,8 +550,8 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
 
         # Second component row: waitlist buttons (always show during Match Ready)
         waitlist_component = Components()
-        waitlist_component.add_button("Join Waitlist", f"join_waitlist_custom_id#{record.queue_id}", False, 1)
-        waitlist_component.add_button("Leave Waitlist", f"leave_waitlist_custom_id#{record.queue_id}", False, 4)
+        waitlist_component.add_button("Join Waitlist", f"{QueueManager.join_waitlist_custom_id}#{record.queue_id}", False, 1)
+        waitlist_component.add_button("Leave Waitlist", f"{QueueManager.leave_waitlist_custom_id}#{record.queue_id}", False, 4)
 
         return [embed], [component, waitlist_component]
 
