@@ -69,6 +69,9 @@ def join_pre_queue_button(guild_id: str, inter: Interaction):
   resp = QueueManager.add_pre_queue_player(inter, inter.custom_id.split("#")[1])
 
   if resp is None:
+    from discord_lambda import Embedding
+    error_embed = Embedding(":x: Cannot Join Pre-Queue", "You can only join pre-queue when a match is ready and in progress.", color=0xFF0000)
+    inter.send_response(embeds=[error_embed], ephemeral=True)
     return
 
   (embed, component) = resp
@@ -82,6 +85,9 @@ def leave_pre_queue_button(guild_id: str, inter: Interaction):
   resp = QueueManager.remove_pre_queue_player(inter, inter.custom_id.split("#")[1])
 
   if resp is None:
+    from discord_lambda import Embedding
+    error_embed = Embedding(":x: Not in Pre-Queue", "You are not currently in the pre-queue.", color=0xFF0000)
+    inter.send_response(embeds=[error_embed], ephemeral=True)
     return
 
   (embed, component) = resp
