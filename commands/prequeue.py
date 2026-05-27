@@ -64,18 +64,5 @@ def prequeue_command(interaction: Interaction, queue: str = "main") -> None:
     interaction.send_response(embeds=[embed], components=[component], ephemeral=True)
 
 
-def setup(registry: CommandRegistry) -> None:
-    """Register the prequeue command"""
-    registry.register_cmd(
-        func=prequeue_command,
-        name="prequeue",
-        desc="Show pre-queue status and join/leave",
-        options=[
-            CommandArg(
-                name="queue",
-                desc="Queue name (default: main)",
-                type=CommandArg.Types.STRING,
-                required=False
-            )
-        ]
-    )
+def setup(registry: CommandRegistry):
+    registry.register_cmd(func=prequeue_command, name="prequeue", desc="Show pre-queue status and join/leave", options=[CommandArg("queue", "Queue name", CommandArg.Types.STRING)])
