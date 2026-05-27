@@ -7,11 +7,11 @@ queue_dao = QueueDao()
 player_dao = PlayerDao()
 
 
-def prequeue_command(interaction: Interaction, queue_name: str = "main") -> None:
+def prequeue_command(interaction: Interaction, queue: str = "main") -> None:
     """Show pre-queue status and allow joining/leaving"""
     interaction.defer(ephemeral=False)
 
-    response = queue_dao.get_queue(guild_id=interaction.guild_id, queue_id=queue_name)
+    response = queue_dao.get_queue(guild_id=interaction.guild_id, queue_id=queue)
 
     # Check if match is ready
     is_match_ready = len(response.team_1) == 4 and len(response.team_2) == 4
@@ -38,7 +38,7 @@ def prequeue_command(interaction: Interaction, queue_name: str = "main") -> None
             pre_queue_str += f"{rank_emoji} {player_data.player_name}{streak} • {sr}\n"
 
     embed = Embedding(
-        title=f"🕓 Pre-Queue - {queue_name}",
+        title=f"🕓 Pre-Queue - {queue}",
         desc=f"**Status:** Match in progress\n**Waiting:** {len(response.pre_queue)}/8 players\n\n{pre_queue_str}\n**Next up** when current match ends",
         color=0x00C853
     )
@@ -58,8 +58,8 @@ def prequeue_command(interaction: Interaction, queue_name: str = "main") -> None
 
     # Join/Leave buttons
     component = Components()
-    component.add_button("Join Pre-Queue", f"join_pre_queue_custom_id#{queue_name}", False, 1)
-    component.add_button("Leave Pre-Queue", f"leave_pre_queue_custom_id#{queue_name}", False, 4)
+    component.add_button("Join Pre-Queue", f"join_pre_queue_custom_id#{queue}", False, 1)
+    component.add_button("Leave Pre-Queue", f"leave_pre_queue_custom_id#{queue}", False, 4)
 
     interaction.send_response(embeds=[embed], components=[component], ephemeral=True)
 
