@@ -7,9 +7,9 @@ queue_dao = QueueDao()
 def button_flow_tree(interaction: Interaction):
   if LeaderboardManager.leaderboard_page_custom_id in interaction.custom_id:
     leaderboard_page_button(interaction.guild_id, interaction)
-  elif QueueManager.join_waitlist_custom_id in interaction.custom_id:
+  elif QueueManager.join_waitlist_custom_id in interaction.custom_id or "join_pre_queue" in interaction.custom_id:
     join_waitlist_button(interaction.guild_id, interaction)
-  elif QueueManager.leave_waitlist_custom_id in interaction.custom_id:
+  elif QueueManager.leave_waitlist_custom_id in interaction.custom_id or "leave_pre_queue" in interaction.custom_id:
     leave_waitlist_button(interaction.guild_id, interaction)
   elif QueueManager.join_queue_custom_id in interaction.custom_id:
     join_queue_button(interaction.guild_id, interaction)
