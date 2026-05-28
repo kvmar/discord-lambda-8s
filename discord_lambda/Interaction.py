@@ -268,6 +268,7 @@ class Interaction:
 
     def send_followup(self, content: str = None, embeds: list[Embedding] = None, ephemeral: bool = True) -> None:
         try:
-            requests.post(self.webhook_url, json=self.__create_channel_message(content, embeds, ephemeral)).raise_for_status()
+            followup_url = f"https://discord.com/api/v10/webhooks/{self.app_id}/{self.token}"
+            requests.post(followup_url, json=self.__create_channel_message(content, embeds, ephemeral)).raise_for_status()
         except Exception as e:
             raise Exception(f"Unable to send followup: {e}")

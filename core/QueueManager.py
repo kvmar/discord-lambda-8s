@@ -217,6 +217,9 @@ def promote_waitlist(record: QueueRecord):
 def start_match(inter: Interaction, queue_id: str, autopick: bool):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
 
+    # Preserve all players for picking phase
+    all_players = response.queue.copy()
+
     if autopick:
         teams = use_average_sr(response)
         idx = 0
@@ -230,14 +233,16 @@ def start_match(inter: Interaction, queue_id: str, autopick: bool):
             if idx < 4:
                 response.team_2.append(i.player_id)
                 idx = idx + 1
+        # Auto-pick: clear queue since all players are assigned
+        response.queue = list()
     else:
         caps = findMinSRDiff(response)
         response.team_1 = list()
         response.team_2 = list()
         response.team_1.append(caps[0])
         response.team_2.append(caps[1])
-
-    response.queue = list()
+        # Manual pick: keep all players in queue for picking phase
+        response.queue = all_players
 
     response.maps = list()
     map_picks = get_maps(queue_record=response)
