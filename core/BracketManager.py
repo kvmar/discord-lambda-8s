@@ -598,6 +598,78 @@ def start_bracket(inter: Interaction, queue_id: str):
 
 
 # ---------------------------------------------------------------------------
+# Public: cancel_bracket (admin command)
+# ---------------------------------------------------------------------------
+
+def cancel_bracket(inter: Interaction, queue_id: str) -> str:
+    """Cancel an active bracket for queue_id. Returns a status string."""
+    guild_id = inter.guild_id
+
+    origin = queue_dao.get_queue_or_none(guild_id, queue_id)
+    if origin is None:
+        return f":x: Queue `{queue_id}` not found."
+
+    tid = getattr(origin, "tournament_id", None)
+    if not getattr(origin, "is_bracket", False) or not tid:
+        return f":x: No active bracket on queue `{queue_id}`."
+
+    meta = _get_meta(guild_id, tid)
+    if meta is None:
+        origin.is_bracket = False
+        origin.tournament_id = None
+        queue_dao.put_queue(origin)
+        return f":warning: Bracket meta not found for `{queue_id}` (tid `{tid}`). Queue flag cleared."
+
+    meta_bracket = meta.bracket or {}
+    if meta_bracket.get("status") == "complete":
+        return f":x: Bracket `{tid}` is already complete."
+
+    meta_bracket["status"] = "cancelled"
+    queue_dao.put_queue(meta)
+
+    # Remove vote buttons from every in-progress match
+    for mid, node in meta_bracket.get("matches", {}).items():
+        if node.get("status") != "ready":
+            continue
+        match = queue_dao.get_queue_or_none(guild_id, _bracket_queue_id(tid, mid))
+        if match and match.channel_id and match.message_id:
+            try:
+                inter.edit_message(
+                    channel_id=match.channel_id, message_id=match.message_id,
+                    embeds=[Embedding(
+                        title=f"🚫 Cancelled — {mid}",
+                        desc="This bracket match has been cancelled by an admin.",
+                        color=0x808080,
+                    )],
+                    components=[],
+                )
+            except Exception as e:
+                print(f"[Bracket cancel] Could not edit match {mid}: {e}")
+
+    # Post cancellation notice to the results channel
+    result_channel_id = meta_bracket.get("result_channel_id")
+    if result_channel_id:
+        try:
+            inter.send_message(
+                channel_id=result_channel_id,
+                embeds=[Embedding(
+                    title="🚫 Bracket Cancelled",
+                    desc=f"The tournament on queue **{queue_id}** (ID: `{tid}`) has been cancelled by an admin.",
+                    color=0x808080,
+                )],
+            )
+        except Exception as e:
+            print(f"[Bracket cancel] Could not post cancellation notice: {e}")
+
+    # Clear the bracket flag so the queue lobby returns to normal
+    origin.is_bracket = False
+    origin.tournament_id = None
+    queue_dao.put_queue(origin)
+
+    return f":white_check_mark: Bracket `{tid}` on queue `{queue_id}` has been cancelled."
+
+
+# ---------------------------------------------------------------------------
 # Public: report_winner (vote handler)
 # ---------------------------------------------------------------------------
 
