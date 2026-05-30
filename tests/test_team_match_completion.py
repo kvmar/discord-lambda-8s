@@ -1,5 +1,7 @@
-"""Regression tests: a completed/cancelled team match must return a fresh view
-so the live Match Ready message updates instead of freezing on the old roster."""
+"""Regression tests: a completed/cancelled team match deletes the live Match
+Ready (lobby) message and returns None — the result is already posted to the
+results channel, so the lobby message just disappears instead of being edited
+into a redundant completed view."""
 
 import pytest
 from unittest.mock import MagicMock
@@ -43,28 +45,30 @@ def _inter(user_id="a4"):
     return inter
 
 
-def test_team_win_returns_completed_view_not_none(patched):
+def test_team_win_deletes_lobby_and_returns_none(patched):
     qd, ts, tm = patched
     # 4 votes already; this is the deciding 5th vote.
     record = _team_match_record(team1_votes=["a1", "a2", "a3", "b1"])
     qd.get_queue.return_value = record
+    inter = _inter("a4")
 
-    result = QueueManager.team_1_won(_inter("a4"), "TEAM-abc123")
+    result = QueueManager.team_1_won(inter, "TEAM-abc123")
 
-    assert result is not None, "completion must return a view so the message updates"
-    embeds, components = result
-    assert len(embeds) == 1
+    assert result is None, "completion deletes the lobby message; nothing left to edit"
     ts.post_team_match.assert_called_once()
+    # Result posted to the results channel, lobby message deleted.
+    inter.send_message.assert_called_once()
+    inter.delete_message.assert_called_once_with(message_id="msg", channel_id="ch")
 
 
-def test_team_cancel_returns_cancelled_view_not_none(patched):
+def test_team_cancel_deletes_lobby_and_returns_none(patched):
     qd, ts, tm = patched
     # Match ready needs 5 cancel votes; supply 4 prior + this one.
     record = _team_match_record(cancel_votes=["a1", "a2", "a3", "b1"])
     qd.get_queue.return_value = record
+    inter = _inter("a4")
 
-    result = QueueManager.cancel_match(_inter("a4"), "TEAM-abc123")
+    result = QueueManager.cancel_match(inter, "TEAM-abc123")
 
-    assert result is not None
-    embeds, components = result
-    assert "Cancel" in embeds[0].title or "ancel" in embeds[0].title
+    assert result is None, "cancel deletes the lobby message; nothing left to edit"
+    inter.delete_message.assert_called_once_with(message_id="msg", channel_id="ch")

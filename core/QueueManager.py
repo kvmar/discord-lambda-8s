@@ -371,23 +371,25 @@ def team_1_won(inter: Interaction, queue_id: str):
 
 
 def _complete_team_match_result(inter: Interaction, response: QueueRecord, win_team_id: str, lose_team_id: str):
-    """Finish a team-queue match: update team ratings, post the result, return
-    both teams to idle, and clear the match record. Returns the embed/component
-    to edit the live Match Ready message into a completed view (so it doesn't
-    stay frozen on the old roster)."""
+    """Finish a team-queue match: update team ratings, post the result to the
+    results channel, return both teams to idle, and clear the match record.
+
+    The live Match Ready (lobby) message is deleted — the result already lands
+    in the results channel, so the lobby message just disappears. Returns None
+    so the caller skips any further edit of the (now-deleted) message."""
     import core.TeamManager as TeamManager
     from core import TeamLeaderboardManager
     ts.post_team_match(win_team_id=win_team_id, lose_team_id=lose_team_id, guild_id=inter.guild_id)
     done_embed = TeamManager.generate_team_match_done_embed(win_team_id, lose_team_id, inter.guild_id)
     inter.send_message(channel_id=response.result_channel_id, embeds=[done_embed])
     TeamManager.complete_team_match(inter.guild_id, win_team_id, lose_team_id)
+    # Delete the lobby message wherever it was posted.
+    for channel_id, message_id in response.channel_config.items():
+        inter.delete_message(message_id=message_id, channel_id=channel_id)
     response.clear_queue(reset_expiry=False)
     queue_dao.put_queue(response)
     TeamLeaderboardManager.post_team_leaderboard(inter.guild_id, inter)
-    # No buttons on the completed view — the match is over. Return an empty
-    # components list (not [Components()]) so the action row is removed; an
-    # action row with zero buttons is rejected by Discord with a 400.
-    return [done_embed], []
+    return None
 
 
 def team_2_won(inter: Interaction, queue_id: str):
@@ -488,10 +490,12 @@ def cancel_match(inter: Interaction, queue_id: str):
             if getattr(response, "is_team_queue", False):
                 import core.TeamManager as TeamManager
                 TeamManager.cancel_team_match(inter.guild_id, response.team_1_id, response.team_2_id)
+                # Match ended → the lobby message just disappears (no result post).
+                for channel_id, message_id in response.channel_config.items():
+                    inter.delete_message(message_id=message_id, channel_id=channel_id)
                 response.clear_queue(reset_expiry=False)
                 queue_dao.put_queue(response)
-                cancelled = Embedding("🚫 Team Match Cancelled", "Both teams have been returned to idle.", color=0xFF0000)
-                return [cancelled], []
+                return None
             response.clear_queue(reset_expiry=False)
             promote_waitlist(response)
             resp = queue_dao.put_queue(response)
