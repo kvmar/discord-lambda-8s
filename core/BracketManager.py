@@ -782,6 +782,13 @@ def _finish_tournament(inter: Interaction, meta: QueueRecord, meta_bracket: dict
     meta_bracket["champion"] = champion
     queue_dao.put_queue(meta)
 
+    # Increment championship count for every player on the winning team.
+    for pid in champion:
+        p = player_dao.get_player(guild_id=inter.guild_id, player_id=pid)
+        if p:
+            p.championships = int(p.championships) + 1
+            player_dao.put_player(p)
+
     embed = _champion_embed(champion, inter.guild_id, meta.tournament_id)
     inter.send_message(channel_id=meta_bracket["result_channel_id"], embeds=[embed])
 
