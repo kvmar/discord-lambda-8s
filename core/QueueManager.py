@@ -686,8 +686,25 @@ def update_message_id(guild_id, msg_id, channel_id, queue_id):
     queue_dao.put_queue(response)
 
 def team_pool_join(inter: Interaction, queue_id: str):
-    """Captain queues their team from the pool board button."""
+    """Captain queues their team from the pool board button.
+    Blocks if any team member is already in an active solo queue."""
     import core.TeamManager as TM
+    # Check up-front that the captain isn't already in any solo queue lobby
+    # (covers the scenario where someone is queued solo AND tries to queue their team).
+    team_check = TM.team_dao.get_team_by_player(inter.guild_id, inter.user_id)
+    if team_check is not None:
+        for player_id in team_check.players:
+            solo = queue_dao.get_queue_or_none(inter.guild_id, "1")
+            if solo is not None and player_id in solo.queue:
+                inter.send_followup(
+                    embeds=[Embedding(
+                        ":x: Player in solo queue",
+                        f"<@{player_id}> is already in the solo queue. They must leave it before your team can queue.",
+                        color=0xFF0000,
+                    )],
+                    ephemeral=True,
+                )
+                return None
     result = TM.queue_team(inter.guild_id, inter.user_id)
     if result.color == TM.ERROR_COLOR:
         inter.send_followup(embeds=[result], ephemeral=True)
