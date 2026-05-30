@@ -6,7 +6,7 @@ import random
 from core import QueueManager
 from dao.QueueDao import QueueDao, QueueRecord
 from dao.TeamDao import TeamDao, TeamRecord, MAX_TEAM_SIZE, STATUS_IDLE, STATUS_QUEUED, STATUS_IN_MATCH
-from discord_lambda import Embedding
+from discord_lambda import Embedding, Components
 from discord_lambda import Interaction
 from trueskillapi import TrueSkillAccessor
 
@@ -64,25 +64,27 @@ def build_team_lobby_embed(team: TeamRecord) -> Embedding:
     return embed
 
 
-def build_pool_board_embed(guild_id: str) -> Embedding:
-    """Rendered when /queue <name> is called on a record flagged is_team_queue.
-    Shows every team currently searching for a match."""
+def build_team_pool_embed(guild_id: str, queue_id: str):
+    """Interactive team queue pool embed. Captains click Queue Up/Dequeue;
+    anyone can click Start Match once ≥2 teams are searching."""
     queued = team_dao.get_queued_teams(guild_id)
     queued = sorted(queued, key=lambda t: t.get_rating(), reverse=True)
 
     if not queued:
-        desc = ("No teams are searching right now.\n\n"
-                "Captains: build a 4/4 roster with `/team_create`, `/team_add`, "
-                "then `/team_queue` to join the pool.")
+        desc = "No teams searching.\n\nCaptains: build a 4/4 roster with `/team_create` and `/team_add`, then click **Queue Up** below."
     else:
         rows = []
         for t in queued:
             sr = f"SR {int(t.team_sr)}" if t.is_ranked() else "Unranked"
             rows.append(f"{t.get_rank_emoji()} **{t.team_name}** — {sr} • {len(t.players)}/{MAX_TEAM_SIZE}")
-        desc = ("Teams searching for a match:\n\n" + "\n".join(rows) +
-                "\n\nAnyone can run `/team_start` to match the two closest teams.")
+        desc = f"{len(queued)} team(s) searching:\n\n" + "\n".join(rows)
 
-    return Embedding(title="🏟️ Team Queue Pool", desc=desc, color=TEAM_COLOR)
+    embed = Embedding(title="🏟️ Team Queue", desc=desc, color=TEAM_COLOR)
+    component = Components()
+    component.add_button("Queue Up", f"team_queue_join#{queue_id}", False, 1)
+    component.add_button("Dequeue", f"team_queue_leave#{queue_id}", False, 4)
+    component.add_button("Start Match", f"team_queue_start#{queue_id}", len(queued) < 2, 3)
+    return [embed], [component]
 
 
 # ---------------------------------------------------------------------------
@@ -192,6 +194,19 @@ def queue_team(guild_id: str, captain_id: str) -> Embedding:
     embed = build_team_lobby_embed(team)
     embed.add_field("Pool", f"{pool_size} team(s) searching. Run `/team_start` to match.", inline=False)
     return embed
+
+
+def dequeue_team(guild_id: str, captain_id: str) -> Embedding:
+    team = team_dao.get_team_by_player(guild_id, captain_id)
+    if team is None:
+        return _error(":x: No team", "You're not on a team.")
+    if team.captain_id != captain_id:
+        return _error(":x: Captain only", "Only the team captain can dequeue the team.")
+    if team.status != STATUS_QUEUED:
+        return _error(":x: Not searching", "Your team isn't currently searching for a match.")
+    team.status = STATUS_IDLE
+    team_dao.put_team(team)
+    return Embedding("✅ Dequeued", f"**{team.team_name}** is no longer searching.", color=TEAM_COLOR)
 
 
 # ---------------------------------------------------------------------------
