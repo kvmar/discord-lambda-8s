@@ -560,11 +560,14 @@ def start_bracket(inter: Interaction, queue_id: str):
     )
     inter.send_message(channel_id=base.result_channel_id, embeds=[announce])
 
-    # Clear the originating queue
+    # Clear the originating queue and stamp it with the active bracket so the
+    # queue embed can show bracket-in-progress state instead of an empty lobby.
     base.clear_queue(reset_expiry=False)
+    base.is_bracket = True
+    base.tournament_id = tid
     queue_dao.put_queue(base)
 
-    # Return updated queue embed (now empty)
+    # Return updated queue embed (bracket-in-progress view)
     from core.QueueManager import update_queue_embed
     return update_queue_embed(base)
 
@@ -775,6 +778,15 @@ def _finish_tournament(inter: Interaction, meta: QueueRecord, meta_bracket: dict
 
     embed = _champion_embed(champion, inter.guild_id, meta.tournament_id)
     inter.send_message(channel_id=meta_bracket["result_channel_id"], embeds=[embed])
+
+    # Clear bracket flag on the originating queue so it returns to the normal lobby.
+    origin_queue_id = meta_bracket.get("queue_id")
+    if origin_queue_id:
+        origin = queue_dao.get_queue_or_none(inter.guild_id, origin_queue_id)
+        if origin and getattr(origin, "tournament_id", None) == meta.tournament_id:
+            origin.is_bracket = False
+            origin.tournament_id = None
+            queue_dao.put_queue(origin)
 
 
 def _maybe_post_next_wave(inter: Interaction, tid: str):
