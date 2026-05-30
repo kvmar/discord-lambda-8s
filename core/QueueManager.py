@@ -285,6 +285,46 @@ def get_maps(queue_record: QueueRecord):
 
 
 
+def build_team_match_ready_embed(record: QueueRecord):
+    """Match Ready view for a premade team match. Members are shown as mentions
+    (team players may not have a solo PlayerRecord), with team names + ratings
+    pulled from the TeamRecords."""
+    from dao.TeamDao import TeamDao
+    team_dao = TeamDao()
+    t1 = team_dao.get_team(record.guild_id, record.team_1_id)
+    t2 = team_dao.get_team(record.guild_id, record.team_2_id)
+
+    t1_name = t1.team_name if t1 else "Team 1"
+    t2_name = t2.team_name if t2 else "Team 2"
+    t1_sr = f" • SR {int(t1.team_sr)}" if (t1 and t1.is_ranked()) else ""
+    t2_sr = f" • SR {int(t2.team_sr)}" if (t2 and t2.is_ranked()) else ""
+
+    team1_str = f"🔵 **{t1_name}**{t1_sr}\n"
+    for user in record.team_1:
+        team1_str += f"• <@{user}>\n"
+
+    team2_str = f"🔴 **{t2_name}**{t2_sr}\n"
+    for user in record.team_2:
+        team2_str += f"• <@{user}>\n"
+
+    map_str = "🗺️ Maps\n"
+    for map in record.maps:
+        map_str += f"• {map}\n"
+
+    embed = Embedding(
+        f"⚔️ Team Match Ready - {t1_name} vs {t2_name}",
+        f"{team1_str}\n{team2_str}\n{map_str}",
+        color=0x7c3aed,
+    )
+
+    component = Components()
+    component.add_button(f"{t1_name} Won - {len(record.team1_votes)}", f"team_1_won_custom_id#{record.queue_id}", False, 1)
+    component.add_button(f"{t2_name} Won - {len(record.team2_votes)}", f"team_2_won_custom_id#{record.queue_id}", False, 2)
+    component.add_button(f"Cancel Match - {len(record.cancel_votes)}", f"cancel_match_custom_id#{record.queue_id}", False, 4)
+
+    return [embed], [component]
+
+
 def team_1_won(inter: Interaction, queue_id: str):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
     if inter.user_id not in response.team_1 and inter.user_id not in response.team_2:
@@ -305,6 +345,9 @@ def team_1_won(inter: Interaction, queue_id: str):
         if len(response.team1_votes) == 5:
             print(f"Posting team 1 win: {response.team_1} and team 2 lose: {response.team_2}")
             response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
+            if getattr(response, "is_team_queue", False):
+                _complete_team_match_result(inter, response, win_team_id=response.team_1_id, lose_team_id=response.team_2_id)
+                return None
             team1 = response.team_1
             team2 = response.team_2
             response.clear_queue(reset_expiry=False)
@@ -323,6 +366,21 @@ def team_1_won(inter: Interaction, queue_id: str):
 
         return embed, component
     return None
+
+
+def _complete_team_match_result(inter: Interaction, response: QueueRecord, win_team_id: str, lose_team_id: str):
+    """Finish a team-queue match: update team ratings, post the result, return
+    both teams to idle, and clear the match record."""
+    import core.TeamManager as TeamManager
+    ts.post_team_match(win_team_id=win_team_id, lose_team_id=lose_team_id, guild_id=inter.guild_id)
+    inter.send_message(
+        channel_id=response.result_channel_id,
+        embeds=[TeamManager.generate_team_match_done_embed(win_team_id, lose_team_id, inter.guild_id)],
+    )
+    TeamManager.complete_team_match(inter.guild_id, win_team_id, lose_team_id)
+    response.clear_queue(reset_expiry=False)
+    queue_dao.put_queue(response)
+
 
 def team_2_won(inter: Interaction, queue_id: str):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
@@ -344,6 +402,9 @@ def team_2_won(inter: Interaction, queue_id: str):
         if len(response.team2_votes) == 5:
             print(f"Posting team 1 lose: {response.team_1} and team 2 win: {response.team_2}")
             response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
+            if getattr(response, "is_team_queue", False):
+                _complete_team_match_result(inter, response, win_team_id=response.team_2_id, lose_team_id=response.team_1_id)
+                return None
             team1 = response.team_1
             team2 = response.team_2
             response.clear_queue(reset_expiry=False)
@@ -417,6 +478,12 @@ def cancel_match(inter: Interaction, queue_id: str):
             cancel_threshold = len(response.queue) // 2
         if len(response.cancel_votes) >= cancel_threshold:
             response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
+            if getattr(response, "is_team_queue", False):
+                import core.TeamManager as TeamManager
+                TeamManager.cancel_team_match(inter.guild_id, response.team_1_id, response.team_2_id)
+                response.clear_queue(reset_expiry=False)
+                queue_dao.put_queue(response)
+                return None
             response.clear_queue(reset_expiry=False)
             promote_waitlist(response)
             resp = queue_dao.put_queue(response)
@@ -519,6 +586,9 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         components = get_player_pick_btns(record, record.queue_id)
         return [embed], components
     elif len(record.team_1) == 4 and len(record.team_2) == 4:
+        if getattr(record, "is_team_queue", False):
+            return build_team_match_ready_embed(record)
+
         team1_str = "🔵 [Team 1](https://discord.com/channels/1123491132765110302/1123491133213921394)\n"
         for user in record.team_1:
             player_data = player_dao.get_player(record.guild_id, user)

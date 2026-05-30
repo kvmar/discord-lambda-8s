@@ -16,7 +16,8 @@ if os.environ.get('BOT_ENV') == "PROD":
 
 class QueueRecord:
   def __init__(self, guild_id: str, money_queue, queue_id: str, team_1: list, team_2: list, queue: list, cancel_votes: list, team1_votes: list, team2_votes: list, maps: list, map_set: list, version: int, expiry: int, result_channel_id: str,
-      team_1_channel_id: str, team_2_channel_id: str, message_id: str = None, channel_id: str = None, channel_config: dict = None, waitlist: list = None):
+      team_1_channel_id: str, team_2_channel_id: str, message_id: str = None, channel_id: str = None, channel_config: dict = None, waitlist: list = None,
+      is_team_queue: bool = False, team_1_id: str = None, team_2_id: str = None):
     self.guild_id = guild_id
     self.queue_id = queue_id
     self.team_1 = team_1
@@ -37,6 +38,12 @@ class QueueRecord:
     self.result_channel_id = result_channel_id
     self.channel_config = channel_config
     self.waitlist = waitlist if waitlist is not None else list()
+    # Team-queue (4v4 premade) fields. is_team_queue routes match results to
+    # the team rating system; team_1_id / team_2_id reference the TeamRecords
+    # that are playing this match.
+    self.is_team_queue = is_team_queue
+    self.team_1_id = team_1_id
+    self.team_2_id = team_2_id
 
 
   def clear_queue(self, reset_expiry: bool = True):
@@ -78,6 +85,21 @@ class QueueDao:
     print(f'Queue Dao get_queue response: {response}')
     return self.get_queue_record_attributes(response["Item"])
 
+  def get_queue_or_none(self, guild_id: str, queue_id: str):
+    """Like get_queue, but returns None instead of raising when the record
+    does not exist yet (used by team matches that create their record fresh)."""
+    if guild_id != "1123491132765110302":
+      guild_id = "1123491132765110302"
+    response = self.table.get_item(
+      Key={
+        'guild_id': guild_id,
+        'queue_id': queue_id,
+      }
+    )
+    if "Item" not in response:
+      return None
+    return self.get_queue_record_attributes(response["Item"])
+
   def put_queue(self, queue_record: QueueRecord):
     current_version = queue_record.version
     queue_record.version = queue_record.version + 1
@@ -87,7 +109,12 @@ class QueueDao:
 
     response = None
     try:
-      response = self.table.put_item(Item=queue_dict, ConditionExpression=Attr("version").eq(current_version))
+      if current_version != 0:
+        response = self.table.put_item(Item=queue_dict, ConditionExpression=Attr("version").eq(current_version))
+      else:
+        # Brand new record (e.g. a freshly created team match) — no prior
+        # version to guard against, so write unconditionally.
+        response = self.table.put_item(Item=queue_dict)
     except ClientError as err:
       if err.response["Error"]["Code"] == 'ConditionalCheckFailedException':
         # Somebody changed the item in the db while we were changing it!
@@ -138,6 +165,10 @@ class QueueDao:
     if response.get("money_queue") is not None:
       money_queue = response['money_queue']
 
+    is_team_queue = bool(response.get("is_team_queue", False))
+    team_1_id = response.get("team_1_id")
+    team_2_id = response.get("team_2_id")
+
     return QueueRecord(guild_id=response["guild_id"], queue_id=response["queue_id"], expiry=int(response["expiry"]),
                        team_1=team_1, team_2=team_2, queue=queue, cancel_votes=cancel_votes,
                        money_queue=money_queue,
@@ -146,4 +177,5 @@ class QueueDao:
                        team_1_channel_id=response["team_1_channel_id"], team_2_channel_id=response["team_2_channel_id"],
                        team1_votes=team1_votes, team2_votes=team2_votes, maps=maps,
                        version=response["version"], message_id=response["message_id"], channel_id=response["channel_id"], channel_config=response["channel_config"],
-                       waitlist=waitlist)
+                       waitlist=waitlist,
+                       is_team_queue=is_team_queue, team_1_id=team_1_id, team_2_id=team_2_id)

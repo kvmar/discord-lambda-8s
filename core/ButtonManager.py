@@ -1,11 +1,15 @@
-from core import QueueManager, LeaderboardManager
+from core import QueueManager, LeaderboardManager, TeamLeaderboardManager
 from discord_lambda import Interaction
 from dao.QueueDao import QueueDao
 
 queue_dao = QueueDao()
 
 def button_flow_tree(interaction: Interaction):
-  if LeaderboardManager.leaderboard_page_custom_id in interaction.custom_id:
+  # NOTE: "team_leaderboard_page" contains "leaderboard_page", so it must be
+  # checked before the solo leaderboard page button.
+  if TeamLeaderboardManager.team_leaderboard_page_custom_id in interaction.custom_id:
+    team_leaderboard_page_button(interaction.guild_id, interaction)
+  elif LeaderboardManager.leaderboard_page_custom_id in interaction.custom_id:
     leaderboard_page_button(interaction.guild_id, interaction)
   elif QueueManager.join_waitlist_custom_id in interaction.custom_id or "join_pre_queue" in interaction.custom_id:
     join_waitlist_button(interaction.guild_id, interaction)
@@ -34,6 +38,15 @@ def leaderboard_page_button(guild_id: str, inter: Interaction):
   page = int(inter.custom_id.split("#")[1])
 
   embed, component = LeaderboardManager.build_leaderboard_page(guild_id, page)
+
+  inter.send_response(embeds=[embed], components=[component], ephemeral=True)
+
+def team_leaderboard_page_button(guild_id: str, inter: Interaction):
+  print(f"Team leaderboard page button clicked: {inter.custom_id}")
+
+  page = int(inter.custom_id.split("#")[1])
+
+  embed, component = TeamLeaderboardManager.build_team_leaderboard_page(guild_id, page)
 
   inter.send_response(embeds=[embed], components=[component], ephemeral=True)
 
