@@ -384,8 +384,10 @@ def _complete_team_match_result(inter: Interaction, response: QueueRecord, win_t
     response.clear_queue(reset_expiry=False)
     queue_dao.put_queue(response)
     TeamLeaderboardManager.post_team_leaderboard(inter.guild_id, inter)
-    # No buttons on the completed view — the match is over.
-    return [done_embed], [Components()]
+    # No buttons on the completed view — the match is over. Return an empty
+    # components list (not [Components()]) so the action row is removed; an
+    # action row with zero buttons is rejected by Discord with a 400.
+    return [done_embed], []
 
 
 def team_2_won(inter: Interaction, queue_id: str):
@@ -489,7 +491,7 @@ def cancel_match(inter: Interaction, queue_id: str):
                 response.clear_queue(reset_expiry=False)
                 queue_dao.put_queue(response)
                 cancelled = Embedding("🚫 Team Match Cancelled", "Both teams have been returned to idle.", color=0xFF0000)
-                return [cancelled], [Components()]
+                return [cancelled], []
             response.clear_queue(reset_expiry=False)
             promote_waitlist(response)
             resp = queue_dao.put_queue(response)
@@ -689,22 +691,23 @@ def team_pool_join(inter: Interaction, queue_id: str):
     """Captain queues their team from the pool board button.
     Blocks if any team member is already in an active solo queue."""
     import core.TeamManager as TM
-    # Check up-front that the captain isn't already in any solo queue lobby
+    # Check up-front that no team member is already in the solo queue lobby
     # (covers the scenario where someone is queued solo AND tries to queue their team).
     team_check = TM.team_dao.get_team_by_player(inter.guild_id, inter.user_id)
     if team_check is not None:
-        for player_id in team_check.players:
-            solo = queue_dao.get_queue_or_none(inter.guild_id, "1")
-            if solo is not None and player_id in solo.queue:
-                inter.send_followup(
-                    embeds=[Embedding(
-                        ":x: Player in solo queue",
-                        f"<@{player_id}> is already in the solo queue. They must leave it before your team can queue.",
-                        color=0xFF0000,
-                    )],
-                    ephemeral=True,
-                )
-                return None
+        solo = queue_dao.get_queue_or_none(inter.guild_id, "kali")
+        if solo is not None:
+            for player_id in team_check.players:
+                if player_id in solo.queue:
+                    inter.send_followup(
+                        embeds=[Embedding(
+                            ":x: Player in solo queue",
+                            f"<@{player_id}> is already in the solo queue. They must leave it before your team can queue.",
+                            color=0xFF0000,
+                        )],
+                        ephemeral=True,
+                    )
+                    return None
     result = TM.queue_team(inter.guild_id, inter.user_id)
     if result.color == TM.ERROR_COLOR:
         inter.send_followup(embeds=[result], ephemeral=True)
@@ -737,14 +740,14 @@ def team_pool_start(inter: Interaction, queue_id: str, channel_id: str):
         return None
     team_a, team_b = TM._pick_fairest_pair(queued)
     # Inherit channel config from the team pool record itself; fall back to the
-    # base solo queue "1" only if the pool record isn't channel-configured.
+    # "kali" queue only if the pool record isn't channel-configured.
     base = queue_dao.get_queue_or_none(inter.guild_id, queue_id)
     if base is None or not base.result_channel_id:
-        base = queue_dao.get_queue_or_none(inter.guild_id, "1")
+        base = queue_dao.get_queue_or_none(inter.guild_id, "kali")
     if base is None:
         inter.send_followup(
             embeds=[Embedding(":x: Queue not set up",
-                              f"No channel config found on queue `{queue_id}` or base queue `1`.",
+                              f"No channel config found on queue `{queue_id}` or fallback queue `kali`.",
                               color=0xFF0000)],
             ephemeral=True,
         )

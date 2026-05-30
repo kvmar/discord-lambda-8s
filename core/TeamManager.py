@@ -236,10 +236,10 @@ def start_team_match(inter: Interaction) -> None:
 
     team_a, team_b = _pick_fairest_pair(queued)
 
-    base = queue_dao.get_queue_or_none(guild_id, "1")
+    base = queue_dao.get_queue_or_none(guild_id, "kali")
     if base is None:
         inter.send_response(embeds=[_error(":x: Queue not set up",
-                                           "No base queue `1` exists to inherit channels from.")],
+                                           "No fallback queue `kali` exists to inherit channels from.")],
                             ephemeral=True)
         return
 
