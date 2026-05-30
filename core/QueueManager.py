@@ -736,11 +736,15 @@ def team_pool_start(inter: Interaction, queue_id: str, channel_id: str):
         )
         return None
     team_a, team_b = TM._pick_fairest_pair(queued)
-    base = queue_dao.get_queue_or_none(inter.guild_id, "1")
+    # Inherit channel config from the team pool record itself; fall back to the
+    # base solo queue "1" only if the pool record isn't channel-configured.
+    base = queue_dao.get_queue_or_none(inter.guild_id, queue_id)
+    if base is None or not base.result_channel_id:
+        base = queue_dao.get_queue_or_none(inter.guild_id, "1")
     if base is None:
         inter.send_followup(
             embeds=[Embedding(":x: Queue not set up",
-                              "No base queue `1` exists to inherit channels from.",
+                              f"No channel config found on queue `{queue_id}` or base queue `1`.",
                               color=0xFF0000)],
             ephemeral=True,
         )
