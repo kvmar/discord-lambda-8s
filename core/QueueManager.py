@@ -22,6 +22,9 @@ player_pick_custom_id = "player_pick"
 cancel_match_custom_id = "cancel_match"
 team_1_won_custom_id = "team_1_won"
 team_2_won_custom_id = "team_2_won"
+team_queue_join_custom_id = "team_queue_join"
+team_queue_leave_custom_id = "team_queue_leave"
+team_queue_start_custom_id = "team_queue_start"
 
 MAX_QUEUE_SIZE = 8
 
@@ -373,12 +376,14 @@ def _complete_team_match_result(inter: Interaction, response: QueueRecord, win_t
     to edit the live Match Ready message into a completed view (so it doesn't
     stay frozen on the old roster)."""
     import core.TeamManager as TeamManager
+    from core import TeamLeaderboardManager
     ts.post_team_match(win_team_id=win_team_id, lose_team_id=lose_team_id, guild_id=inter.guild_id)
     done_embed = TeamManager.generate_team_match_done_embed(win_team_id, lose_team_id, inter.guild_id)
     inter.send_message(channel_id=response.result_channel_id, embeds=[done_embed])
     TeamManager.complete_team_match(inter.guild_id, win_team_id, lose_team_id)
     response.clear_queue(reset_expiry=False)
     queue_dao.put_queue(response)
+    TeamLeaderboardManager.post_team_leaderboard(inter.guild_id, inter)
     # No buttons on the completed view — the match is over.
     return [done_embed], [Components()]
 
@@ -535,6 +540,9 @@ def player_pick(inter: Interaction, queue_id: str):
 
 
 def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
+    if getattr(record, "is_team_queue", False) and len(record.team_1) == 0:
+        import core.TeamManager as TeamManager
+        return TeamManager.build_team_pool_embed(record.guild_id, record.queue_id)
     if len(record.team_1) == 0 or len(record.team_2) == 0:
         queue_str = ""
         for user in record.queue:
@@ -676,6 +684,95 @@ def update_message_id(guild_id, msg_id, channel_id, queue_id):
     response.channel_id = channel_id
     response.channel_config[channel_id] = msg_id
     queue_dao.put_queue(response)
+
+def team_pool_join(inter: Interaction, queue_id: str):
+    """Captain queues their team from the pool board button.
+    Blocks if any team member is already in an active solo queue."""
+    import core.TeamManager as TM
+    # Check up-front that the captain isn't already in any solo queue lobby
+    # (covers the scenario where someone is queued solo AND tries to queue their team).
+    team_check = TM.team_dao.get_team_by_player(inter.guild_id, inter.user_id)
+    if team_check is not None:
+        for player_id in team_check.players:
+            solo = queue_dao.get_queue_or_none(inter.guild_id, "1")
+            if solo is not None and player_id in solo.queue:
+                inter.send_followup(
+                    embeds=[Embedding(
+                        ":x: Player in solo queue",
+                        f"<@{player_id}> is already in the solo queue. They must leave it before your team can queue.",
+                        color=0xFF0000,
+                    )],
+                    ephemeral=True,
+                )
+                return None
+    result = TM.queue_team(inter.guild_id, inter.user_id)
+    if result.color == TM.ERROR_COLOR:
+        inter.send_followup(embeds=[result], ephemeral=True)
+        return None
+    return TM.build_team_pool_embed(inter.guild_id, queue_id)
+
+
+def team_pool_leave(inter: Interaction, queue_id: str):
+    """Captain dequeues their team from the pool board button."""
+    import core.TeamManager as TM
+    result = TM.dequeue_team(inter.guild_id, inter.user_id)
+    if result.color == TM.ERROR_COLOR:
+        inter.send_followup(embeds=[result], ephemeral=True)
+        return None
+    return TM.build_team_pool_embed(inter.guild_id, queue_id)
+
+
+def team_pool_start(inter: Interaction, queue_id: str, channel_id: str):
+    """Start a match from the pool board. Posts the Match Ready embed to
+    channel_id and returns the refreshed (empty) pool embed."""
+    import core.TeamManager as TM
+    queued = TM.team_dao.get_queued_teams(inter.guild_id)
+    if len(queued) < 2:
+        inter.send_followup(
+            embeds=[Embedding(":x: Not enough teams",
+                              f"Need at least 2 teams searching ({len(queued)} in pool).",
+                              color=0xFF0000)],
+            ephemeral=True,
+        )
+        return None
+    team_a, team_b = TM._pick_fairest_pair(queued)
+    base = queue_dao.get_queue_or_none(inter.guild_id, "1")
+    if base is None:
+        inter.send_followup(
+            embeds=[Embedding(":x: Queue not set up",
+                              "No base queue `1` exists to inherit channels from.",
+                              color=0xFF0000)],
+            ephemeral=True,
+        )
+        return None
+    match_queue_id = TM.TEAM_MATCH_PREFIX + team_a.team_id[:8]
+    maps = random.sample(base.map_set, min(3, len(base.map_set)))
+    match_record = QueueRecord(
+        guild_id=inter.guild_id, money_queue=False, queue_id=match_queue_id,
+        team_1=list(team_a.players), team_2=list(team_b.players), queue=list(),
+        cancel_votes=list(), team1_votes=list(), team2_votes=list(),
+        maps=maps, map_set=base.map_set, version=0, expiry=0,
+        result_channel_id=base.result_channel_id,
+        team_1_channel_id=base.team_1_channel_id, team_2_channel_id=base.team_2_channel_id,
+        message_id=None, channel_id=None, channel_config={},
+        waitlist=list(),
+        is_team_queue=True, team_1_id=team_a.team_id, team_2_id=team_b.team_id,
+    )
+    match_record.update_expiry_date()
+    queue_dao.put_queue(match_record)
+    team_a.status = TM.STATUS_IN_MATCH
+    team_b.status = TM.STATUS_IN_MATCH
+    TM.team_dao.put_team(team_a)
+    TM.team_dao.put_team(team_b)
+    match_embeds, match_components = update_queue_embed(match_record)
+    resp = inter.send_message(channel_id=channel_id, embeds=match_embeds, components=match_components)
+    posted = queue_dao.get_queue(inter.guild_id, match_queue_id)
+    posted.message_id = resp[0]
+    posted.channel_id = resp[1]
+    posted.channel_config = {resp[1]: resp[0]}
+    queue_dao.put_queue(posted)
+    return TM.build_team_pool_embed(inter.guild_id, queue_id)
+
 
 def update_queue_view(record: QueueRecord, embeds: list[Embedding], components: list[Components], inter: Interaction):
     curr_time = int(datetime.utcnow().timestamp())

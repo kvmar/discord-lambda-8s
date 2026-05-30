@@ -9,6 +9,12 @@ def button_flow_tree(interaction: Interaction):
   # checked before the solo leaderboard page button.
   if TeamLeaderboardManager.team_leaderboard_page_custom_id in interaction.custom_id:
     team_leaderboard_page_button(interaction.guild_id, interaction)
+  elif QueueManager.team_queue_join_custom_id in interaction.custom_id:
+    team_pool_join_button(interaction.guild_id, interaction)
+  elif QueueManager.team_queue_leave_custom_id in interaction.custom_id:
+    team_pool_leave_button(interaction.guild_id, interaction)
+  elif QueueManager.team_queue_start_custom_id in interaction.custom_id:
+    team_pool_start_button(interaction.guild_id, interaction)
   elif LeaderboardManager.leaderboard_page_custom_id in interaction.custom_id:
     leaderboard_page_button(interaction.guild_id, interaction)
   elif QueueManager.join_waitlist_custom_id in interaction.custom_id or "join_pre_queue" in interaction.custom_id:
@@ -193,6 +199,43 @@ def cancel_match_button(guild_id: str, inter: Interaction):
 
   record = queue_dao.get_queue(guild_id=guild_id, queue_id=inter.custom_id.split("#")[1])
   QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
+
+
+def team_pool_join_button(guild_id: str, inter: Interaction):
+  print("Team pool Queue Up button clicked")
+  queue_id = inter.custom_id.split("#")[1]
+  resp = QueueManager.team_pool_join(inter, queue_id)
+  if resp is None:
+    return
+  embed, component = resp
+  record = queue_dao.get_queue(guild_id=guild_id, queue_id=queue_id)
+  QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
+
+
+def team_pool_leave_button(guild_id: str, inter: Interaction):
+  print("Team pool Dequeue button clicked")
+  queue_id = inter.custom_id.split("#")[1]
+  resp = QueueManager.team_pool_leave(inter, queue_id)
+  if resp is None:
+    return
+  embed, component = resp
+  record = queue_dao.get_queue(guild_id=guild_id, queue_id=queue_id)
+  QueueManager.update_queue_view(record, embeds=embed, components=component, inter=inter)
+
+
+def team_pool_start_button(guild_id: str, inter: Interaction):
+  print("Team pool Start Match button clicked")
+  queue_id = inter.custom_id.split("#")[1]
+  pool_record = queue_dao.get_queue(guild_id=guild_id, queue_id=queue_id)
+  channel_id = next(iter(pool_record.channel_config), None)
+  if not channel_id:
+    return
+  resp = QueueManager.team_pool_start(inter, queue_id, channel_id)
+  if resp is None:
+    return
+  embed, component = resp
+  pool_record = queue_dao.get_queue(guild_id=guild_id, queue_id=queue_id)
+  QueueManager.update_queue_view(pool_record, embeds=embed, components=component, inter=inter)
 
 
 
