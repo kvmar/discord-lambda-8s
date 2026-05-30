@@ -346,8 +346,7 @@ def team_1_won(inter: Interaction, queue_id: str):
             print(f"Posting team 1 win: {response.team_1} and team 2 lose: {response.team_2}")
             response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
             if getattr(response, "is_team_queue", False):
-                _complete_team_match_result(inter, response, win_team_id=response.team_1_id, lose_team_id=response.team_2_id)
-                return None
+                return _complete_team_match_result(inter, response, win_team_id=response.team_1_id, lose_team_id=response.team_2_id)
             team1 = response.team_1
             team2 = response.team_2
             response.clear_queue(reset_expiry=False)
@@ -370,16 +369,18 @@ def team_1_won(inter: Interaction, queue_id: str):
 
 def _complete_team_match_result(inter: Interaction, response: QueueRecord, win_team_id: str, lose_team_id: str):
     """Finish a team-queue match: update team ratings, post the result, return
-    both teams to idle, and clear the match record."""
+    both teams to idle, and clear the match record. Returns the embed/component
+    to edit the live Match Ready message into a completed view (so it doesn't
+    stay frozen on the old roster)."""
     import core.TeamManager as TeamManager
     ts.post_team_match(win_team_id=win_team_id, lose_team_id=lose_team_id, guild_id=inter.guild_id)
-    inter.send_message(
-        channel_id=response.result_channel_id,
-        embeds=[TeamManager.generate_team_match_done_embed(win_team_id, lose_team_id, inter.guild_id)],
-    )
+    done_embed = TeamManager.generate_team_match_done_embed(win_team_id, lose_team_id, inter.guild_id)
+    inter.send_message(channel_id=response.result_channel_id, embeds=[done_embed])
     TeamManager.complete_team_match(inter.guild_id, win_team_id, lose_team_id)
     response.clear_queue(reset_expiry=False)
     queue_dao.put_queue(response)
+    # No buttons on the completed view — the match is over.
+    return [done_embed], [Components()]
 
 
 def team_2_won(inter: Interaction, queue_id: str):
@@ -403,8 +404,7 @@ def team_2_won(inter: Interaction, queue_id: str):
             print(f"Posting team 1 lose: {response.team_1} and team 2 win: {response.team_2}")
             response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
             if getattr(response, "is_team_queue", False):
-                _complete_team_match_result(inter, response, win_team_id=response.team_2_id, lose_team_id=response.team_1_id)
-                return None
+                return _complete_team_match_result(inter, response, win_team_id=response.team_2_id, lose_team_id=response.team_1_id)
             team1 = response.team_1
             team2 = response.team_2
             response.clear_queue(reset_expiry=False)
@@ -483,7 +483,8 @@ def cancel_match(inter: Interaction, queue_id: str):
                 TeamManager.cancel_team_match(inter.guild_id, response.team_1_id, response.team_2_id)
                 response.clear_queue(reset_expiry=False)
                 queue_dao.put_queue(response)
-                return None
+                cancelled = Embedding("🚫 Team Match Cancelled", "Both teams have been returned to idle.", color=0xFF0000)
+                return [cancelled], [Components()]
             response.clear_queue(reset_expiry=False)
             promote_waitlist(response)
             resp = queue_dao.put_queue(response)
