@@ -384,8 +384,10 @@ def _complete_team_match_result(inter: Interaction, response: QueueRecord, win_t
     response.clear_queue(reset_expiry=False)
     queue_dao.put_queue(response)
     TeamLeaderboardManager.post_team_leaderboard(inter.guild_id, inter)
-    # No buttons on the completed view — the match is over.
-    return [done_embed], [Components()]
+    # No buttons on the completed view — the match is over. Return an empty
+    # components list (not [Components()]) so the action row is removed; an
+    # action row with zero buttons is rejected by Discord with a 400.
+    return [done_embed], []
 
 
 def team_2_won(inter: Interaction, queue_id: str):
@@ -489,7 +491,7 @@ def cancel_match(inter: Interaction, queue_id: str):
                 response.clear_queue(reset_expiry=False)
                 queue_dao.put_queue(response)
                 cancelled = Embedding("🚫 Team Match Cancelled", "Both teams have been returned to idle.", color=0xFF0000)
-                return [cancelled], [Components()]
+                return [cancelled], []
             response.clear_queue(reset_expiry=False)
             promote_waitlist(response)
             resp = queue_dao.put_queue(response)

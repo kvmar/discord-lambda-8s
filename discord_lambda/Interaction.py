@@ -186,7 +186,10 @@ class Interaction:
                 json["content"] = content
             if embeds:
                 json["embeds"] = [embed.to_dict() for embed in embeds]
-            if components:
+            # Use `is not None` (not truthiness) so an explicit empty list clears
+            # all buttons. A bare [Components()] would send an empty action row,
+            # which Discord rejects with a 400.
+            if components is not None:
                 json["components"] = [component.to_dict() for component in components]
 
             headers = {
