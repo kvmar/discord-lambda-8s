@@ -17,7 +17,8 @@ if os.environ.get('BOT_ENV') == "PROD":
 class QueueRecord:
   def __init__(self, guild_id: str, money_queue, queue_id: str, team_1: list, team_2: list, queue: list, cancel_votes: list, team1_votes: list, team2_votes: list, maps: list, map_set: list, version: int, expiry: int, result_channel_id: str,
       team_1_channel_id: str, team_2_channel_id: str, message_id: str = None, channel_id: str = None, channel_config: dict = None, waitlist: list = None,
-      is_team_queue: bool = False, team_1_id: str = None, team_2_id: str = None):
+      is_team_queue: bool = False, team_1_id: str = None, team_2_id: str = None,
+      is_bracket: bool = False, tournament_id: str = None, bracket_match_id: str = None, bracket: dict = None):
     self.guild_id = guild_id
     self.queue_id = queue_id
     self.team_1 = team_1
@@ -44,6 +45,15 @@ class QueueRecord:
     self.is_team_queue = is_team_queue
     self.team_1_id = team_1_id
     self.team_2_id = team_2_id
+    # Bracket (double-elim tournament) fields. is_bracket marks a record as part
+    # of a tournament; tournament_id groups all the per-match records together;
+    # bracket_match_id identifies the match node (e.g. "WB-R1-M0"). The `bracket`
+    # dict is only populated on the tournament's META record and holds the full
+    # bracket structure (seeds, advance pointers, wave state).
+    self.is_bracket = is_bracket
+    self.tournament_id = tournament_id
+    self.bracket_match_id = bracket_match_id
+    self.bracket = bracket
 
 
   def clear_queue(self, reset_expiry: bool = True):
@@ -169,6 +179,11 @@ class QueueDao:
     team_1_id = response.get("team_1_id")
     team_2_id = response.get("team_2_id")
 
+    is_bracket = bool(response.get("is_bracket", False))
+    tournament_id = response.get("tournament_id")
+    bracket_match_id = response.get("bracket_match_id")
+    bracket = response.get("bracket")
+
     return QueueRecord(guild_id=response["guild_id"], queue_id=response["queue_id"], expiry=int(response["expiry"]),
                        team_1=team_1, team_2=team_2, queue=queue, cancel_votes=cancel_votes,
                        money_queue=money_queue,
@@ -178,4 +193,16 @@ class QueueDao:
                        team1_votes=team1_votes, team2_votes=team2_votes, maps=maps,
                        version=response["version"], message_id=response["message_id"], channel_id=response["channel_id"], channel_config=response["channel_config"],
                        waitlist=waitlist,
-                       is_team_queue=is_team_queue, team_1_id=team_1_id, team_2_id=team_2_id)
+                       is_team_queue=is_team_queue, team_1_id=team_1_id, team_2_id=team_2_id,
+                       is_bracket=is_bracket, tournament_id=tournament_id, bracket_match_id=bracket_match_id, bracket=bracket)
+
+  def get_queues_by_prefix(self, guild_id: str, prefix: str):
+    """Return all queue records whose queue_id starts with prefix. Used to
+    enumerate every per-match record of a bracket tournament in one query."""
+    from boto3.dynamodb.conditions import Key
+    if guild_id != "1123491132765110302":
+      guild_id = "1123491132765110302"
+    response = self.table.query(
+      KeyConditionExpression=Key("guild_id").eq(guild_id) & Key("queue_id").begins_with(prefix)
+    )
+    return [self.get_queue_record_attributes(item) for item in response.get("Items", [])]

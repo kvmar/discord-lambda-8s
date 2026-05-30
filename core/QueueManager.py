@@ -47,6 +47,7 @@ def create_queue_resources(guild_id: str, queue_name: str):
     component.add_button("Leave queue", f"leave_queue_custom_id#{queue_name}", False, 4)
     component.add_button("Start queue", f"start_queue_custom_id#{queue_name}", True, 3)
     component.add_button("Auto pick", f"auto_pick_custom_id#{queue_name}", True, 3)
+    component.add_button("Start Bracket", f"start_bracket#{queue_name}", True, 3)
 
     response.clear_queue()
 
@@ -588,10 +589,11 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         if len(record.queue) >= 8:
             component.add_button("Start queue", f"start_queue_custom_id#{record.queue_id}", False, 3)
             component.add_button("Auto pick", f"auto_pick_custom_id#{record.queue_id}", False, 3)
-
+            component.add_button("Start Bracket", f"start_bracket#{record.queue_id}", False, 3)
         else:
             component.add_button("Start queue", f"start_queue_custom_id#{record.queue_id}", True, 3)
             component.add_button("Auto pick", f"auto_pick_custom_id#{record.queue_id}", True, 3)
+            component.add_button("Start Bracket", f"start_bracket#{record.queue_id}", True, 3)
 
         return [embed], [component]
     elif len(record.team_1) != 4 or len(record.team_2) != 4:
