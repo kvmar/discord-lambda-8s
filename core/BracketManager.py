@@ -620,11 +620,17 @@ def report_winner(inter: Interaction, tid: str, match_id: str, side: str):
             embeds=[embed], components=[comp],
         )
 
-    # Check threshold
+    # Check threshold — normal vote count OR both captains agreed on the same side.
+    # Captain = first player in each team (team_1[0] / team_2[0]).
+    captain_a = match.team_1[0] if match.team_1 else None
+    captain_b = match.team_2[0] if match.team_2 else None
+    both_caps_a = (captain_a in match.team1_votes and captain_b in match.team1_votes)
+    both_caps_b = (captain_a in match.team2_votes and captain_b in match.team2_votes)
+
     win_side = None
-    if len(match.team1_votes) >= VOTE_THRESHOLD:
+    if len(match.team1_votes) >= VOTE_THRESHOLD or both_caps_a:
         win_side = "A"
-    elif len(match.team2_votes) >= VOTE_THRESHOLD:
+    elif len(match.team2_votes) >= VOTE_THRESHOLD or both_caps_b:
         win_side = "B"
 
     if win_side:
