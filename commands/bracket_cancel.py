@@ -3,7 +3,6 @@ from discord_lambda import CommandRegistry, Interaction, CommandArg, Embedding
 
 
 def bracket_cancel(inter: Interaction, queue_name: str) -> None:
-    inter.defer(ephemeral=True)
     msg = BracketManager.cancel_bracket(inter, queue_name)
     inter.send_response(
         embeds=[Embedding(desc=msg, color=0x00C853 if "check_mark" in msg else 0xFF0000)],
