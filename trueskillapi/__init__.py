@@ -42,6 +42,50 @@ class TrueSkillAccessor:
         self.update_ratings(new_ratings, lose_team_ratings, 1, game_avg_rating=game_avg_rating)
 
 
+    def post_team_match(self, win_team_id: str, lose_team_id: str, guild_id: str):
+        """Rate a 4v4 premade team match. Each TEAM is treated as a single
+        rated entity (one Rating per team), so the team's own elo/sigma move —
+        completely separate from individual players' solo ratings."""
+        from dao.TeamDao import TeamDao
+        team_dao = TeamDao()
+
+        win = team_dao.get_team(guild_id, win_team_id)
+        lose = team_dao.get_team(guild_id, lose_team_id)
+
+        win_rating = Rating(float(win.elo), float(win.sigma))
+        lose_rating = Rating(float(lose.elo), float(lose.sigma))
+
+        new_ratings = self.env.rate([(win_rating,), (lose_rating,)], ranks=[0, 1])
+
+        game_avg = (win.get_rating() + lose.get_rating()) / 2
+        print(f"[Team SR] win={win.get_rating():.1f} lose={lose.get_rating():.1f} game_avg={game_avg:.1f}")
+
+        self._update_team(win, new_ratings[0][0], 0, game_avg)
+        self._update_team(lose, new_ratings[1][0], 1, game_avg)
+
+        team_dao.put_team(win)
+        team_dao.put_team(lose)
+
+    def _update_team(self, team, new_rating, tuple_idx: int, game_avg: float):
+        if tuple_idx == 0:
+            team.tmw = int(team.tmw) + 1
+        else:
+            team.tml = int(team.tml) + 1
+
+        pre_match_rating = team.get_rating()
+
+        old_elo = float(team.elo)
+        new_elo = float(new_rating.mu)
+        new_sigma = float(new_rating.sigma)
+
+        k = self.get_k_factor(int(team.tmw + team.tml), old_elo)
+        team.elo = old_elo + (new_elo - old_elo) * k
+        team.sigma = max(0.5, new_sigma)
+
+        expected = 1 / (1 + 10 ** ((game_avg - pre_match_rating) / 20))
+        print(f"[Team SR] {team.team_name} rating={pre_match_rating:.1f} game_avg={game_avg:.1f} expected={expected:.2f}")
+        team.apply_rp_change(tuple_idx, expected=expected)
+
     def get_player_data(self, team: list, guild_id: str) -> list[PlayerRecord]:
         player_data_list = list()
         for user in team:

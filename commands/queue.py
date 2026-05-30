@@ -1,8 +1,17 @@
-from core import QueueManager
+from core import QueueManager, TeamManager
 from discord_lambda import CommandRegistry, Interaction, CommandArg
 
 def queue(inter: Interaction, queue_name: str = "1") -> None:
   print(f"Creating queue with: {queue_name} in guild_id: {inter.guild_id}")
+
+  # A queue record flagged is_team_queue renders the premade-team pool board
+  # instead of the solo queue. Teams are managed via the /team_* commands.
+  flagged = QueueManager.queue_dao.get_queue_or_none(inter.guild_id, queue_name)
+  if flagged is not None and getattr(flagged, "is_team_queue", False):
+    embed = TeamManager.build_pool_board_embed(inter.guild_id)
+    inter.send_response(embeds=[embed], ephemeral=False)
+    return
+
   if inter.guild_id != "1123491132765110302" and queue_name != 'HP':
     (embed, component) = QueueManager.add_player(inter.guild_id, queue_name)
   else:
