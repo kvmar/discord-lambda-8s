@@ -46,7 +46,8 @@ def build_leaderboard_entries(guild_id: str):
             "delta": delta,
             "wins": wins,
             "losses": losses,
-            "total": total_games
+            "total": total_games,
+            "championships": int(getattr(user, "championships", 0)),
         }
         entries.append(entry)
         rank += 1
@@ -67,8 +68,10 @@ def build_leaderboard_page(guild_id: str, page: int):
     rows = []
     for entry in page_entries:
         streak = f" {entry['streak_emoji']}" if entry['streak_emoji'] else ""
+        champs = entry.get("championships", 0)
+        trophy_str = f" 🏆x{champs}" if champs > 0 else ""
         row = (
-            f"{entry['medal']} {entry['rank_emoji']} **{entry['name']}**{streak}\n"
+            f"{entry['medal']} {entry['rank_emoji']} **{entry['name']}**{streak}{trophy_str}\n"
             f"└─ SR: **{entry['sr']}** ({entry['delta']}) | {entry['wins']}W / {entry['losses']}L"
         )
         rows.append(row)
