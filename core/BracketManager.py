@@ -125,7 +125,7 @@ TEMPLATES = {
             # LB round 2 (LB-R1 winners face WB-R2 losers... wait)
             # Standard: LB-R2 mixes WB-R2 losers (major) with LB-R1 winners (minor)
             "LB-R2-M0": {"side": "LB", "round": 2, "seed_a": None, "seed_b": None,
-                          "win_to":  {"match_id": "LB-R3-M0", "slot": "B"},
+                          "win_to":  {"match_id": "LB-R3-M0", "slot": "A"},
                           "lose_to": None},
             "LB-R2-M1": {"side": "LB", "round": 2, "seed_a": None, "seed_b": None,
                           "win_to":  {"match_id": "LB-R3-M0", "slot": "B"},
@@ -427,9 +427,10 @@ def _resolve_byes(bracket_nodes: dict) -> list:
 
 
 def _select_map(base: QueueRecord, num: int = 1) -> list:
-    from core.QueueManager import get_maps
-    all_maps = get_maps(base)
-    return all_maps[:num]
+    map_set = list(base.map_set) if base.map_set else []
+    if not map_set:
+        return ["TBD"] * num
+    return [random.choice(map_set) for _ in range(num)]
 
 
 # ---------------------------------------------------------------------------
@@ -440,12 +441,21 @@ def start_bracket(inter: Interaction, queue_id: str):
     """Called when the Start Bracket button is clicked on the queue embed."""
     base = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
 
+    # Abort if a bracket is already running (prevents double-starts from duplicate invocations)
+    if getattr(base, "is_bracket", False):
+        inter.send_followup(
+            embeds=[Embedding(":x: Bracket already running",
+                              "A tournament is already in progress for this queue.",
+                              color=0xFF0000)],
+            ephemeral=True,
+        )
+        return None
+
     players = list(base.queue)
     num_teams = len(players) // 4
     dropped = players[num_teams * 4:]
 
     if num_teams < 2:
-        from discord_lambda import Embedding
         inter.send_followup(
             embeds=[Embedding(":x: Not enough players",
                               "Need at least 8 players (2 full teams of 4) to start a bracket.",
@@ -472,13 +482,35 @@ def start_bracket(inter: Interaction, queue_id: str):
     bracket_nodes = _build_bracket_skeleton(seeds, template)
     byes = _resolve_byes(bracket_nodes)
 
+    # Stamp the base record FIRST with an OCC guard. This serves as a distributed
+    # lock: only the first Lambda invocation succeeds; any concurrent duplicate
+    # button-click invocation will see is_bracket=True on re-read and abort above.
+    # Capture channel config values we still need before clearing.
+    result_channel_id = base.result_channel_id
+    map_set = list(base.map_set) if base.map_set else []
+    team_1_channel_id = base.team_1_channel_id
+    team_2_channel_id = base.team_2_channel_id
+
+    base.clear_queue(reset_expiry=False)
+    base.is_bracket = True
+    base.tournament_id = tid
+    lock_result = queue_dao.put_queue(base)
+    if lock_result is None:
+        inter.send_followup(
+            embeds=[Embedding(":x: Bracket already starting",
+                              "Another player just started a bracket. Please try again.",
+                              color=0xFF0000)],
+            ephemeral=True,
+        )
+        return None
+
     # Build META record
     expiry = int((datetime.utcnow() + timedelta(hours=24)).timestamp())
     meta_bracket = {
         "status": "active",
         "queue_id": queue_id,
-        "result_channel_id": base.result_channel_id,
-        "map_set": list(base.map_set),
+        "result_channel_id": result_channel_id,
+        "map_set": map_set,
         "num_teams": num_teams,
         "wb_rounds": template["wb_rounds"],
         "lb_rounds": template["lb_rounds"],
@@ -498,12 +530,12 @@ def start_bracket(inter: Interaction, queue_id: str):
         queue_id=_meta_queue_id(tid),
         team_1=[], team_2=[], queue=[],
         cancel_votes=[], team1_votes=[], team2_votes=[],
-        maps=[], map_set=list(base.map_set),
+        maps=[], map_set=map_set,
         version=0,
         expiry=expiry,
-        result_channel_id=base.result_channel_id,
-        team_1_channel_id=base.team_1_channel_id,
-        team_2_channel_id=base.team_2_channel_id,
+        result_channel_id=result_channel_id,
+        team_1_channel_id=team_1_channel_id,
+        team_2_channel_id=team_2_channel_id,
         message_id=None, channel_id=None, channel_config={},
         waitlist=[],
         is_bracket=True,
@@ -513,34 +545,7 @@ def start_bracket(inter: Interaction, queue_id: str):
     )
     queue_dao.put_queue(meta_record)
 
-    # Create and post wave-1 match records
-    wave1_matches = [mid for mid, n in bracket_nodes.items()
-                     if n["status"] == "ready" and mid != template["gf_match_id"]]
-
-    for match_id in wave1_matches:
-        node = bracket_nodes[match_id]
-        match_rec = _make_match_record(
-            inter.guild_id, tid, match_id, node, base,
-            team_a=node["team_a"], team_b=node["team_b"],
-        )
-        match_rec.maps = _select_map(base, 1)
-        queue_dao.put_queue(match_rec)
-        embed = _match_embed(match_rec, meta_bracket)
-        comp = _match_vote_buttons(tid, match_id, 0, 0)
-        resp = inter.send_message(
-            channel_id=base.result_channel_id,
-            embeds=[embed], components=[comp],
-        )
-        if resp:
-            # store message_id so we can edit it later
-            saved = queue_dao.get_queue_or_none(inter.guild_id, _bracket_queue_id(tid, match_id))
-            if saved:
-                saved.message_id = resp[0]
-                saved.channel_id = resp[1]
-                saved.channel_config = {resp[1]: resp[0]}
-                queue_dao.put_queue(saved)
-
-    # Announce bracket start
+    # Announce bracket start (posted before match embeds so seedings appear first)
     alt_str = ""
     if dropped:
         names = ", ".join(f"<@{p}>" for p in dropped)
@@ -558,14 +563,34 @@ def start_bracket(inter: Interaction, queue_id: str):
         ),
         color=0xFFD700,
     )
-    inter.send_message(channel_id=base.result_channel_id, embeds=[announce])
+    inter.send_message(channel_id=result_channel_id, embeds=[announce])
 
-    # Clear the originating queue and stamp it with the active bracket so the
-    # queue embed can show bracket-in-progress state instead of an empty lobby.
-    base.clear_queue(reset_expiry=False)
-    base.is_bracket = True
-    base.tournament_id = tid
-    queue_dao.put_queue(base)
+    # Create and post wave-1 match records
+    wave1_matches = [mid for mid, n in bracket_nodes.items()
+                     if n["status"] == "ready" and mid != template["gf_match_id"]]
+
+    for match_id in wave1_matches:
+        node = bracket_nodes[match_id]
+        match_rec = _make_match_record(
+            inter.guild_id, tid, match_id, node, base,
+            team_a=node["team_a"], team_b=node["team_b"],
+        )
+        match_rec.maps = _select_map(base, 1)
+        queue_dao.put_queue(match_rec)
+        embed = _match_embed(match_rec, meta_bracket)
+        comp = _match_vote_buttons(tid, match_id, 0, 0)
+        resp = inter.send_message(
+            channel_id=result_channel_id,
+            embeds=[embed], components=[comp],
+        )
+        if resp:
+            # store message_id so we can edit it later
+            saved = queue_dao.get_queue_or_none(inter.guild_id, _bracket_queue_id(tid, match_id))
+            if saved:
+                saved.message_id = resp[0]
+                saved.channel_id = resp[1]
+                saved.channel_config = {resp[1]: resp[0]}
+                queue_dao.put_queue(saved)
 
     # Return updated queue embed (bracket-in-progress view)
     from core.QueueManager import update_queue_embed
