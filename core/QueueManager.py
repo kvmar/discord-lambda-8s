@@ -345,7 +345,10 @@ def team_1_won(inter: Interaction, queue_id: str):
     resp = queue_dao.put_queue(response)
 
     if resp is not None:
-        if len(response.team1_votes) == 5:
+        threshold_met = (len(response.team1_votes) == 5 or
+                         (getattr(response, "is_team_queue", False) and
+                          _both_captains_voted(response, response.team1_votes)))
+        if threshold_met:
             print(f"Posting team 1 win: {response.team_1} and team 2 lose: {response.team_2}")
             response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
             if getattr(response, "is_team_queue", False):
@@ -368,6 +371,17 @@ def team_1_won(inter: Interaction, queue_id: str):
 
         return embed, component
     return None
+
+
+def _both_captains_voted(response: QueueRecord, vote_list: list) -> bool:
+    """Return True if both team captains appear in vote_list."""
+    from dao.TeamDao import TeamDao
+    team_dao = TeamDao()
+    t1 = team_dao.get_team(response.guild_id, response.team_1_id)
+    t2 = team_dao.get_team(response.guild_id, response.team_2_id)
+    if t1 is None or t2 is None:
+        return False
+    return t1.captain_id in vote_list and t2.captain_id in vote_list
 
 
 def _complete_team_match_result(inter: Interaction, response: QueueRecord, win_team_id: str, lose_team_id: str):
@@ -409,7 +423,10 @@ def team_2_won(inter: Interaction, queue_id: str):
     resp = queue_dao.put_queue(response)
 
     if resp is not None:
-        if len(response.team2_votes) == 5:
+        threshold_met = (len(response.team2_votes) == 5 or
+                         (getattr(response, "is_team_queue", False) and
+                          _both_captains_voted(response, response.team2_votes)))
+        if threshold_met:
             print(f"Posting team 1 lose: {response.team_1} and team 2 win: {response.team_2}")
             response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
             if getattr(response, "is_team_queue", False):
@@ -485,7 +502,10 @@ def cancel_match(inter: Interaction, queue_id: str):
             cancel_threshold = 5
         else:
             cancel_threshold = len(response.queue) // 2
-        if len(response.cancel_votes) >= cancel_threshold:
+        captain_override = (is_match_ready and
+                            getattr(response, "is_team_queue", False) and
+                            _both_captains_voted(response, response.cancel_votes))
+        if len(response.cancel_votes) >= cancel_threshold or captain_override:
             response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
             if getattr(response, "is_team_queue", False):
                 import core.TeamManager as TeamManager
