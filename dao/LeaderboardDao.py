@@ -14,10 +14,13 @@ if os.environ.get('BOT_ENV') == "PROD":
   table_name = "GuildToLeaderboardMappingTableProd"
 
 class LeaderboardRecord:
-  def __init__(self, guild_id: str, leaderboard_channel_id: str, leaderboard_message_id: str, version: int):
+  def __init__(self, guild_id: str, leaderboard_channel_id: str, leaderboard_message_id: str, version: int,
+               team_leaderboard_channel_id: str = "", team_leaderboard_message_id: str = ""):
     self.guild_id = guild_id
     self.leaderboard_channel_id = leaderboard_channel_id
     self.leaderboard_message_id = leaderboard_message_id
+    self.team_leaderboard_channel_id = team_leaderboard_channel_id
+    self.team_leaderboard_message_id = team_leaderboard_message_id
     self.version = int(version)
 
 class LeaderboardDao:
@@ -62,5 +65,11 @@ class LeaderboardDao:
 
 
   def get_leaderboard_record_attributes(self, response):
-    return LeaderboardRecord(guild_id=response["guild_id"], leaderboard_message_id=response["leaderboard_message_id"],
-                             leaderboard_channel_id=response["leaderboard_channel_id"], version=response["version"])
+    return LeaderboardRecord(
+      guild_id=response["guild_id"],
+      leaderboard_message_id=response["leaderboard_message_id"],
+      leaderboard_channel_id=response["leaderboard_channel_id"],
+      version=response["version"],
+      team_leaderboard_channel_id=response.get("team_leaderboard_channel_id", ""),
+      team_leaderboard_message_id=response.get("team_leaderboard_message_id", ""),
+    )

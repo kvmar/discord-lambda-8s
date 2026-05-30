@@ -70,9 +70,9 @@ class TestTeamApplyRpChange:
         t.apply_rp_change(loss=1, expected=0.5)
         assert t.team_delta.startswith("-")
 
-    def test_placement_fires_on_10th_game(self):
-        # tmw=9, tml=0 → after the win is recorded externally we simulate total 10
-        t = _team(team_sr=50, team_rank=0, tmw=10, tml=0)
+    def test_placement_fires_on_1st_game(self):
+        # 1 game recorded before apply_rp_change is called (trueskill increments tmw first)
+        t = _team(team_sr=50, team_rank=0, tmw=1, tml=0)
         t.apply_rp_change(loss=0, expected=0.5)
         assert t.team_sr == RANK_SR_RANGES[t.team_rank][0] + 50
         assert t.team_rank <= 3
@@ -85,9 +85,9 @@ class TestTeamHelpers:
         assert t.is_full() is False
 
     def test_is_ranked_threshold(self):
-        assert _team(tmw=6, tml=4).is_ranked() is True   # 10 games
-        assert _team(tmw=5, tml=4).is_ranked() is False  # 9 games
+        assert _team(tmw=1, tml=0).is_ranked() is True   # 1 game
+        assert _team(tmw=0, tml=0).is_ranked() is False  # 0 games
 
     def test_recruit_emoji_before_placement(self):
-        t = _team(tmw=2, tml=3)
+        t = _team(tmw=0, tml=0)
         assert "recruit" in t.get_rank_emoji()

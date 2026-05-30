@@ -60,7 +60,7 @@ class TeamRecord:
     return len(self.players) >= MAX_TEAM_SIZE
 
   def is_ranked(self) -> bool:
-    return (self.tmw + self.tml) >= 10
+    return (self.tmw + self.tml) >= 1
 
   def calculate_proj_rank(self):
     hidden_mmr = self.get_rating() * 100
@@ -76,7 +76,7 @@ class TeamRecord:
     return max(RANK_SR_RANGES.keys())
 
   def get_rank_emoji(self):
-    if self.tmw + self.tml <= 9:
+    if self.tmw + self.tml == 0:
       return "<:recruit:1367977165618024491>"
     if self.team_rank == 0:
       return "<:Bronze:1367281599250563216>"
@@ -122,8 +122,8 @@ class TeamRecord:
       self.team_rank = self.calculate_sr_rank(new_sr)
       self.team_delta = str(int(float(new_sr - curr_sr)))
 
-    # Placement: on the 10th team game, seed rank from hidden MMR (capped at Diamond)
-    if self.tmw + self.tml == 10:
+    # Placement: after the 1st team game, seed rank from hidden MMR (capped at Diamond)
+    if self.tmw + self.tml == 1:
       placement_rank = max(self.team_rank, self.calculate_proj_rank())
       self.team_rank = min(3, placement_rank)
       self.team_sr = RANK_SR_RANGES[self.team_rank][0] + 50

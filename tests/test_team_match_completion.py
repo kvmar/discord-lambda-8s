@@ -31,6 +31,7 @@ def patched(mocker):
                       return_value=Embedding("done", "x", color=0x7c3aed))
     mocker.patch("core.TeamManager.complete_team_match")
     mocker.patch("core.TeamManager.cancel_team_match")
+    mocker.patch("core.TeamLeaderboardManager.post_team_leaderboard")
     return qd, ts, tm
 
 

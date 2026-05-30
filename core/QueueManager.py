@@ -376,12 +376,14 @@ def _complete_team_match_result(inter: Interaction, response: QueueRecord, win_t
     to edit the live Match Ready message into a completed view (so it doesn't
     stay frozen on the old roster)."""
     import core.TeamManager as TeamManager
+    from core import TeamLeaderboardManager
     ts.post_team_match(win_team_id=win_team_id, lose_team_id=lose_team_id, guild_id=inter.guild_id)
     done_embed = TeamManager.generate_team_match_done_embed(win_team_id, lose_team_id, inter.guild_id)
     inter.send_message(channel_id=response.result_channel_id, embeds=[done_embed])
     TeamManager.complete_team_match(inter.guild_id, win_team_id, lose_team_id)
     response.clear_queue(reset_expiry=False)
     queue_dao.put_queue(response)
+    TeamLeaderboardManager.post_team_leaderboard(inter.guild_id, inter)
     # No buttons on the completed view — the match is over.
     return [done_embed], [Components()]
 
