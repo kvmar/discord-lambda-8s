@@ -1,10 +1,26 @@
 from core import QueueManager, LeaderboardManager, TeamLeaderboardManager
+import core.BracketManager as BracketManager
 from discord_lambda import Interaction
 from dao.QueueDao import QueueDao
 
 queue_dao = QueueDao()
 
 def button_flow_tree(interaction: Interaction):
+  # Bracket buttons — checked before start_queue to avoid substring collision.
+  # bracket_a_won / bracket_b_won use distinct prefixes so no collision risk,
+  # but start_bracket must come before start_queue ("start_queue" ⊄ "start_bracket"
+  # but "start_" is shared so explicit ordering is safer).
+  if BracketManager.bracket_a_won_custom_id in interaction.custom_id:
+    bracket_a_won_button(interaction.guild_id, interaction)
+    return
+  elif BracketManager.bracket_b_won_custom_id in interaction.custom_id:
+    bracket_b_won_button(interaction.guild_id, interaction)
+    return
+  elif BracketManager.start_bracket_custom_id in interaction.custom_id and \
+       QueueManager.start_queue_custom_id not in interaction.custom_id:
+    start_bracket_button(interaction.guild_id, interaction)
+    return
+
   # NOTE: "team_leaderboard_page" contains "leaderboard_page", so it must be
   # checked before the solo leaderboard page button.
   if TeamLeaderboardManager.team_leaderboard_page_custom_id in interaction.custom_id:
@@ -238,4 +254,28 @@ def team_pool_start_button(guild_id: str, inter: Interaction):
   QueueManager.update_queue_view(pool_record, embeds=embed, components=component, inter=inter)
 
 
+def start_bracket_button(guild_id: str, inter: Interaction):
+  print("Start Bracket button clicked")
+  queue_id = inter.custom_id.split("#")[1]
+  resp = BracketManager.start_bracket(inter, queue_id)
+  if resp is None:
+    return
+  embeds, components = resp
+  record = queue_dao.get_queue(guild_id=guild_id, queue_id=queue_id)
+  QueueManager.update_queue_view(record, embeds=embeds, components=components, inter=inter)
 
+
+def bracket_a_won_button(guild_id: str, inter: Interaction):
+  print(f"Bracket Team A Won button clicked: {inter.custom_id}")
+  parts = inter.custom_id.split("#")
+  tid = parts[1]
+  match_id = parts[2]
+  BracketManager.report_winner(inter, tid, match_id, "A")
+
+
+def bracket_b_won_button(guild_id: str, inter: Interaction):
+  print(f"Bracket Team B Won button clicked: {inter.custom_id}")
+  parts = inter.custom_id.split("#")
+  tid = parts[1]
+  match_id = parts[2]
+  BracketManager.report_winner(inter, tid, match_id, "B")

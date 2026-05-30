@@ -47,6 +47,7 @@ def create_queue_resources(guild_id: str, queue_name: str):
     component.add_button("Leave queue", f"leave_queue_custom_id#{queue_name}", False, 4)
     component.add_button("Start queue", f"start_queue_custom_id#{queue_name}", True, 3)
     component.add_button("Auto pick", f"auto_pick_custom_id#{queue_name}", True, 3)
+    component.add_button("Start Bracket", f"start_bracket#{queue_name}", True, 3)
 
     response.clear_queue()
 
@@ -570,6 +571,27 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         import core.TeamManager as TeamManager
         return TeamManager.build_team_pool_embed(record.guild_id, record.queue_id)
     if len(record.team_1) == 0 or len(record.team_2) == 0:
+        # Bracket-in-progress: queue was consumed by a tournament; show status.
+        if getattr(record, "is_bracket", False) and getattr(record, "tournament_id", None):
+            tid = record.tournament_id
+            embed = Embedding(
+                title=f"🏆 Bracket in Progress — {record.queue_id}",
+                desc=(
+                    f"A double-elimination tournament is running.\n"
+                    f"Tournament ID: `{tid}`\n\n"
+                    f"Match results are being posted to the results channel.\n"
+                    f"Join the queue to be ready for the next bracket!"
+                ),
+                color=0xFFD700,
+            )
+            component = Components()
+            component.add_button("Join queue", f"join_queue_custom_id#{record.queue_id}", False, 1)
+            component.add_button("Leave queue", f"leave_queue_custom_id#{record.queue_id}", False, 4)
+            component.add_button("Start queue", f"start_queue_custom_id#{record.queue_id}", True, 3)
+            component.add_button("Auto pick", f"auto_pick_custom_id#{record.queue_id}", True, 3)
+            component.add_button("Start Bracket", f"start_bracket#{record.queue_id}", True, 3)
+            return [embed], [component]
+
         queue_str = ""
         for user in record.queue:
             player_data = player_dao.get_player(record.guild_id, user)
@@ -588,10 +610,11 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
         if len(record.queue) >= 8:
             component.add_button("Start queue", f"start_queue_custom_id#{record.queue_id}", False, 3)
             component.add_button("Auto pick", f"auto_pick_custom_id#{record.queue_id}", False, 3)
-
+            component.add_button("Start Bracket", f"start_bracket#{record.queue_id}", False, 3)
         else:
             component.add_button("Start queue", f"start_queue_custom_id#{record.queue_id}", True, 3)
             component.add_button("Auto pick", f"auto_pick_custom_id#{record.queue_id}", True, 3)
+            component.add_button("Start Bracket", f"start_bracket#{record.queue_id}", True, 3)
 
         return [embed], [component]
     elif len(record.team_1) != 4 or len(record.team_2) != 4:
