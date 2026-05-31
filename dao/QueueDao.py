@@ -70,7 +70,7 @@ class QueueRecord:
       self.update_expiry_date()
 
   def update_expiry_date(self):
-    time = datetime.utcnow() + timedelta(minutes=10)
+    time = datetime.utcnow() + timedelta(minutes=20)
     self.expiry = int(time.timestamp())
 
 class QueueDao:
