@@ -107,14 +107,29 @@ def add_waitlist_player(inter: Interaction, queue_id: str):
         print("Cannot join waitlist: game not in Match Ready state")
         return None
 
-    # Enforce waitlist capacity and deduplication
-    if len(response.waitlist) >= MAX_QUEUE_SIZE:
-        print(f"Waitlist full ({MAX_QUEUE_SIZE} players)")
-        return None
+    # Players already in the match cannot also join the waitlist
+    if inter.user_id in response.team_1 or inter.user_id in response.team_2:
+        inter.send_followup(
+            embeds=[Embedding(":x: Cannot Join Waitlist", "You are already playing in this match.", color=0xFF0000)],
+            ephemeral=True,
+        )
+        return "handled"
 
+    # Enforce waitlist capacity
+    if len(response.waitlist) >= MAX_QUEUE_SIZE:
+        inter.send_followup(
+            embeds=[Embedding(":x: Waitlist Full", f"The waitlist is full ({MAX_QUEUE_SIZE} players).", color=0xFF0000)],
+            ephemeral=True,
+        )
+        return "handled"
+
+    # Deduplication
     if inter.user_id in response.waitlist:
-        print(f"Player {inter.user_id} already in waitlist")
-        return None
+        inter.send_followup(
+            embeds=[Embedding(":x: Already in Waitlist", "You are already in the waitlist.", color=0xFF0000)],
+            ephemeral=True,
+        )
+        return "handled"
 
     # Register player if not already registered
     player_data = player_dao.get_player(guild_id=inter.guild_id, player_id=inter.user_id)
@@ -134,9 +149,10 @@ def add_waitlist_player(inter: Interaction, queue_id: str):
 def remove_waitlist_player(inter: Interaction, queue_id: str):
     response = queue_dao.get_queue(guild_id=inter.guild_id, queue_id=queue_id)
 
-    if inter.user_id in response.waitlist:
-        response.waitlist.remove(inter.user_id)
+    if inter.user_id not in response.waitlist:
+        return None  # triggers "Not in Waitlist" error in ButtonManager
 
+    response.waitlist.remove(inter.user_id)
     resp = queue_dao.put_queue(response)
 
     if resp is not None:
