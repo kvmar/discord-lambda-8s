@@ -109,6 +109,10 @@ def join_waitlist_button(guild_id: str, inter: Interaction):
     inter.send_followup(embeds=[error_embed], ephemeral=True)
     return
 
+  if resp == "handled":
+    # add_waitlist_player already sent a specific error followup
+    return
+
   (embed, component) = resp
 
   record = queue_dao.get_queue(guild_id=guild_id, queue_id=inter.custom_id.split("#")[1])
