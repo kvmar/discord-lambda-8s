@@ -6,6 +6,18 @@ from dao.QueueDao import QueueDao
 queue_dao = QueueDao()
 
 
+def _update_queue_view(record, embeds, components, inter):
+  """Use the existing update path; self-heal only a missing Discord message."""
+  try:
+    return QueueManager.update_queue_view(
+      record, embeds=embeds, components=components, inter=inter
+    )
+  except Exception as exc:
+    return StateRepair.recover_missing_queue_message(
+      record, embeds, components, inter, exc
+    )
+
+
 def button_flow_tree(interaction: Interaction):
   # Bracket buttons — checked before start_queue to avoid substring collision.
   # bracket_a_won / bracket_b_won use distinct prefixes so no collision risk,
@@ -86,7 +98,7 @@ def join_queue_button(guild_id: str, inter: Interaction):
   (embed, component) = resp
 
   record = queue_dao.get_queue(guild_id=guild_id, queue_id=inter.custom_id.split("#")[1])
-  StateRepair.update_queue_view_with_recovery(record, embeds=embed, components=component, inter=inter)
+  _update_queue_view(record, embeds=embed, components=component, inter=inter)
 
 
 def leave_queue_button(guild_id: str, inter: Interaction):
@@ -99,7 +111,7 @@ def leave_queue_button(guild_id: str, inter: Interaction):
   (embed, component) = resp
 
   record = queue_dao.get_queue(guild_id=guild_id, queue_id=inter.custom_id.split("#")[1])
-  StateRepair.update_queue_view_with_recovery(record, embeds=embed, components=component, inter=inter)
+  _update_queue_view(record, embeds=embed, components=component, inter=inter)
 
 
 def join_waitlist_button(guild_id: str, inter: Interaction):
@@ -115,7 +127,7 @@ def join_waitlist_button(guild_id: str, inter: Interaction):
   (embed, component) = resp
 
   record = queue_dao.get_queue(guild_id=guild_id, queue_id=inter.custom_id.split("#")[1])
-  StateRepair.update_queue_view_with_recovery(record, embeds=embed, components=component, inter=inter)
+  _update_queue_view(record, embeds=embed, components=component, inter=inter)
 
 
 def leave_waitlist_button(guild_id: str, inter: Interaction):
@@ -131,7 +143,7 @@ def leave_waitlist_button(guild_id: str, inter: Interaction):
   (embed, component) = resp
 
   record = queue_dao.get_queue(guild_id=guild_id, queue_id=inter.custom_id.split("#")[1])
-  StateRepair.update_queue_view_with_recovery(record, embeds=embed, components=component, inter=inter)
+  _update_queue_view(record, embeds=embed, components=component, inter=inter)
 
 
 def start_queue_button(guild_id: str, inter: Interaction, autopick: bool):
@@ -147,7 +159,7 @@ def start_queue_button(guild_id: str, inter: Interaction, autopick: bool):
   record.team1_votes = list()
   record.team2_votes = list()
   record.cancel_votes = list()
-  StateRepair.update_queue_view_with_recovery(record, embeds=embed, components=component, inter=inter)
+  _update_queue_view(record, embeds=embed, components=component, inter=inter)
   QueueManager.send_match_found_dms(inter, record)
   if len(record.team_1) == 4 and len(record.team_2) == 4:
     print("Moving members to team queue")
@@ -170,7 +182,7 @@ def player_pick_button(guild_id, inter):
   (embed, component) = resp
 
   record = queue_dao.get_queue(guild_id=guild_id, queue_id=inter.custom_id.split("#")[2])
-  StateRepair.update_queue_view_with_recovery(record, embeds=embed, components=component, inter=inter)
+  _update_queue_view(record, embeds=embed, components=component, inter=inter)
 
   if len(record.team_1) == 4 and len(record.team_2) == 4:
     print("Moving members to team queue")
@@ -193,7 +205,7 @@ def team_1_won_button(guild_id: str, inter: Interaction):
 
   record = queue_dao.get_queue(guild_id=guild_id, queue_id=inter.custom_id.split("#")[1])
 
-  StateRepair.update_queue_view_with_recovery(record, embeds=embed, components=component, inter=inter)
+  _update_queue_view(record, embeds=embed, components=component, inter=inter)
 
 
 def team_2_won_button(guild_id: str, inter: Interaction):
@@ -206,7 +218,7 @@ def team_2_won_button(guild_id: str, inter: Interaction):
   (embed, component) = resp
 
   record = queue_dao.get_queue(guild_id=guild_id, queue_id=inter.custom_id.split("#")[1])
-  StateRepair.update_queue_view_with_recovery(record, embeds=embed, components=component, inter=inter)
+  _update_queue_view(record, embeds=embed, components=component, inter=inter)
 
 
 def cancel_match_button(guild_id: str, inter: Interaction):
@@ -219,7 +231,7 @@ def cancel_match_button(guild_id: str, inter: Interaction):
   (embed, component) = resp
 
   record = queue_dao.get_queue(guild_id=guild_id, queue_id=inter.custom_id.split("#")[1])
-  StateRepair.update_queue_view_with_recovery(record, embeds=embed, components=component, inter=inter)
+  _update_queue_view(record, embeds=embed, components=component, inter=inter)
 
 
 def team_pool_join_button(guild_id: str, inter: Interaction):
@@ -230,7 +242,7 @@ def team_pool_join_button(guild_id: str, inter: Interaction):
     return
   embed, component = resp
   record = queue_dao.get_queue(guild_id=guild_id, queue_id=queue_id)
-  StateRepair.update_queue_view_with_recovery(record, embeds=embed, components=component, inter=inter)
+  _update_queue_view(record, embeds=embed, components=component, inter=inter)
 
 
 def team_pool_leave_button(guild_id: str, inter: Interaction):
@@ -241,7 +253,7 @@ def team_pool_leave_button(guild_id: str, inter: Interaction):
     return
   embed, component = resp
   record = queue_dao.get_queue(guild_id=guild_id, queue_id=queue_id)
-  StateRepair.update_queue_view_with_recovery(record, embeds=embed, components=component, inter=inter)
+  _update_queue_view(record, embeds=embed, components=component, inter=inter)
 
 
 def team_pool_start_button(guild_id: str, inter: Interaction):
@@ -256,7 +268,7 @@ def team_pool_start_button(guild_id: str, inter: Interaction):
     return
   embed, component = resp
   pool_record = queue_dao.get_queue(guild_id=guild_id, queue_id=queue_id)
-  StateRepair.update_queue_view_with_recovery(pool_record, embeds=embed, components=component, inter=inter)
+  _update_queue_view(pool_record, embeds=embed, components=component, inter=inter)
 
 
 def start_bracket_button(guild_id: str, inter: Interaction):
@@ -267,7 +279,7 @@ def start_bracket_button(guild_id: str, inter: Interaction):
     return
   embeds, components = resp
   record = queue_dao.get_queue(guild_id=guild_id, queue_id=queue_id)
-  StateRepair.update_queue_view_with_recovery(record, embeds=embeds, components=components, inter=inter)
+  _update_queue_view(record, embeds=embeds, components=components, inter=inter)
 
 
 def bracket_a_won_button(guild_id: str, inter: Interaction):
