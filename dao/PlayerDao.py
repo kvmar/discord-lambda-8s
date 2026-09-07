@@ -47,18 +47,21 @@ class PlayerRecord:
     self.guild_id = guild_id
     self.player_id = player_id
     self.player_name = player_name
-    self.mw = mw
-    self.ml = ml
-    self.sr = sr
-    self.rank = rank
-    self.elo = elo
-    self.sigma = sigma
-    self.delta = delta
-    self.streak = int(streak)
-    self.version = version
-    self.last_played = int(last_played)
-    self.last_loss_forgiven = int(last_loss_forgiven)
-    self.championships = int(championships)
+    # DynamoDB contains some legacy player rows where numeric fields were stored
+    # as strings. Normalize at the model boundary so every caller can safely do
+    # arithmetic/comparisons (e.g. mw + ml <= 9 when rendering the queue).
+    self.mw = int(mw or 0)
+    self.ml = int(ml or 0)
+    self.sr = float(sr or 0.0)
+    self.rank = int(rank or 0)
+    self.elo = float(elo if elo is not None else 25.0)
+    self.sigma = float(sigma if sigma is not None else 8.33)
+    self.delta = str(delta if delta is not None else "+0.0")
+    self.streak = int(streak or 0)
+    self.version = int(version or 0)
+    self.last_played = int(last_played or 0)
+    self.last_loss_forgiven = int(last_loss_forgiven or 0)
+    self.championships = int(championships or 0)
 
 
   def get_streak(self):
