@@ -1,10 +1,23 @@
-from core import QueueManager, TeamManager
+from core import QueueManager, TeamManager, StateRepair
 from discord_lambda import CommandRegistry, Interaction, CommandArg
+
 
 def queue(inter: Interaction, queue_name: str = "1") -> None:
   print(f"Creating queue with: {queue_name} in guild_id: {inter.guild_id}")
 
-  flagged = QueueManager.queue_dao.get_queue_or_none(inter.guild_id, queue_name)
+  # A bracket META record can finish successfully while the originating queue's
+  # OCC-protected cleanup loses a race. Repair that stale flag before deciding
+  # which queue view to build so /queue never shows a completed tournament as
+  # still being in progress.
+  flagged, repaired, bracket_status = StateRepair.repair_stale_bracket_flag(
+    inter.guild_id, queue_name
+  )
+  if repaired:
+    print(
+      f"[Queue repair] Cleared stale {bracket_status} bracket state "
+      f"for queue {queue_name}."
+    )
+
   if flagged is not None and getattr(flagged, "is_team_queue", False):
     embeds, components = TeamManager.build_team_pool_embed(inter.guild_id, queue_name)
     resp = inter.send_response(embeds=embeds, components=components, ephemeral=False)
