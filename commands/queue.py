@@ -18,6 +18,20 @@ def queue(inter: Interaction, queue_name: str = "1") -> None:
       f"for queue {queue_name}."
     )
 
+  # The results channel is for completed-match posts, not the live queue board.
+  # PR #83 could recreate a missing queue-board message in any saved
+  # channel_config destination, including an old results-channel entry. Clean
+  # that stale destination when /queue is refreshed so future join/leave edits
+  # only touch the real queue channel.
+  if flagged is not None:
+    flagged, removed_results_board = StateRepair.remove_result_channel_queue_board(
+      flagged, inter=inter
+    )
+    if removed_results_board:
+      print(
+        f"[Queue repair] Removed stale results-channel board for {queue_name}."
+      )
+
   if flagged is not None and getattr(flagged, "is_team_queue", False):
     embeds, components = TeamManager.build_team_pool_embed(inter.guild_id, queue_name)
     resp = inter.send_response(embeds=embeds, components=components, ephemeral=False)
