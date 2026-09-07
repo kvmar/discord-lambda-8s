@@ -75,6 +75,96 @@ def _is_missing_discord_message(exc: Exception) -> bool:
     return "404" in text and ("not found" in text or "/messages/" in text)
 
 
+def _result_channel_key(record: QueueRecord) -> str | None:
+    result_channel_id = getattr(record, "result_channel_id", None)
+    if result_channel_id is None:
+        return None
+    return str(result_channel_id)
+
+
+def _sanitize_result_channel_in_memory(record: QueueRecord) -> str | None:
+    """Remove the results channel from a live queue board's channel_config.
+
+    Match-completion messages belong in result_channel_id, but the live queue
+    board does not. Older queue records can contain the results channel in
+    channel_config, which makes every join/leave update mirror the live board
+    into both channels.
+
+    Returns the stale queue-board message ID that was removed, if any.
+    """
+    result_key = _result_channel_key(record)
+    if result_key is None:
+        return None
+
+    if record.channel_config is None:
+        record.channel_config = {}
+
+    stale_message_id = record.channel_config.pop(result_key, None)
+    if stale_message_id is None:
+        return None
+
+    if str(getattr(record, "channel_id", "")) == result_key:
+        fallback = next(iter(record.channel_config.items()), (None, None))
+        record.channel_id = fallback[0]
+        record.message_id = fallback[1]
+
+    return stale_message_id
+
+
+def remove_result_channel_queue_board(
+    record: QueueRecord,
+    inter=None,
+    max_retries: int = 4,
+) -> tuple[QueueRecord, bool]:
+    """Persistently remove a live queue board from the configured results channel.
+
+    If a stale queue board exists there, we also try to delete that Discord
+    message. Deletion failures are non-fatal because the important part is
+    removing the channel from channel_config so it is never updated/recreated.
+    """
+    initial_result_key = _result_channel_key(record)
+    if initial_result_key is None or initial_result_key not in (record.channel_config or {}):
+        return record, False
+
+    stale_message_id = (record.channel_config or {}).get(initial_result_key)
+    if inter is not None and stale_message_id:
+        try:
+            inter.delete_message(
+                channel_id=initial_result_key,
+                message_id=stale_message_id,
+            )
+        except Exception as exc:
+            print(
+                f"[Queue repair] Could not delete stale results-channel queue "
+                f"message {stale_message_id}: {exc}"
+            )
+
+    latest = record
+    for _ in range(max_retries):
+        current = queue_dao.get_queue_or_none(record.guild_id, record.queue_id)
+        if current is None:
+            _sanitize_result_channel_in_memory(latest)
+            return latest, True
+
+        latest = current
+        result_key = _result_channel_key(current)
+        if result_key is None or result_key not in (current.channel_config or {}):
+            return current, True
+
+        _sanitize_result_channel_in_memory(current)
+        if queue_dao.put_queue(current) is not None:
+            refreshed = queue_dao.get_queue_or_none(record.guild_id, record.queue_id)
+            return (refreshed if refreshed is not None else current), True
+
+    # Keep the caller's in-memory view clean even if OCC repeatedly collided.
+    _sanitize_result_channel_in_memory(latest)
+    print(
+        f"[Queue repair] WARNING: could not persist results-channel cleanup "
+        f"for queue {record.queue_id}."
+    )
+    return latest, False
+
+
 def _save_message_location(
     guild_id: str,
     queue_id: str,
@@ -87,6 +177,13 @@ def _save_message_location(
     for _ in range(max_retries):
         current = queue_dao.get_queue_or_none(guild_id, queue_id)
         if current is None:
+            return False
+
+        result_key = _result_channel_key(current)
+        if result_key is not None and str(new_channel_id) == result_key:
+            # Never turn the results channel into a live queue-board destination.
+            _sanitize_result_channel_in_memory(current)
+            queue_dao.put_queue(current)
             return False
 
         if current.channel_config is None:
@@ -120,14 +217,25 @@ def recover_missing_queue_message(
     if not _is_missing_discord_message(exc):
         raise exc
 
+    result_key = _result_channel_key(record)
     match = _MESSAGE_URL_RE.search(str(exc))
     if match:
         targets = [(match.group(1), match.group(2))]
     else:
         targets = list((record.channel_config or {}).items())
 
+    if result_key is not None:
+        targets = [
+            (channel_id, message_id)
+            for channel_id, message_id in targets
+            if str(channel_id) != result_key
+        ]
+
     if not targets:
-        raise exc
+        # A missing queue board in the results channel is intentionally not
+        # recreated. Clean the stale destination instead.
+        remove_result_channel_queue_board(record, inter=inter)
+        return
 
     for channel_id, message_id in targets:
         print(
@@ -170,6 +278,8 @@ def update_queue_view_with_recovery(
     message. This helper remains useful when a caller wants the same behavior in
     one operation.
     """
+    record, _ = remove_result_channel_queue_board(record, inter=inter)
+
     expired = int(datetime.utcnow().timestamp()) > record.expiry
     if expired:
         record.update_expiry_date()
