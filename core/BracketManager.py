@@ -4,6 +4,7 @@ import random
 import uuid
 from datetime import datetime, timedelta
 
+from core.MapHosts import assign_map_hosts, format_maps
 from dao.PlayerDao import PlayerDao
 from dao.QueueDao import QueueDao, QueueRecord
 from discord_lambda import Embedding, Components, Interaction
@@ -297,7 +298,7 @@ def _match_embed(match: QueueRecord, meta_bracket: dict) -> Embedding:
     node = meta_bracket["matches"][mid]
     side_label = {"WB": "Winners", "LB": "Losers", "GF": "Grand Final"}.get(node["side"], node["side"])
     num_maps = 2 if node["side"] == "GF" else 1
-    map_str = "\n".join(f"• {m}" for m in match.maps[:num_maps]) if match.maps else "TBD"
+    map_str = format_maps(match, limit=num_maps)
 
     t1_str = _player_names(match.team_1, match.guild_id)
     t2_str = _player_names(match.team_2, match.guild_id)
@@ -576,6 +577,7 @@ def start_bracket(inter: Interaction, queue_id: str):
             team_a=node["team_a"], team_b=node["team_b"],
         )
         match_rec.maps = _select_map(base, 1)
+        assign_map_hosts(match_rec)
         queue_dao.put_queue(match_rec)
         embed = _match_embed(match_rec, meta_bracket)
         comp = _match_vote_buttons(tid, match_id, 0, 0)
@@ -835,6 +837,7 @@ def _handle_grand_final(inter: Interaction, meta: QueueRecord, meta_bracket: dic
                 meta, wb_team, lb_team,
             )
             reset_rec.maps = _select_map(meta, 2)
+            assign_map_hosts(reset_rec)
             meta_bracket["matches"][reset_id] = {
                 "side": "GF", "round": 2,
                 "win_to": None, "lose_to": None,
@@ -953,6 +956,7 @@ def _maybe_post_next_wave(inter: Interaction, tid: str):
         )
         num_maps = 2 if node["side"] == "GF" else 1
         match_rec.maps = _select_map(base_map_set_record, num_maps)
+        assign_map_hosts(match_rec)
         queue_dao.put_queue(match_rec)
 
         embed = _match_embed(match_rec, meta.bracket)
