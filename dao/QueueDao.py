@@ -18,7 +18,8 @@ class QueueRecord:
   def __init__(self, guild_id: str, money_queue, queue_id: str, team_1: list, team_2: list, queue: list, cancel_votes: list, team1_votes: list, team2_votes: list, maps: list, map_set: list, version: int, expiry: int, result_channel_id: str,
       team_1_channel_id: str, team_2_channel_id: str, message_id: str = None, channel_id: str = None, channel_config: dict = None, waitlist: list = None,
       is_team_queue: bool = False, team_1_id: str = None, team_2_id: str = None,
-      is_bracket: bool = False, tournament_id: str = None, bracket_match_id: str = None, bracket: dict = None):
+      is_bracket: bool = False, tournament_id: str = None, bracket_match_id: str = None, bracket: dict = None,
+      map_hosts: list = None):
     self.guild_id = guild_id
     self.queue_id = queue_id
     self.team_1 = team_1
@@ -27,6 +28,8 @@ class QueueRecord:
     self.team1_votes = team1_votes
     self.team2_votes = team2_votes
     self.maps = maps
+    # Indexed by map occurrence, so repeated maps can have different hosts.
+    self.map_hosts = list(map_hosts) if map_hosts is not None else []
     self.map_set = map_set
     self.queue = queue
     self.version = int(version)
@@ -64,6 +67,7 @@ class QueueRecord:
     self.team1_votes = list()
     self.team2_votes = list()
     self.maps = list()
+    self.map_hosts = list()
     # IMPORTANT: waitlist is intentionally NOT cleared here. It persists
     # so it can be promoted to the active queue when the game finishes.
     if reset_expiry:
@@ -191,6 +195,7 @@ class QueueDao:
                        result_channel_id=response["result_channel_id"],
                        team_1_channel_id=response["team_1_channel_id"], team_2_channel_id=response["team_2_channel_id"],
                        team1_votes=team1_votes, team2_votes=team2_votes, maps=maps,
+                       map_hosts=response.get("map_hosts"),
                        version=response["version"], message_id=response["message_id"], channel_id=response["channel_id"], channel_config=response["channel_config"],
                        waitlist=waitlist,
                        is_team_queue=is_team_queue, team_1_id=team_1_id, team_2_id=team_2_id,

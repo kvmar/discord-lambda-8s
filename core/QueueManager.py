@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from core import LeaderboardManager
+from core.MapHosts import assign_map_hosts, format_maps
 from dao.PlayerDao import PlayerDao, PlayerRecord
 from dao.QueueDao import QueueDao, QueueRecord
 from discord_lambda import Embedding, Interaction
@@ -253,6 +254,7 @@ def start_match(inter: Interaction, queue_id: str, autopick: bool):
     response.maps.append(map_picks[0])
     response.maps.append(map_picks[1])
     response.maps.append(map_picks[2])
+    assign_map_hosts(response)
 
     resp = queue_dao.put_queue(response)
 
@@ -265,7 +267,7 @@ def start_match(inter: Interaction, queue_id: str, autopick: bool):
     return None
 
 def send_match_found_dms(inter: Interaction, record: QueueRecord) -> None:
-    maps_str = "\n".join(record.maps) if record.maps else "TBD"
+    maps_str = format_maps(record)
     embed = Embedding(
         title="⚔️ Match Found!",
         desc=f"A match has started in **{record.queue_id}**. Captains are picking teams!",
@@ -311,9 +313,7 @@ def build_team_match_ready_embed(record: QueueRecord):
     for user in record.team_2:
         team2_str += f"• <@{user}>\n"
 
-    map_str = "🗺️ Maps\n"
-    for map in record.maps:
-        map_str += f"• {map}\n"
+    map_str = f"🗺️ Maps\n{format_maps(record)}\n"
 
     embed = Embedding(
         f"⚔️ Team Match Ready - {t1_name} vs {t2_name}",
@@ -637,7 +637,7 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
 
         embed = Embedding(
             f"🎮 Picking - {record.queue_id}",
-            f"{whose_pick}\n\n{team1_str}\n{team2_str}",
+            f"{whose_pick}\n\n{team1_str}\n{team2_str}\n🗺️ Maps\n{format_maps(record)}",
             color=0x7c3aed,
         )
 
@@ -657,9 +657,7 @@ def update_queue_embed(record: QueueRecord) -> ([Embedding], [Components]):
             player_data = player_dao.get_player(record.guild_id, user)
             team2_str = team2_str + str(player_data.get_rank_emoji()) + player_data.player_name + str(player_data.get_streak()) + " • " + str(int(player_data.sr)) + "\n"
 
-        map_str = "🗺️ Maps\n"
-        for map in record.maps:
-            map_str = map_str + f"• {map}\n"
+        map_str = f"🗺️ Maps\n{format_maps(record)}\n"
 
         # Build waitlist section if players are waiting
         waitlist_str = ""
@@ -813,6 +811,7 @@ def team_pool_start(inter: Interaction, queue_id: str, channel_id: str):
         is_team_queue=True, team_1_id=team_a.team_id, team_2_id=team_b.team_id,
     )
     match_record.update_expiry_date()
+    assign_map_hosts(match_record)
     queue_dao.put_queue(match_record)
     team_a.status = TM.STATUS_IN_MATCH
     team_b.status = TM.STATUS_IN_MATCH

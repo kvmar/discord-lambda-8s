@@ -4,6 +4,7 @@ import itertools
 import random
 
 from core import QueueManager
+from core.MapHosts import assign_map_hosts
 from dao.QueueDao import QueueDao, QueueRecord
 from dao.TeamDao import TeamDao, TeamRecord, MAX_TEAM_SIZE, STATUS_IDLE, STATUS_QUEUED, STATUS_IN_MATCH
 from discord_lambda import Embedding, Components
@@ -258,6 +259,7 @@ def start_team_match(inter: Interaction) -> None:
         is_team_queue=True, team_1_id=team_a.team_id, team_2_id=team_b.team_id,
     )
     record.update_expiry_date()
+    assign_map_hosts(record)
     queue_dao.put_queue(record)
 
     team_a.status = STATUS_IN_MATCH
